@@ -3,8 +3,17 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
+	IDataObject,
+	JsonObject,
 } from 'n8n-workflow';
-import { NodeConnectionTypes } from 'n8n-workflow';
+import { NodeConnectionTypes, NodeApiError } from 'n8n-workflow';
+import type { Activity } from '@microsoft/agents-activity';
+import { verifyJwt } from '../../shared/verifyJwt';
+import {
+	activityToConversationReference,
+	parseActivity,
+} from '../../shared/envelope';
+import type { ItemEnvelope, M365AgentCredentials } from '../../shared/types';
 
 export class M365AgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -14,23 +23,22 @@ export class M365AgentTrigger implements INodeType {
 		group: ['trigger'],
 		version: 1,
 		description:
-			'Receives Activity POSTs from Azure Bot Service. Validates JWT and outputs a parsed turnContext.',
-		defaults: {
-			name: 'M365 Agent Trigger',
-		},
+			'Receive activities from Azure Bot Service. Validates JWT, parses Activity, exposes conversationReference + activity envelope.',
+		defaults: { name: 'M365 Agent Trigger' },
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
 		usableAsTool: true,
-		credentials: [
-			{
-				name: 'm365AgentApi',
-				required: true,
-			},
-		],
+		credentials: [{ name: 'm365AgentApi', required: true }],
 		webhooks: [
 			{
 				name: 'default',
 				httpMethod: 'POST',
+				responseMode: 'onReceived',
+				path: 'messages',
+			},
+			{
+				name: 'setup',
+				httpMethod: 'GET',
 				responseMode: 'onReceived',
 				path: 'messages',
 			},
@@ -50,7 +58,7 @@ export class M365AgentTrigger implements INodeType {
 					{ name: 'Typing', value: 'typing' },
 				],
 				default: ['message'],
-				description: 'Which Activity types should trigger this workflow',
+				description: 'Only emit activities of these types',
 			},
 			{
 				displayName: 'Channel Filter',
@@ -61,23 +69,77 @@ export class M365AgentTrigger implements INodeType {
 					{ name: 'Emulator', value: 'emulator' },
 					{ name: 'Microsoft 365 Copilot', value: 'msteamscopilot' },
 					{ name: 'Microsoft Teams', value: 'msteams' },
-					{ name: 'Slack', value: 'slack' },
 					{ name: 'Web Chat', value: 'webchat' },
 				],
 				default: [],
-				description: 'Only trigger for these channels. Empty = all channels.',
+				description: 'If set, only emit activities from these channels. Empty = all.',
 			},
 		],
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		// TODO: JWT validation against credentials (use @microsoft/agents-hosting CloudAdapter)
-		// TODO: filter by activityTypes and channelFilter
-		// TODO: shape output as { activity, turnContext, channelData } typed payload
-		const body = this.getBodyData();
+		const req = this.getRequestObject();
+
+		// GET → unauthenticated health check.
+		if (req.method === 'GET') {
+			const res = this.getResponseObject();
+			res.status(200).json({ status: 'ok', service: 'M365 Agent' });
+			return { noWebhookResponse: true };
+		}
+
+		const credentials = (await this.getCredentials(
+			'm365AgentApi',
+		)) as unknown as M365AgentCredentials;
+
+		// POST → JWT validation unless explicitly bypassed for Emulator.
+		if (!credentials.anonymousAllowed) {
+			const authHeader = req.headers.authorization as string | undefined;
+			if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
+				const res = this.getResponseObject();
+				res.status(401).json({ error: 'Missing bearer token' });
+				return { noWebhookResponse: true };
+			}
+			const token = authHeader.slice(7).trim();
+			try {
+				await verifyJwt(token, {
+					clientId: credentials.clientId,
+					tenantId: credentials.tenantId,
+				});
+			} catch (err) {
+				const res = this.getResponseObject();
+				res.status(401).json({ error: 'JWT verification failed', detail: (err as Error).message });
+				return { noWebhookResponse: true };
+			}
+		}
+
+		const body = this.getBodyData() as unknown as Activity;
+		const activityTypes = this.getNodeParameter('activityTypes', []) as string[];
+		const channelFilter = this.getNodeParameter('channelFilter', []) as string[];
+
+		if (activityTypes.length > 0 && body.type && !activityTypes.includes(body.type)) {
+			return { webhookResponse: { status: 200 }, workflowData: [[]] };
+		}
+		if (channelFilter.length > 0 && body.channelId && !channelFilter.includes(body.channelId)) {
+			return { webhookResponse: { status: 200 }, workflowData: [[]] };
+		}
+
+		let envelope: ItemEnvelope;
+		try {
+			envelope = {
+				conversationReference: activityToConversationReference(body),
+				activity: body,
+				parsed: parseActivity(body),
+				raw: body,
+			};
+		} catch (err) {
+			const e = err as Error;
+			throw new NodeApiError(this.getNode(), { message: e.message } as JsonObject, {
+				message: `Malformed Activity: ${e.message}`,
+			});
+		}
 
 		return {
-			workflowData: [this.helpers.returnJsonArray([body])],
+			workflowData: [this.helpers.returnJsonArray([envelope as unknown as IDataObject])],
 		};
 	}
 }
