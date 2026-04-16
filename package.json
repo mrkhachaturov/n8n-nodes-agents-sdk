@@ -30,7 +30,10 @@
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
+		"prepublishOnly": "n8n-node prerelease",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage"
 	},
 	"files": [
 		"dist"
@@ -50,14 +53,22 @@
 		"node": ">=20.0.0"
 	},
 	"dependencies": {
-		"@microsoft/agents-hosting": "^1.4.2"
+		"@microsoft/agents-activity": "^1.4.2",
+		"@microsoft/agents-hosting": "^1.4.2",
+		"adaptivecards-templating": "^2.3.1",
+		"axios": "^1.15.0",
+		"jsonwebtoken": "^9.0.3",
+		"jwks-rsa": "^4.0.1"
 	},
 	"devDependencies": {
 		"@n8n/node-cli": "^0.23.1",
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/node": "^22.19.17",
 		"eslint": "^10.2.0",
 		"prettier": "^3.8.3",
 		"release-it": "^20.0.0",
-		"typescript": "^6.0.2"
+		"typescript": "^6.0.2",
+		"vitest": "^4.1.4"
 	},
 	"peerDependencies": {
 		"n8n-workflow": "^2.13.1"
