@@ -9,7 +9,7 @@ import type {
 import { NodeConnectionTypes, NodeOperationError, NodeApiError } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
 import { buildAuthConfig } from '../../shared/buildAuthConfig';
-import { createConnector, replyInThread } from '../../shared/botConnector';
+import { createConnector, replyInThread, type BotConnectorBundle } from '../../shared/botConnector';
 import type {
 	ConversationReference,
 	M365AgentCredentials,
@@ -113,6 +113,20 @@ export class M365SendActivity implements INodeType {
 		)) as unknown as M365AgentCredentials;
 		const authConfig = buildAuthConfig(credentials);
 
+		// Connector bundle is memoized per serviceUrl within this execute() call.
+		// MSAL's internal token cache is per-ConfidentialClientApplication instance,
+		// so reusing the bundle across items with the same serviceUrl avoids
+		// redundant token fetches (one acquisition per unique tenant endpoint).
+		const connectors = new Map<string, BotConnectorBundle>();
+		const getBundle = async (serviceUrl: string): Promise<BotConnectorBundle> => {
+			let b = connectors.get(serviceUrl);
+			if (!b) {
+				b = await createConnector(authConfig, serviceUrl);
+				connectors.set(serviceUrl, b);
+			}
+			return b;
+		};
+
 		for (let i = 0; i < items.length; i++) {
 			const operation = this.getNodeParameter('operation', i) as Operation;
 			const refParam = this.getNodeParameter('conversationReference', i) as unknown;
@@ -155,7 +169,7 @@ export class M365SendActivity implements INodeType {
 				}
 			}
 
-			const bundle = await createConnector(authConfig, ref.serviceUrl);
+			const bundle = await getBundle(ref.serviceUrl);
 
 			try {
 				let result: IDataObject | undefined;
