@@ -1,0 +1,32 @@
+name: Publish to npm
+
+# Triggered by tags produced by `npm run release` locally (release-it defaults
+# to bare-version tags, e.g. `0.1.1`, `0.2.0-beta.1`).
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions:
+  id-token: write   # OIDC for npm Trusted Publisher + provenance
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      # `n8n-node release` (aliased as `npm run release`) auto-detects CI via
+      # GITHUB_ACTIONS and takes the CI branch: lint → build → npm publish
+      # with RELEASE_MODE=true + NPM_CONFIG_PROVENANCE=true. The tag, commit,
+      # and GitHub release were already created locally by the same command.
+      - run: npm run release
