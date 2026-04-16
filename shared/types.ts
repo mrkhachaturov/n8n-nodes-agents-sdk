@@ -1,20 +1,4 @@
-/**
- * Structural alias for an Activity-compatible object.
- * Uses a structural type rather than importing from @microsoft/agents-activity
- * to keep this file free of restricted imports per n8n community node rules.
- * Nodes that need the full SDK Activity type import it directly from the SDK.
- */
-export type ActivityLike = {
-	type: string;
-	id?: string;
-	text?: string;
-	channelId?: string;
-	attachments?: unknown[];
-	entities?: unknown[];
-	value?: unknown;
-	replyToId?: string;
-	[key: string]: unknown;
-};
+import type { Activity } from '@microsoft/agents-activity';
 
 /**
  * Minimal ConversationReference shape used across the package.
@@ -57,10 +41,9 @@ export interface ParsedActivity {
  */
 export interface ItemEnvelope {
 	conversationReference?: ConversationReference;
-	activity: Partial<ActivityLike>;
+	activity: Partial<Activity>;
 	parsed?: ParsedActivity;
-	/** Full incoming Activity from the SDK — typed as unknown to avoid restricted imports. */
-	raw?: unknown;
+	raw?: Activity;
 }
 
 /** Operations supported by M365SendActivity. */
