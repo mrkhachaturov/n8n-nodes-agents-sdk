@@ -1,4 +1,4 @@
-# n8n-nodes-m365-agents
+# n8n-nodes-agents-sdk
 
 n8n community nodes for the Microsoft 365 Agents SDK. Build Teams / Copilot / WebChat bots with n8n as the orchestration layer — no raw HTTP, no hand-built Activity JSON, JWT validation done for you.
 
@@ -15,10 +15,10 @@ Milestone 0 — four nodes and one credential. See the design spec for the full 
 ## Install
 
 ```bash
-npm install n8n-nodes-m365-agents
+npm install n8n-nodes-agents-sdk
 ```
 
-Or in the n8n UI: **Settings → Community Nodes → Install** → `n8n-nodes-m365-agents`.
+Or in the n8n UI: **Settings → Community Nodes → Install** → `n8n-nodes-agents-sdk`.
 
 The package has external runtime dependencies (MSAL via `@microsoft/agents-hosting`, `axios`, `jsonwebtoken`, `jwks-rsa`, `adaptivecards-templating`) and is intended for self-hosted n8n — it will not run in n8n Cloud's sandbox.
 

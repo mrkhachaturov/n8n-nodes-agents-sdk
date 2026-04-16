@@ -1,4 +1,4 @@
-# n8n-nodes-m365-agents — development and deploy tasks.
+# n8n-nodes-agents-sdk — development and deploy tasks.
 #
 # Deploy target: the n8n Swarm service reads its custom-nodes directory from
 # `/home/node/.n8n/custom`, which is backed by `${SHARED}/automation/n8n/custom`
@@ -27,7 +27,8 @@ build:
 
 # Compile + rsync dist/ to CephFS + force-update the n8n service.
 deploy-dev: build
-	rsync -av --delete dist/ {{SWARM_HOST}}:{{CEPHFS_PATH}}/n8n-nodes-m365-agents/dist/
+	rsync -av --delete dist/ {{SWARM_HOST}}:{{CEPHFS_PATH}}/n8n-nodes-agents-sdk/dist/
+	rsync -av package.json {{SWARM_HOST}}:{{CEPHFS_PATH}}/n8n-nodes-agents-sdk/package.json
 	ssh {{SWARM_HOST}} "docker service update --force {{N8N_SERVICE}}"
 
 # Run unit tests (offline — default scope, excludes tests/integration).
