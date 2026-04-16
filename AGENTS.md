@@ -135,13 +135,34 @@ npm run release      # release-it (once published)
 Or via `just` (same tasks, shorter):
 
 ```bash
-just build           # npm run build
-just test            # npm test
-just lint            # npm run lint
-just check           # lint + test + build
-just watch           # vitest --watch
-just deploy-dev      # rsync dist/ to CephFS + force n8n service update
+just build              # npm run build
+just test               # npm test (unit only, offline)
+just test-integration   # hits real Azure via mise-loaded credentials
+just lint               # npm run lint
+just check              # lint + test + build
+just watch              # vitest --watch
+just deploy-dev         # rsync dist/ to CephFS + force n8n service update
 ```
+
+## Integration tests (real Azure)
+
+`tests/integration/azure.integration.test.ts` hits `login.microsoftonline.com`
+to verify end-to-end that:
+1. `buildAuthConfig` + `MsalTokenProvider` actually acquire a Bot Framework token
+2. The token passes our `verifyJwt` validator against the real JWKS endpoint
+
+Credentials come from the parent repo's mise-managed 1Password env
+(`~/.op-env/at-m365bot.env`) which exports:
+
+```
+M365_TEST_CLIENT_ID
+M365_TEST_TENANT_ID
+M365_TEST_CLIENT_SECRET
+```
+
+`just test-integration` wraps `mise exec --` so the env loads automatically.
+Without the env vars, the integration `describe` block is skipped cleanly —
+CI and anyone without credentials can still run `npm test` offline.
 
 ## Dev deploy loop (Docker Swarm + CephFS)
 

@@ -30,9 +30,16 @@ deploy-dev: build
 	rsync -av --delete dist/ {{SWARM_HOST}}:{{CEPHFS_PATH}}/n8n-nodes-m365-agents/dist/
 	ssh {{SWARM_HOST}} "docker service update --force {{N8N_SERVICE}}"
 
-# Run tests.
+# Run unit tests (offline — default scope, excludes tests/integration).
 test:
 	npm test
+
+# Run integration tests against real Azure. Uses `mise exec` so the
+# parent repo's 1Password-managed env (~/.op-env/at-m365bot.env) is loaded,
+# populating M365_TEST_CLIENT_ID / _SECRET / _TENANT_ID. Tests skip cleanly
+# if those vars are not set.
+test-integration:
+	mise exec -- npm run test:integration
 
 # Lint.
 lint:
