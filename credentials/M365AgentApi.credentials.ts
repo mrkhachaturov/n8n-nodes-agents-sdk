@@ -34,7 +34,7 @@ export class M365AgentApi implements ICredentialType {
 			],
 			default: 'SingleTenant',
 			description:
-				'Azure Bot app type. Multi-tenant creation is deprecated after 2025-07-31 — prefer Single Tenant or User-Assigned MSI.',
+				'Azure Bot registration app type. Multi-tenant creation is deprecated after 2025-07-31; prefer SingleTenant or UserAssignedMsi.',
 		},
 		{
 			displayName: 'App ID (Client ID)',
@@ -71,7 +71,7 @@ export class M365AgentApi implements ICredentialType {
 			type: 'boolean',
 			default: false,
 			description:
-				'Whether to skip JWT validation. Use only with Bot Framework Emulator for local dev.',
+				'Skip JWT validation. Only for Bot Framework Emulator testing. Never true in production.',
 		},
 	];
 }
