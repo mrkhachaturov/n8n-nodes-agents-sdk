@@ -1,4 +1,5 @@
 import type {
+	ICredentialTestRequest,
 	ICredentialType,
 	INodeProperties,
 } from 'n8n-workflow';
@@ -10,6 +11,16 @@ export class M365AgentApi implements ICredentialType {
 
 	documentationUrl =
 		'https://learn.microsoft.com/microsoft-365/agents-sdk/';
+
+	icon = { light: 'file:../icons/m365.svg', dark: 'file:../icons/m365.dark.svg' } as const;
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://login.microsoftonline.com',
+			url: '/common/v2.0/.well-known/openid-configuration',
+			method: 'GET',
+		},
+	};
 
 	properties: INodeProperties[] = [
 		{

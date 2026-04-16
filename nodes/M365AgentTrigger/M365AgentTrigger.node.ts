@@ -1,5 +1,4 @@
 import type {
-	IHookFunctions,
 	IWebhookFunctions,
 	INodeType,
 	INodeTypeDescription,
@@ -11,7 +10,7 @@ export class M365AgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'M365 Agent Trigger',
 		name: 'm365AgentTrigger',
-		icon: 'file:../../icons/m365.svg',
+		icon: { light: 'file:../../icons/m365.svg', dark: 'file:../../icons/m365.dark.svg' },
 		group: ['trigger'],
 		version: 1,
 		description:
@@ -21,6 +20,7 @@ export class M365AgentTrigger implements INodeType {
 		},
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'm365AgentApi',
@@ -41,12 +41,12 @@ export class M365AgentTrigger implements INodeType {
 				name: 'activityTypes',
 				type: 'multiOptions',
 				options: [
-					{ name: 'Message', value: 'message' },
 					{ name: 'Conversation Update', value: 'conversationUpdate' },
-					{ name: 'Message Reaction', value: 'messageReaction' },
-					{ name: 'Invoke', value: 'invoke' },
 					{ name: 'Event', value: 'event' },
 					{ name: 'Installation Update', value: 'installationUpdate' },
+					{ name: 'Invoke', value: 'invoke' },
+					{ name: 'Message', value: 'message' },
+					{ name: 'Message Reaction', value: 'messageReaction' },
 					{ name: 'Typing', value: 'typing' },
 				],
 				default: ['message'],
@@ -57,12 +57,12 @@ export class M365AgentTrigger implements INodeType {
 				name: 'channelFilter',
 				type: 'multiOptions',
 				options: [
-					{ name: 'Microsoft Teams', value: 'msteams' },
-					{ name: 'Microsoft 365 Copilot', value: 'msteamscopilot' },
-					{ name: 'Web Chat', value: 'webchat' },
 					{ name: 'Direct Line', value: 'directline' },
 					{ name: 'Emulator', value: 'emulator' },
+					{ name: 'Microsoft 365 Copilot', value: 'msteamscopilot' },
+					{ name: 'Microsoft Teams', value: 'msteams' },
 					{ name: 'Slack', value: 'slack' },
+					{ name: 'Web Chat', value: 'webchat' },
 				],
 				default: [],
 				description: 'Only trigger for these channels. Empty = all channels.',
@@ -77,7 +77,7 @@ export class M365AgentTrigger implements INodeType {
 		const body = this.getBodyData();
 
 		return {
-			workflowData: [this.helpers.returnJsonArray([body as object])],
+			workflowData: [this.helpers.returnJsonArray([body])],
 		};
 	}
 }

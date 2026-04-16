@@ -1,76 +1,79 @@
 {
-	"name": "n8n-nodes-m365-agents",
-	"version": "0.1.0",
-	"description": "n8n community nodes for the Microsoft 365 Agents SDK. Build Teams/Copilot/WebChat bots with n8n as the orchestration layer.",
-	"license": "MIT",
-	"homepage": "https://github.com/mrkhachaturov/n8n-nodes-m365-agents",
-	"keywords": [
-		"n8n-community-node-package",
-		"n8n",
-		"microsoft",
-		"m365",
-		"agents",
-		"bot-framework",
-		"teams",
-		"copilot",
-		"adaptive-cards"
-	],
-	"author": {
-		"name": "Ruben Khachaturov",
-		"email": "rkhachaturov@gmail.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/mrkhachaturov/n8n-nodes-m365-agents.git"
-	},
-	"scripts": {
-		"build": "n8n-node build",
-		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
-		"lint": "n8n-node lint",
-		"lint:fix": "n8n-node lint --fix",
-		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease",
-		"test": "vitest run",
-		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage"
-	},
-	"files": [
-		"dist"
-	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"strict": true,
-		"credentials": [
-			"dist/credentials/M365AgentApi.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/M365AgentTrigger/M365AgentTrigger.node.js",
-			"dist/nodes/M365SendActivity/M365SendActivity.node.js"
-		]
-	},
-	"engines": {
-		"node": ">=20.0.0"
-	},
-	"dependencies": {
-		"@microsoft/agents-activity": "^1.4.2",
-		"@microsoft/agents-hosting": "^1.4.2",
-		"adaptivecards-templating": "^2.3.1",
-		"axios": "^1.15.0",
-		"jsonwebtoken": "^9.0.3",
-		"jwks-rsa": "^4.0.1"
-	},
-	"devDependencies": {
-		"@n8n/node-cli": "^0.23.1",
-		"@types/jsonwebtoken": "^9.0.10",
-		"@types/node": "^22.19.17",
-		"eslint": "^10.2.0",
-		"prettier": "^3.8.3",
-		"release-it": "^20.0.0",
-		"typescript": "^6.0.2",
-		"vitest": "^4.1.4"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "^2.13.1"
-	}
+  "name": "n8n-nodes-m365-agents",
+  "version": "0.1.0",
+  "description": "n8n community nodes for the Microsoft 365 Agents SDK. Build Teams/Copilot/WebChat bots with n8n as the orchestration layer.",
+  "license": "MIT",
+  "homepage": "https://github.com/mrkhachaturov/n8n-nodes-m365-agents",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "microsoft",
+    "m365",
+    "agents",
+    "bot-framework",
+    "teams",
+    "copilot",
+    "adaptive-cards"
+  ],
+  "author": {
+    "name": "Ruben Khachaturov",
+    "email": "rkhachaturov@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrkhachaturov/n8n-nodes-m365-agents.git"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": false,
+    "credentials": [
+      "dist/credentials/M365AgentApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/M365AgentTrigger/M365AgentTrigger.node.js",
+      "dist/nodes/M365SendActivity/M365SendActivity.node.js"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@microsoft/agents-activity": "^1.4.2",
+    "@microsoft/agents-hosting": "^1.4.2",
+    "adaptivecards-templating": "^2.3.1",
+    "axios": "^1.15.0",
+    "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^4.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@n8n/node-cli": "^0.23.1",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.19.17",
+    "eslint": "^9.39.4",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import-x": "^4.16.2",
+    "prettier": "^3.8.3",
+    "release-it": "^20.0.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.4"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "^2.13.1"
+  }
 }

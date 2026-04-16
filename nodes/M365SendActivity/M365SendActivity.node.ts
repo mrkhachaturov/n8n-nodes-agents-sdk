@@ -10,7 +10,7 @@ export class M365SendActivity implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'M365 Send Activity',
 		name: 'm365SendActivity',
-		icon: 'file:../../icons/m365.svg',
+		icon: { light: 'file:../../icons/m365.svg', dark: 'file:../../icons/m365.dark.svg' },
 		group: ['output'],
 		version: 1,
 		description:
