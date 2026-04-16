@@ -4,9 +4,9 @@ Working context for AI coding agents inside this package. Portable format — Cl
 
 ## What this is
 
-`n8n-nodes-agents-sdk` (published on npm; GitHub repo kept at `mrkhachaturov/n8n-nodes-m365-agents` for historical continuity) — an n8n community-nodes package that exposes the **Microsoft 365 Agents SDK** as first-class n8n nodes. Lets n8n workflows receive/send/update Activities from Azure Bot Service across Teams, M365 Copilot, WebChat, and Direct Line — without raw HTTP or manual JWT validation.
+`n8n-nodes-agents-sdk` — an n8n community-nodes package that exposes the **Microsoft 365 Agents SDK** as first-class n8n nodes. Lets n8n workflows receive/send/update Activities from Azure Bot Service across Teams, M365 Copilot, WebChat, and Direct Line — without raw HTTP or manual JWT validation.
 
-The package is a git submodule at `.dev/n8n-nodes-m365-agents/` inside the parent `n8n-workflows` repo, backed by the GitHub repo at `github.com/mrkhachaturov/n8n-nodes-m365-agents`.
+Published at [npm/n8n-nodes-agents-sdk](https://www.npmjs.com/package/n8n-nodes-agents-sdk) and [github.com/mrkhachaturov/n8n-nodes-agents-sdk](https://github.com/mrkhachaturov/n8n-nodes-agents-sdk). Tracked here as a git submodule at `.dev/n8n-nodes-m365-agents/` inside the parent `n8n-workflows` repo (folder name kept for historical continuity — the npm and repo names are `n8n-nodes-agents-sdk`).
 
 ## Architecture (where this sits)
 
@@ -243,7 +243,7 @@ just deploy-dev
 
 - **2026-04-16** — SDK choice: `@microsoft/agents-hosting` (not `botbuilder`). Reason: Bot Framework SDK archived 2025-12-31.
 - **2026-04-16** — Package naming: unscoped `n8n-nodes-m365-agents` for now. May move under `@mrkhachaturov/` scope on publish.
-- **2026-04-17** — Published to npm as `n8n-nodes-agents-sdk` (not `n8n-nodes-m365-agents`). npm's automated spam detection flagged the original name, likely due to the "m365" + "microsoft" + "teams" keyword cluster. `agents-sdk` is the SDK's real short name ("Microsoft 365 Agents SDK") and mirrors what users will type when searching. The GitHub repo stays at the original name — no value in renaming downstream links.
+- **2026-04-17** — Published to npm as `n8n-nodes-agents-sdk` (not `n8n-nodes-m365-agents`). npm's automated spam detection flagged the original name, likely due to the "m365" + "microsoft" + "teams" keyword cluster. `agents-sdk` is the SDK's real short name ("Microsoft 365 Agents SDK") and mirrors what users will type when searching. The GitHub repo was renamed in parallel; GitHub's HTTP redirect keeps the old URL working. The local submodule folder `.dev/n8n-nodes-m365-agents/` is intentionally unchanged — renaming it would rewrite .gitmodules in the parent repo with no user-facing benefit.
 - **2026-04-16** — Dependency strategy: pinned current majors (TS 6, ESLint 10, release-it 20). Verified compatible with `@n8n/node-cli@0.23.1`.
 - **2026-04-17** — ESLint downgraded to `^9.29.0` during M0 build-out. Reason: `@n8n/node-cli@0.23.1` tests with eslint 9 and `eslint-plugin-n8n-nodes-base` uses `context.getFilename()` which was removed in ESLint 10. Revisit when the n8n CLI updates.
 - **2026-04-17** — n8n Cloud support OFF: `eslint.config.mjs` uses `configWithoutCloudSupport` and `package.json` `n8n.strict: false`. Reason: the package has six external runtime deps (`@microsoft/agents-hosting`, `@microsoft/agents-activity`, `axios`, `jsonwebtoken`, `jwks-rsa`, `adaptivecards-templating`) — n8n Cloud's sandbox won't load it. Self-hosted n8n is the target.
