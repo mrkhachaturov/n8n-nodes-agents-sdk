@@ -1,10 +1,20 @@
 import type {
+	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	JsonObject,
 } from 'n8n-workflow';
-import { NodeConnectionTypes } from 'n8n-workflow';
+import { NodeConnectionTypes, NodeOperationError, NodeApiError } from 'n8n-workflow';
+import type { Activity } from '@microsoft/agents-activity';
+import { buildAuthConfig } from '../../shared/buildAuthConfig';
+import { createConnector, replyInThread } from '../../shared/botConnector';
+import type {
+	ConversationReference,
+	M365AgentCredentials,
+	Operation,
+} from '../../shared/types';
 
 export class M365SendActivity implements INodeType {
 	description: INodeTypeDescription = {
@@ -14,30 +24,50 @@ export class M365SendActivity implements INodeType {
 		group: ['output'],
 		version: 1,
 		description:
-			'Send a message, Adaptive Card, or update/delete an existing Activity via Azure Bot Service.',
-		defaults: {
-			name: 'M365 Send Activity',
-		},
+			'Send a message, card, or thread reply; or update/delete an existing Activity. Uses the envelope from M365AgentTrigger.',
+		defaults: { name: 'M365 Send Activity' },
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
 		usableAsTool: true,
-		credentials: [
-			{
-				name: 'm365AgentApi',
-				required: true,
-			},
-		],
+		credentials: [{ name: 'm365AgentApi', required: true }],
 		properties: [
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
+				// Options alphabetized by display name to satisfy n8n-nodes-base lint rule
 				options: [
-					{ name: 'Send Reply', value: 'reply' },
-					{ name: 'Send Proactive Message', value: 'proactive' },
-					{ name: 'Update Activity', value: 'update' },
-					{ name: 'Delete Activity', value: 'delete' },
+					{
+						name: 'Delete',
+						value: 'delete',
+						description: 'DELETE activities/{activityId}',
+						action: 'Delete activities activity id',
+					},
+					{
+						name: 'Proactive',
+						value: 'proactive',
+						description: 'POST a new Activity to the conversation',
+						action: 'Post a new activity to the conversation',
+					},
+					{
+						name: 'Reply',
+						value: 'reply',
+						description: 'POST to activities/{activityId}',
+						action: 'Post to activities activity id',
+					},
+					{
+						name: 'Reply In Thread',
+						value: 'replyInThread',
+						description: 'Teams-specific: POST into a thread via ;messageid= URL suffix',
+						action: 'Teams specific post into a thread via messageid url suffix',
+					},
+					{
+						name: 'Update',
+						value: 'update',
+						description: 'PUT activities/{activityId}',
+						action: 'Put activities activity id',
+					},
 				],
 				default: 'reply',
 			},
@@ -45,58 +75,155 @@ export class M365SendActivity implements INodeType {
 				displayName: 'Conversation Reference',
 				name: 'conversationReference',
 				type: 'json',
-				default: '={{ $json.activity }}',
+				default: '={{ $json.conversationReference }}',
 				description:
-					'The Activity or ConversationReference to reply to. Defaults to the incoming activity from M365 Agent Trigger.',
+					"Routing fields from the envelope. Defaults to the item's conversationReference.",
 			},
 			{
-				displayName: 'Content Type',
-				name: 'contentType',
-				type: 'options',
-				displayOptions: {
-					show: { operation: ['reply', 'proactive', 'update'] },
-				},
-				options: [
-					{ name: 'Text', value: 'text' },
-					{ name: 'Adaptive Card', value: 'adaptiveCard' },
-				],
-				default: 'text',
-			},
-			{
-				displayName: 'Text',
-				name: 'text',
-				type: 'string',
-				typeOptions: { rows: 3 },
-				displayOptions: {
-					show: { contentType: ['text'] },
-				},
-				default: '',
-			},
-			{
-				displayName: 'Adaptive Card JSON',
-				name: 'card',
+				displayName: 'Activity',
+				name: 'activity',
 				type: 'json',
-				displayOptions: {
-					show: { contentType: ['adaptiveCard'] },
-				},
+				default: '={{ $json.activity }}',
+				displayOptions: { hide: { operation: ['delete'] } },
+				description: 'Activity body from the envelope (typically built by M365TextMessage or M365CardTemplate)',
+			},
+			{
+				displayName: 'Parent Activity ID',
+				name: 'parentActivityId',
+				type: 'string',
 				default: '',
-				description: 'Adaptive Card payload (schema 1.5+ recommended for Teams)',
+				displayOptions: { show: { operation: ['replyInThread'] } },
+				description:
+					'ID of the card or post that spawned the thread. Usually stored earlier in workflow state, not the inbound activityId.',
 			},
 		],
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = [];
+		const out: INodeExecutionData[] = [];
+
+		const credentials = (await this.getCredentials(
+			'm365AgentApi',
+		)) as unknown as M365AgentCredentials;
+		const authConfig = buildAuthConfig(credentials);
 
 		for (let i = 0; i < items.length; i++) {
-			// TODO: build CloudAdapter from credentials
-			// TODO: route by operation (reply / proactive / update / delete)
-			// TODO: use adapter.continueConversationAsync() for proactive + update + delete
-			// TODO: capture response, push activityId into returnData for chaining
-			returnData.push({ json: { ok: true, stub: true } });
+			const operation = this.getNodeParameter('operation', i) as Operation;
+			const refParam = this.getNodeParameter('conversationReference', i) as unknown;
+			const ref: ConversationReference =
+				typeof refParam === 'string'
+					? (JSON.parse(refParam) as ConversationReference)
+					: (refParam as ConversationReference);
+
+			if (!ref?.serviceUrl || !ref.conversation?.id) {
+				throw new NodeOperationError(
+					this.getNode(),
+					`Operation "${operation}" requires serviceUrl and conversation.id in conversationReference.`,
+					{ itemIndex: i },
+				);
+			}
+
+			const needsActivityId =
+				operation === 'reply' || operation === 'update' || operation === 'delete';
+			if (needsActivityId && !ref.activityId) {
+				throw new NodeOperationError(
+					this.getNode(),
+					`Operation "${operation}" requires conversationReference.activityId.`,
+					{ itemIndex: i },
+				);
+			}
+
+			let activity: Partial<Activity> | undefined;
+			if (operation !== 'delete') {
+				const actParam = this.getNodeParameter('activity', i) as unknown;
+				activity =
+					typeof actParam === 'string'
+						? (JSON.parse(actParam) as Partial<Activity>)
+						: (actParam as Partial<Activity>);
+				if (!activity) {
+					throw new NodeOperationError(
+						this.getNode(),
+						`Operation "${operation}" requires an activity body.`,
+						{ itemIndex: i },
+					);
+				}
+			}
+
+			const bundle = await createConnector(authConfig, ref.serviceUrl);
+
+			try {
+				let result: IDataObject | undefined;
+				switch (operation) {
+					case 'reply': {
+						const r = await bundle.client.replyToActivity(
+							ref.conversation.id,
+							ref.activityId,
+							activity as Activity,
+						);
+						result = { id: r.id };
+						break;
+					}
+					case 'proactive': {
+						const r = await bundle.client.sendToConversation(
+							ref.conversation.id,
+							activity as Activity,
+						);
+						result = { id: r.id };
+						break;
+					}
+					case 'update': {
+						const r = await bundle.client.updateActivity(
+							ref.conversation.id,
+							ref.activityId,
+							activity as Activity,
+						);
+						result = { id: r.id };
+						break;
+					}
+					case 'delete': {
+						await bundle.client.deleteActivity(ref.conversation.id, ref.activityId);
+						result = { ok: true, deletedActivityId: ref.activityId };
+						break;
+					}
+					case 'replyInThread': {
+						const parent = this.getNodeParameter('parentActivityId', i) as string;
+						if (!parent) {
+							throw new NodeOperationError(
+								this.getNode(),
+								'replyInThread requires parentActivityId.',
+								{ itemIndex: i },
+							);
+						}
+						const r = await replyInThread(
+							bundle,
+							ref.conversation.id,
+							parent,
+							activity as Activity,
+						);
+						result = { id: r.id };
+						break;
+					}
+					default: {
+						throw new NodeOperationError(
+							this.getNode(),
+							`Unknown operation: ${String(operation)}`,
+							{ itemIndex: i },
+						);
+					}
+				}
+				out.push({
+					json: { ...(items[i].json as IDataObject), sendResult: result! } as IDataObject,
+					pairedItem: i,
+				});
+			} catch (err) {
+				const e = err as Error;
+				throw new NodeApiError(this.getNode(), { message: e.message } as JsonObject, {
+					message: `M365SendActivity ${operation} failed: ${e.message}`,
+				});
+			}
 		}
 
-		return [returnData];
+		return [out];
 	}
 }
