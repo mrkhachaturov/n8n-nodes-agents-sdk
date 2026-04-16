@@ -127,7 +127,37 @@ npm run build:watch  # tsc --watch
 npm run dev          # spins up n8n with this package loaded
 npm run lint         # n8n-specific eslint rules
 npm run lint:fix     # auto-fix
+npm test             # vitest run
+npm run test:watch   # vitest --watch
 npm run release      # release-it (once published)
+```
+
+Or via `just` (same tasks, shorter):
+
+```bash
+just build           # npm run build
+just test            # npm test
+just lint            # npm run lint
+just check           # lint + test + build
+just watch           # vitest --watch
+just deploy-dev      # rsync dist/ to CephFS + force n8n service update
+```
+
+## Dev deploy loop (Docker Swarm + CephFS)
+
+The n8n stack mounts `${SHARED}/automation/n8n` into `/home/node/.n8n` (see
+`Infra/Containers/swarm/stacks/automation/n8n/docker-compose.yml`). n8n reads
+custom nodes from `/home/node/.n8n/custom`. `just deploy-dev` rsyncs our
+`dist/` into that CephFS-backed folder then forces a service update so the
+new code loads.
+
+Override targets per-invocation if your setup differs from the defaults:
+
+```bash
+SWARM_HOST=node01.astrateam.net \
+CEPHFS_PATH=/mnt/shared/automation/n8n/custom \
+N8N_SERVICE=n8n_app \
+just deploy-dev
 ```
 
 ## Project layout
