@@ -166,23 +166,31 @@ just deploy-dev
 .
 ├── credentials/
 │   └── M365AgentApi.credentials.ts        — App ID / secret / tenant / appType
-├── nodes/                                  — Milestone 0 set (other milestones add more)
-│   ├── M365AgentTrigger/
-│   │   └── M365AgentTrigger.node.ts       — JWT-validated webhook + GET health
-│   ├── M365SendActivity/
-│   │   └── M365SendActivity.node.ts       — reply / proactive / update / delete / replyInThread
-│   ├── M365TextMessage/                    — builds text Activity with mentions (M0)
-│   └── M365CardTemplate/                   — Adaptive Card + data binding (M0)
-├── shared/                                 — internals
-│   ├── verifyJwt.ts                        — JWT validation (replicated from SDK middleware)
+├── nodes/                                  — Milestone 0 set
+│   ├── M365AgentTrigger/                   — JWT-validated webhook + GET health
+│   ├── M365SendActivity/                   — reply / proactive / update / delete / replyInThread
+│   ├── M365TextMessage/                    — text Activity builder
+│   └── M365CardTemplate/                   — Adaptive Card + data binding
+├── shared/
+│   ├── types.ts                            — envelope, credential, operation types
 │   ├── buildAuthConfig.ts                  — credential → SDK AuthConfiguration
-│   └── ...
-├── icons/                                  — m365.svg, m365.dark.svg (TODO)
+│   ├── verifyJwt.ts                        — standalone JWT validator
+│   ├── envelope.ts                         — envelope helpers (ConvRef/parse/merge)
+│   └── botConnector.ts                     — MSAL + axios + replyInThread
+├── tests/
+│   ├── credentials/
+│   ├── nodes/
+│   └── shared/
+├── icons/                                  — m365.svg, m365.dark.svg
 ├── dist/                                   — build output (gitignored)
+├── justfile                                — build, test, lint, deploy-dev
+├── eslint.config.mjs                       — configWithoutCloudSupport + ignores
+├── vitest.config.ts
 ├── package.json
 ├── tsconfig.json
 ├── CLAUDE.md                               — one line: @AGENTS.md
-└── AGENTS.md                                — this file (portable multi-agent convention)
+├── AGENTS.md                                — this file
+└── README.md                                — public-facing intro
 ```
 
 ## Conventions
@@ -200,6 +208,8 @@ just deploy-dev
 - **2026-04-16** — SDK choice: `@microsoft/agents-hosting` (not `botbuilder`). Reason: Bot Framework SDK archived 2025-12-31.
 - **2026-04-16** — Package naming: unscoped `n8n-nodes-m365-agents` for now. May move under `@mrkhachaturov/` scope on publish.
 - **2026-04-16** — Dependency strategy: pinned current majors (TS 6, ESLint 10, release-it 20). Verified compatible with `@n8n/node-cli@0.23.1`.
+- **2026-04-17** — ESLint downgraded to `^9.29.0` during M0 build-out. Reason: `@n8n/node-cli@0.23.1` tests with eslint 9 and `eslint-plugin-n8n-nodes-base` uses `context.getFilename()` which was removed in ESLint 10. Revisit when the n8n CLI updates.
+- **2026-04-17** — n8n Cloud support OFF: `eslint.config.mjs` uses `configWithoutCloudSupport` and `package.json` `n8n.strict: false`. Reason: the package has six external runtime deps (`@microsoft/agents-hosting`, `@microsoft/agents-activity`, `axios`, `jsonwebtoken`, `jwks-rsa`, `adaptivecards-templating`) — n8n Cloud's sandbox won't load it. Self-hosted n8n is the target.
 
 ## References (external, only fetch when skills can't answer)
 
