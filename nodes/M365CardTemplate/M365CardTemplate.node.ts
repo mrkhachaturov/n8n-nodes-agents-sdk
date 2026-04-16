@@ -40,7 +40,7 @@ export class M365CardTemplate implements INodeType {
 				name: 'bindingData',
 				type: 'json',
 				default: '={{ $json }}',
-				description: 'Object used to expand ${field} placeholders. Defaults to the full item JSON, so fields like $JSON.order_number are available as ${order_number}. Accepts a JSON object or expression.',
+				description: 'Object used to expand ${field} placeholders. Defaults to the full item, so an incoming field like `order_number` is available as `${order_number}` in the template. Accepts an object or an expression.',
 			},
 		],
 	};
