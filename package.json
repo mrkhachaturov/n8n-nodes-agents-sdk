@@ -37,7 +37,11 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "files": [
-    "dist"
+    "dist/credentials",
+    "dist/nodes",
+    "dist/shared",
+    "dist/icons",
+    "dist/package.json"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
