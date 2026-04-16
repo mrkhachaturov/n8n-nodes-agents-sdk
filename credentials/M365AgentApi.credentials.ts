@@ -14,6 +14,10 @@ export class M365AgentApi implements ICredentialType {
 
 	icon = { light: 'file:../icons/m365.svg', dark: 'file:../icons/m365.dark.svg' } as const;
 
+	// Credential "test" button — verifies outbound HTTPS to Entra, not
+	// that the App ID / secret / tenant are valid. A green check here
+	// only means n8n can reach login.microsoftonline.com. Actual
+	// credential validation happens on the first M365SendActivity call.
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://login.microsoftonline.com',

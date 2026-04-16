@@ -100,6 +100,11 @@ export class M365SendActivity implements INodeType {
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+		// NOTE on Activity typing: the SDK's ConnectorClient methods expect
+		// `Activity` but the Bot Connector wire protocol happily accepts
+		// partials (type+text or type+attachments is enough for most sends).
+		// Builders upstream emit Partial<Activity>; the `as Activity` casts
+		// below are load-bearing only at the TS level.
 		const items = this.getInputData();
 		const out: INodeExecutionData[] = [];
 
@@ -156,9 +161,10 @@ export class M365SendActivity implements INodeType {
 				let result: IDataObject | undefined;
 				switch (operation) {
 					case 'reply': {
+						// activityId presence is enforced by the needsActivityId guard above.
 						const r = await bundle.client.replyToActivity(
 							ref.conversation.id,
-							ref.activityId,
+							ref.activityId as string,
 							activity as Activity,
 						);
 						result = { id: r.id };
@@ -175,14 +181,14 @@ export class M365SendActivity implements INodeType {
 					case 'update': {
 						const r = await bundle.client.updateActivity(
 							ref.conversation.id,
-							ref.activityId,
+							ref.activityId as string,
 							activity as Activity,
 						);
 						result = { id: r.id };
 						break;
 					}
 					case 'delete': {
-						await bundle.client.deleteActivity(ref.conversation.id, ref.activityId);
+						await bundle.client.deleteActivity(ref.conversation.id, ref.activityId as string);
 						result = { ok: true, deletedActivityId: ref.activityId };
 						break;
 					}

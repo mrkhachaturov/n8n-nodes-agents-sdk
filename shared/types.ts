@@ -3,12 +3,17 @@ import type { Activity } from '@microsoft/agents-activity';
 /**
  * Minimal ConversationReference shape used across the package.
  * Mirrors the SDK's ConversationReference but restricts it to the fields
- * the Trigger always emits and the sender always consumes.
+ * the Trigger emits and the sender consumes.
+ *
+ * activityId is OPTIONAL: the Trigger always populates it (see
+ * activityToConversationReference), but user-crafted proactive targets
+ * have no inbound activity to reference. M365SendActivity enforces
+ * per-operation presence at runtime.
  */
 export interface ConversationReference {
 	serviceUrl: string;
 	conversation: { id: string; conversationType?: string; isGroup?: boolean };
-	activityId: string;
+	activityId?: string;
 	bot?: { id?: string; name?: string };
 	user?: { id?: string; name?: string; aadObjectId?: string; role?: string };
 	channelId: string;

@@ -199,7 +199,7 @@ just deploy-dev
 - **Use `@microsoft/agents-hosting`, never `botbuilder`.** The old `botbuilder` SDK is archived (Dec 31, 2025).
 - **Single-tenant / UserAssignedMsi over multi-tenant.** Multi-tenant bot creation is deprecated after 2025-07-31.
 - **Validate JWT on every incoming webhook.** Use the standalone verifier in `shared/verifyJwt.ts` (SDK pieces — `jsonwebtoken`, `jwks-rsa` — driven by the same logic as the SDK's `authorizeJWT` middleware). The SDK's `CloudAdapter.process()` is Express-coupled and incompatible with n8n's `IWebhookFunctions`; replicating ~40 lines of its JWT logic is the correct path. Never skip validation on POST.
-- **Support both POST and GET** on the trigger path — POST for messages, GET for health checks / manifest URL verification.
+- **Support both POST and GET** on the trigger path — POST for messages, GET for health checks / manifest URL verification. Note: the two webhooks are registered as `name: 'default'` (POST) and `name: 'setup'` (GET). `n8n-workflow` only accepts `default | setup` as `webhooks[].name`; that's why the GET is called "setup" even though the path is `/messages`.
 - **No premature abstractions.** Start with 2-3 nodes, add more only when a real workflow needs them.
 - **Channel-aware but not channel-specific by default.** Use `Activity.ChannelId` + `ChannelData` for per-channel logic rather than separate nodes per channel.
 

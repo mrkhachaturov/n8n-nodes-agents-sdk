@@ -58,7 +58,10 @@ export function parseActivity(activity: Activity): ParsedActivity {
 		userId: activity.from?.id,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		aadObjectId: (activity.from as any)?.aadObjectId,
-		timestamp: activity.timestamp as unknown as string | undefined,
+		timestamp:
+			activity.timestamp instanceof Date
+				? activity.timestamp.toISOString()
+				: (activity.timestamp as string | undefined),
 	};
 }
 

@@ -116,6 +116,9 @@ export class M365AgentTrigger implements INodeType {
 		const activityTypes = this.getNodeParameter('activityTypes', []) as string[];
 		const channelFilter = this.getNodeParameter('channelFilter', []) as string[];
 
+		// Filters return 200 OK to Azure Bot Service (acknowledging receipt)
+		// but emit zero items, so the workflow short-circuits. Azure will
+		// not retry; the activity is effectively swallowed on purpose.
 		if (activityTypes.length > 0 && body.type && !activityTypes.includes(body.type)) {
 			return { webhookResponse: { status: 200 }, workflowData: [[]] };
 		}
