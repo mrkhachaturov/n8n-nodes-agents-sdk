@@ -1,3 +1,9 @@
+/* eslint-disable @n8n/community-nodes/node-usable-as-tool --
+ * Triggers are not AI-invocable tools per manifest §10.3 — a trigger fires
+ * from an external webhook, it cannot be called from an agent's reasoning loop.
+ * The lint rule's autofix would add `usableAsTool: true`, which is incorrect
+ * for trigger nodes. Suppressing this rule keeps that intent explicit.
+ */
 import type {
 	IWebhookFunctions,
 	INodeType,
@@ -24,7 +30,6 @@ export class M365AgentTrigger implements INodeType {
 		defaults: { name: 'M365 Agent Trigger' },
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
-		usableAsTool: true,
 		credentials: [{ name: 'm365AgentApi', required: true }],
 		webhooks: [
 			{

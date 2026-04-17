@@ -168,4 +168,8 @@ describe('M365AgentTrigger — responseMode parameter', () => {
 		const get = (node.description.webhooks ?? []).find((w) => w.httpMethod === 'GET');
 		expect(get?.responseMode).toBe('onReceived');
 	});
+
+	it('does not expose usableAsTool (manifest §10.3 — triggers are not tools)', () => {
+		expect(new M365AgentTrigger().description.usableAsTool).toBeFalsy();
+	});
 });

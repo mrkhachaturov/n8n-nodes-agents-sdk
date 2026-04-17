@@ -8,4 +8,7 @@ describe('M365Agent node', () => {
 	it('uses m365AgentApi credential', () => {
 		expect(new M365Agent().description.credentials?.[0]?.name).toBe('m365AgentApi');
 	});
+	it('does not expose usableAsTool (manifest §10.7 — side-effecting node)', () => {
+		expect(new M365Agent().description.usableAsTool).toBeFalsy();
+	});
 });
