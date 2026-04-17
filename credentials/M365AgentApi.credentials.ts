@@ -7,7 +7,7 @@ import type {
 export class M365AgentApi implements ICredentialType {
 	name = 'm365AgentApi';
 
-	displayName = 'Microsoft 365 Agent API';
+	displayName = 'M365 Agent API';
 
 	documentationUrl =
 		'https://learn.microsoft.com/microsoft-365/agents-sdk/';
