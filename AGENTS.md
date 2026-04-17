@@ -25,7 +25,7 @@ Teams / M365 Copilot / WebChat / Direct Line  (Azure Bot Service channels)
             ▼
   M365Agent (this package)          ← resource + operation: pick what to do
             │                          - Message: send / reply / update / delete / replyInThread
-            │                          - Card: send (Adaptive Card + templating)
+            │                          - Card: send / update (Adaptive Card + templating)
             │                          - Invoke Response: respond (Plain / AdaptiveCard)
             ▼
      Azure Bot Service → channel → user

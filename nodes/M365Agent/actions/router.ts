@@ -78,6 +78,9 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 					case 'send':
 						result = await card.send.execute(this, i, creds, bundles);
 						break;
+					case 'update':
+						result = await card.update.execute(this, i, creds, bundles);
+						break;
 					default:
 						throw new NodeOperationError(
 							this.getNode(),

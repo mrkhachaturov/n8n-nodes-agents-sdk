@@ -90,9 +90,10 @@ The **Conversation Source** toggle picks between `From Envelope` (default — re
 </details>
 
 <details>
-  <summary><b>Resource: Card</b> — send Adaptive Card with templating</summary>
+  <summary><b>Resource: Card</b> — send / update Adaptive Cards with templating</summary>
 
   - ✅ **Send** — render an Adaptive Card template against a data object and send it as a card attachment
+  - ✅ **Update** — re-render the template with new binding data and update a card you already posted (requires `activityId` on the conversation reference)
 
   Author the card in the [Adaptive Cards Designer](https://adaptivecards.microsoft.com/designer), paste the JSON into **Card Template**, and reference fields with `${field}` placeholders. **Binding Data** defaults to the whole inbound item (`={{ $json }}`). **Options → Fallback Text** shows on clients that can't render Adaptive Cards (notifications, mobile lockscreens).
 </details>
@@ -156,7 +157,7 @@ Every node in this package reads and writes items of this shape:
 
 **Contract:**
 - The **Trigger** emits the full envelope on every inbound activity.
-- The **M365 Agent** node reads `conversationReference` (via the `From Envelope` default) to route the outbound call. On output it spreads every input field through unchanged and adds an operation-specific result field (`sendResult` / `replyResult` / `updateResult` / `deleteResult` / `replyInThreadResult` / `cardSendResult`).
+- The **M365 Agent** node reads `conversationReference` (via the `From Envelope` default) to route the outbound call. On output it spreads every input field through unchanged and adds an operation-specific result field (`sendResult` / `replyResult` / `updateResult` / `deleteResult` / `replyInThreadResult` / `cardSendResult` / `cardUpdateResult`).
 
 Ancillary state you carry through your workflow (correlation IDs, cached state, upstream webhook payloads, etc.) survives the `M365 Agent` node unchanged.
 
