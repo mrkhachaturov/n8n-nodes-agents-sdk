@@ -1,16 +1,11 @@
-import type {
-	ICredentialTestRequest,
-	ICredentialType,
-	INodeProperties,
-} from 'n8n-workflow';
+import type { ICredentialTestRequest, ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class M365AgentApi implements ICredentialType {
 	name = 'm365AgentApi';
 
 	displayName = 'M365 Agent API';
 
-	documentationUrl =
-		'https://learn.microsoft.com/microsoft-365/agents-sdk/';
+	documentationUrl = 'https://learn.microsoft.com/microsoft-365/agents-sdk/';
 
 	icon = { light: 'file:../icons/m365.svg', dark: 'file:../icons/m365.dark.svg' } as const;
 

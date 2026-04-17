@@ -1,9 +1,5 @@
 import type { Activity } from '@microsoft/agents-activity';
-import type {
-	ConversationReference,
-	ItemEnvelope,
-	ParsedActivity,
-} from './types';
+import type { ConversationReference, ItemEnvelope, ParsedActivity } from './types';
 
 /**
  * Extract routing fields from a received Activity into a ConversationReference.
@@ -53,7 +49,8 @@ export function parseActivity(activity: Activity): ParsedActivity {
 		text: activity.text,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		action: typeof value === 'object' && value !== null ? (value as any).action : undefined,
-		submitData: typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : undefined,
+		submitData:
+			typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : undefined,
 		userName: activity.from?.name,
 		userId: activity.from?.id,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any

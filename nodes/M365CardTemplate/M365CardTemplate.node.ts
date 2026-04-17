@@ -8,8 +8,6 @@ import type {
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { Template } from 'adaptivecards-templating';
 import type { Activity } from '@microsoft/agents-activity';
-import { mergeEnvelope } from '../../shared/envelope';
-import type { ItemEnvelope } from '../../shared/types';
 
 export class M365CardTemplate implements INodeType {
 	description: INodeTypeDescription = {
@@ -33,14 +31,15 @@ export class M365CardTemplate implements INodeType {
 					'{\n  "type": "AdaptiveCard",\n  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",\n  "version": "1.4",\n  "body": [\n    { "type": "TextBlock", "text": "${title}", "weight": "bolder", "size": "large" }\n  ]\n}',
 				required: true,
 				description:
-					'Adaptive Card JSON with ${field} placeholders. Author in https://adaptivecards.io/designer/.',
+					'Adaptive Card JSON with ${field} placeholders. Author and preview at https://adaptivecards.microsoft.com/designer — paste into the Card Payload Editor, populate the Sample Data Editor to preview template expansion. Ignore "[Parsing] Unknown property action/order_number" warnings — Action.Submit `data` accepts arbitrary keys.',
 			},
 			{
 				displayName: 'Binding Data',
 				name: 'bindingData',
 				type: 'json',
 				default: '={{ $json }}',
-				description: 'Object used to expand ${field} placeholders. Defaults to the full item, so an incoming field like `order_number` is available as `${order_number}` in the template. Accepts an object or an expression.',
+				description:
+					'Object used to expand ${field} placeholders. Defaults to the full item, so an incoming field like `order_number` is available as `${order_number}` in the template. Accepts an object or an expression.',
 			},
 		],
 	};
@@ -50,8 +49,6 @@ export class M365CardTemplate implements INodeType {
 		const out: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
-			const current = items[i].json as unknown as Partial<ItemEnvelope>;
-
 			const templateParam = this.getNodeParameter('cardTemplate', i) as unknown;
 			const bindingDataParam = this.getNodeParameter('bindingData', i) as unknown;
 
@@ -84,14 +81,16 @@ export class M365CardTemplate implements INodeType {
 				attachments: [adaptiveCardAttachment],
 			};
 
-			const outItem = current.conversationReference
-				? mergeEnvelope(
-						{ conversationReference: current.conversationReference, activity: current.activity },
-						activity,
-					)
-				: { activity };
+			// Preserve conversationReference AND all ancillary fields (state
+			// carried by the workflow through earlier nodes). Only `activity`
+			// is overwritten. Earlier versions dropped these via mergeEnvelope,
+			// breaking downstream expressions that referenced upstream state.
+			const outItem: IDataObject = {
+				...(items[i].json as IDataObject),
+				activity: activity as unknown as IDataObject,
+			};
 
-			out.push({ json: outItem as unknown as IDataObject, pairedItem: i });
+			out.push({ json: outItem, pairedItem: i });
 		}
 
 		return [out];

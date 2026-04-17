@@ -2,10 +2,7 @@ import jwt, { type JwtHeader, type JwtPayload, type VerifyOptions } from 'jsonwe
 import jwksRsa from 'jwks-rsa';
 
 /** Signing-key fetcher. Default impl uses jwks-rsa; tests inject a fake. */
-export type GetSigningKey = (
-	jwksUri: string,
-	header: JwtHeader,
-) => Promise<string | Buffer>;
+export type GetSigningKey = (jwksUri: string, header: JwtHeader) => Promise<string | Buffer>;
 
 export interface VerifyJwtOptions {
 	clientId: string;
@@ -23,10 +20,7 @@ export interface VerifyJwtOptions {
  * Replicates the logic of @microsoft/agents-hosting's authorizeJWT middleware,
  * minus its Express coupling.
  */
-export async function verifyJwt(
-	raw: string,
-	opts: VerifyJwtOptions,
-): Promise<JwtPayload> {
+export async function verifyJwt(raw: string, opts: VerifyJwtOptions): Promise<JwtPayload> {
 	const decoded = jwt.decode(raw);
 	if (!decoded || typeof decoded === 'string') {
 		throw new Error('verifyJwt: token could not be decoded');

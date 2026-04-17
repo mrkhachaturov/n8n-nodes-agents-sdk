@@ -46,6 +46,7 @@ Every node in this package reads/writes items of this shape:
 ```
 
 **Contract:**
+
 - `M365AgentTrigger` emits the full envelope
 - Builder nodes (`M365TextMessage`, `M365CardTemplate`, etc.) populate/replace `activity`; must preserve `conversationReference` unchanged
 - `M365SendActivity` reads both fields; routes via `conversationReference`, sends `activity`
@@ -64,15 +65,15 @@ Violating this (e.g., a builder that strips `conversationReference`) is a bug.
 
 This project is inside the Claude Code `n8n-workflows` workspace. The following skills (plugins) are enabled:
 
-| Skill | Use when |
-|-------|----------|
-| `/microsoft-docs` | Looking up Microsoft/Azure concept docs — Agents SDK, Bot Framework, Teams, Adaptive Cards, Entra |
-| `/microsoft-code-reference` | Finding working MS SDK code samples, verifying API signatures |
-| `/microsoft-skill-creator` | Generating new skills for other Microsoft technologies |
-| `/n8n-mcp-tools-expert` | Using `n8n-dev` MCP tools (node discovery, validation, templates) |
-| `/n8n-code-javascript` | Writing JS code for n8n Code nodes or node internals |
-| `/n8n-node-configuration` | Configuring node properties, `displayOptions`, required fields |
-| `/n8n-validation-expert` | Interpreting `validate_node` / `validate_workflow` errors |
+| Skill                       | Use when                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| `/microsoft-docs`           | Looking up Microsoft/Azure concept docs — Agents SDK, Bot Framework, Teams, Adaptive Cards, Entra |
+| `/microsoft-code-reference` | Finding working MS SDK code samples, verifying API signatures                                     |
+| `/microsoft-skill-creator`  | Generating new skills for other Microsoft technologies                                            |
+| `/n8n-mcp-tools-expert`     | Using `n8n-dev` MCP tools (node discovery, validation, templates)                                 |
+| `/n8n-code-javascript`      | Writing JS code for n8n Code nodes or node internals                                              |
+| `/n8n-node-configuration`   | Configuring node properties, `displayOptions`, required fields                                    |
+| `/n8n-validation-expert`    | Interpreting `validate_node` / `validate_workflow` errors                                         |
 
 **Prefer the `/microsoft-docs` skill over WebFetch** — it queries the Microsoft Learn MCP server directly and returns clean excerpts.
 
@@ -84,39 +85,39 @@ Two upstream Microsoft repos are cloned to the parent workspace `.local/` direct
 
 Authoritative protocol specs and cross-language samples.
 
-| Path | What's there |
-|------|--------------|
-| `specs/activity/protocol-activity.md` | Activity JSON schema — ground truth for Trigger output shape |
-| `specs/activity/protocol-cards.md` | Card protocol |
+| Path                                        | What's there                                                                |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| `specs/activity/protocol-activity.md`       | Activity JSON schema — ground truth for Trigger output shape                |
+| `specs/activity/protocol-cards.md`          | Card protocol                                                               |
 | `specs/channel-api/ChannelAPI-OpenAPI.yaml` | Bot Connector REST API (sendToConversation, updateActivity, deleteActivity) |
-| `specs/channel-api/TokenAPI-OpenAPI.yaml` | Token API for sign-in flows |
-| `specs/manifest/` | Teams manifest schema |
-| `samples/nodejs/quickstart/` | Minimal bot scaffold |
-| `samples/nodejs/cards/` | Card patterns |
-| `samples/nodejs/auto-signin/` | OAuth sign-in |
-| `samples/nodejs/obo-authorization/` | On-Behalf-Of token exchange |
-| `samples/nodejs/multi-turn-prompt/` | Conversation state |
-| `samples/nodejs/langchain-multiturn/` | LangChain orchestration |
-| `AgentErrorCodesJS.md` | JS error codes reference |
+| `specs/channel-api/TokenAPI-OpenAPI.yaml`   | Token API for sign-in flows                                                 |
+| `specs/manifest/`                           | Teams manifest schema                                                       |
+| `samples/nodejs/quickstart/`                | Minimal bot scaffold                                                        |
+| `samples/nodejs/cards/`                     | Card patterns                                                               |
+| `samples/nodejs/auto-signin/`               | OAuth sign-in                                                               |
+| `samples/nodejs/obo-authorization/`         | On-Behalf-Of token exchange                                                 |
+| `samples/nodejs/multi-turn-prompt/`         | Conversation state                                                          |
+| `samples/nodejs/langchain-multiturn/`       | LangChain orchestration                                                     |
+| `AgentErrorCodesJS.md`                      | JS error codes reference                                                    |
 
 ### `../../.local/Agents-for-js/` — the JavaScript SDK (microsoft/Agents-for-js)
 
 Actual TypeScript source for the npm packages we depend on, plus ready-to-run samples.
 
-| Path | What's there |
-|------|--------------|
-| `packages/agents-hosting/src/` | `CloudAdapter`, `TurnContext`, JWT validation — reference for what we need to replicate in the Trigger |
-| `packages/agents-activity/src/` | Activity type definitions |
-| `packages/agents-hosting-extensions-teams/` | Teams-specific helpers (mentions, meeting data, channel data) |
-| `samples/basic/echo.ts` | Minimal echo bot — the reference pattern |
-| `samples/basic/cardsWithInvoke.ts` | Adaptive Card `Action.Submit` handling |
-| `samples/basic/proactive.ts` | Bot-initiated conversations |
-| `samples/basic/streamingSample.ts` | Streaming responses |
-| `samples/basic/longRunning.ts` | Typing indicator during long ops |
-| `samples/basic/errorHandling.ts` | Error patterns |
-| `samples/teams/cardActions.ts` | Teams button callbacks |
-| `samples/teams/taskModuleExample.ts` | Teams popup dialogs |
-| `samples/teams/msgExtensionExample.ts` | Messaging extensions |
+| Path                                        | What's there                                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `packages/agents-hosting/src/`              | `CloudAdapter`, `TurnContext`, JWT validation — reference for what we need to replicate in the Trigger |
+| `packages/agents-activity/src/`             | Activity type definitions                                                                              |
+| `packages/agents-hosting-extensions-teams/` | Teams-specific helpers (mentions, meeting data, channel data)                                          |
+| `samples/basic/echo.ts`                     | Minimal echo bot — the reference pattern                                                               |
+| `samples/basic/cardsWithInvoke.ts`          | Adaptive Card `Action.Submit` handling                                                                 |
+| `samples/basic/proactive.ts`                | Bot-initiated conversations                                                                            |
+| `samples/basic/streamingSample.ts`          | Streaming responses                                                                                    |
+| `samples/basic/longRunning.ts`              | Typing indicator during long ops                                                                       |
+| `samples/basic/errorHandling.ts`            | Error patterns                                                                                         |
+| `samples/teams/cardActions.ts`              | Teams button callbacks                                                                                 |
+| `samples/teams/taskModuleExample.ts`        | Teams popup dialogs                                                                                    |
+| `samples/teams/msgExtensionExample.ts`      | Messaging extensions                                                                                   |
 
 ## Commands
 
@@ -173,6 +174,7 @@ just deploy-dev         # rsync dist/ to CephFS + force n8n service update
 
 `tests/integration/azure.integration.test.ts` hits `login.microsoftonline.com`
 to verify end-to-end that:
+
 1. `buildAuthConfig` + `MsalTokenProvider` actually acquire a Bot Framework token
 2. The token passes our `verifyJwt` validator against the real JWKS endpoint
 

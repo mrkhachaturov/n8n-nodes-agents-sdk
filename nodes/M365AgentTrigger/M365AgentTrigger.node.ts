@@ -9,10 +9,7 @@ import type {
 import { NodeConnectionTypes, NodeApiError } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
 import { verifyJwt } from '../../shared/verifyJwt';
-import {
-	activityToConversationReference,
-	parseActivity,
-} from '../../shared/envelope';
+import { activityToConversationReference, parseActivity } from '../../shared/envelope';
 import type { ItemEnvelope, M365AgentCredentials } from '../../shared/types';
 
 export class M365AgentTrigger implements INodeType {

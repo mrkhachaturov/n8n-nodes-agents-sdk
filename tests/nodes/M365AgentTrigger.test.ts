@@ -65,7 +65,9 @@ describe('M365AgentTrigger webhook()', () => {
 		const result = await node.webhook.call(ctx as never);
 
 		expect(ctx._statusFn).toHaveBeenCalledWith(401);
-		expect(ctx._jsonFn).toHaveBeenCalledWith(expect.objectContaining({ error: 'Missing bearer token' }));
+		expect(ctx._jsonFn).toHaveBeenCalledWith(
+			expect.objectContaining({ error: 'Missing bearer token' }),
+		);
 		expect(result).toEqual({ noWebhookResponse: true });
 	});
 

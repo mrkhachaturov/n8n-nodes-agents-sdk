@@ -10,11 +10,7 @@ import { NodeConnectionTypes, NodeOperationError, NodeApiError } from 'n8n-workf
 import type { Activity } from '@microsoft/agents-activity';
 import { buildAuthConfig } from '../../shared/buildAuthConfig';
 import { createConnector, replyInThread, type BotConnectorBundle } from '../../shared/botConnector';
-import type {
-	ConversationReference,
-	M365AgentCredentials,
-	Operation,
-} from '../../shared/types';
+import type { ConversationReference, M365AgentCredentials, Operation } from '../../shared/types';
 
 export class M365SendActivity implements INodeType {
 	description: INodeTypeDescription = {
@@ -85,7 +81,8 @@ export class M365SendActivity implements INodeType {
 				type: 'json',
 				default: '={{ $json.activity }}',
 				displayOptions: { hide: { operation: ['delete'] } },
-				description: 'Activity body from the envelope (typically built by M365TextMessage or M365CardTemplate)',
+				description:
+					'Activity body from the envelope (typically built by M365TextMessage or M365CardTemplate)',
 			},
 			{
 				displayName: 'Parent Activity ID',

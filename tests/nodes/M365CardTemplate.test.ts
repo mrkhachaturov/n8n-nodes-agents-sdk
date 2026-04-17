@@ -19,7 +19,7 @@ describe('M365CardTemplate execute()', () => {
 	it('expands ${field} placeholders from bindingData into the card', async () => {
 		const template = {
 			type: 'AdaptiveCard',
-			'$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+			$schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
 			version: '1.4',
 			body: [{ type: 'TextBlock', text: '${title}' }],
 		};
@@ -61,7 +61,7 @@ describe('M365CardTemplate execute()', () => {
 		const ctx = makeExecuteContext({
 			inputItems: [{}],
 			parameters: {
-				cardTemplate: '{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"${title}"',  // truncated — invalid JSON
+				cardTemplate: '{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"${title}"', // truncated — invalid JSON
 				bindingData: '{}',
 			},
 		});

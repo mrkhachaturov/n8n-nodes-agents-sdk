@@ -7,8 +7,6 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
-import { mergeEnvelope } from '../../shared/envelope';
-import type { ItemEnvelope } from '../../shared/types';
 
 export class M365TextMessage implements INodeType {
 	description: INodeTypeDescription = {
@@ -43,8 +41,6 @@ export class M365TextMessage implements INodeType {
 		const out: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
-			const current = items[i].json as unknown as Partial<ItemEnvelope>;
-
 			const text = this.getNodeParameter('text', i, '') as string;
 
 			const activity: Partial<Activity> = {
@@ -52,17 +48,17 @@ export class M365TextMessage implements INodeType {
 				text,
 			};
 
-			// Preserve conversationReference if present (reply-style path).
-			// If absent (proactive-from-1C path), output just the activity;
-			// M365SendActivity proactive supplies the target via its own input.
-			const outItem = current.conversationReference
-				? mergeEnvelope(
-						{ conversationReference: current.conversationReference, activity: current.activity },
-						activity,
-					)
-				: { activity };
+			// Preserve conversationReference AND all ancillary fields (state
+			// carried by the workflow through earlier nodes — e.g. threadMessage,
+			// teamsMessageId, action outcomes). Only `activity` is overwritten.
+			// Earlier versions dropped these, breaking downstream expressions
+			// that referenced upstream state.
+			const outItem: IDataObject = {
+				...(items[i].json as IDataObject),
+				activity: activity as unknown as IDataObject,
+			};
 
-			out.push({ json: outItem as unknown as IDataObject, pairedItem: i });
+			out.push({ json: outItem, pairedItem: i });
 		}
 
 		return [out];

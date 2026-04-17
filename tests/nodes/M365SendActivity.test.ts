@@ -190,9 +190,6 @@ describe('M365SendActivity execute()', () => {
 
 		// Key assertion: one unique serviceUrl → createConnector called exactly once
 		expect(mockCreateConnector).toHaveBeenCalledTimes(1);
-		expect(mockCreateConnector).toHaveBeenCalledWith(
-			expect.anything(),
-			BASE_REF.serviceUrl,
-		);
+		expect(mockCreateConnector).toHaveBeenCalledWith(expect.anything(), BASE_REF.serviceUrl);
 	});
 });

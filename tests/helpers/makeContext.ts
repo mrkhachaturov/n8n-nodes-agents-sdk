@@ -65,9 +65,9 @@ export function makeWebhookContext(opts: WebhookContextOptions = {}) {
 	});
 	const getNode = vi.fn().mockReturnValue(makeNodeRef());
 
-	const returnJsonArray = vi.fn().mockImplementation(
-		(items: Record<string, unknown>[]) => items.map((json) => ({ json })),
-	);
+	const returnJsonArray = vi
+		.fn()
+		.mockImplementation((items: Record<string, unknown>[]) => items.map((json) => ({ json })));
 
 	return {
 		getRequestObject,
