@@ -1,0 +1,100 @@
+import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
+import type { BotConnectorBundle } from '../../../shared/botConnector';
+import type { M365AgentCredentials } from '../../../shared/types';
+
+import * as message from './message';
+import * as card from './card';
+import * as invokeResponse from './invokeResponse';
+
+type Resource = 'message' | 'card' | 'invokeResponse';
+
+export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+	const items = this.getInputData();
+	const out: INodeExecutionData[] = [];
+	const creds = (await this.getCredentials('m365AgentApi')) as unknown as M365AgentCredentials;
+	const bundles = new Map<string, BotConnectorBundle>();
+
+	// Invoke Response is a webhook-response writer (see manifest §9 — mirrors
+	// RespondToWebhook). It must run ONCE for the batch, not per item, or we'd
+	// call `this.sendResponse(...)` multiple times against a single HTTP request.
+	// Special-case it before the per-item loop; pass items through unchanged.
+	const firstResource = this.getNodeParameter('resource', 0) as Resource;
+	if (firstResource === 'invokeResponse') {
+		const firstOp = this.getNodeParameter('operation', 0) as string;
+		if (firstOp !== 'respond') {
+			throw new NodeOperationError(
+				this.getNode(),
+				`Unknown invokeResponse operation: ${firstOp}`,
+				{ itemIndex: 0 },
+			);
+		}
+		await invokeResponse.respond.execute(this); // reads params from item 0
+		// Pass input items through unchanged — preserve json, binary, and any
+		// other execution metadata (manifest §12). pairedItem 1-to-1.
+		return [items.map((item, i) => ({ ...item, pairedItem: i }))];
+	}
+
+	for (let i = 0; i < items.length; i++) {
+		const resource = this.getNodeParameter('resource', i) as Resource;
+		const operation = this.getNodeParameter('operation', i) as string;
+
+		let result: IDataObject;
+		switch (resource) {
+			case 'message': {
+				switch (operation) {
+					case 'send':
+						result = await message.send.execute(this, i, creds, bundles);
+						break;
+					case 'reply':
+						result = await message.reply.execute(this, i, creds, bundles);
+						break;
+					case 'update':
+						result = await message.update.execute(this, i, creds, bundles);
+						break;
+					case 'delete':
+						result = await message.deleteMessage.execute(this, i, creds, bundles);
+						break;
+					case 'replyInThread':
+						result = await message.replyInThread.execute(this, i, creds, bundles);
+						break;
+					default:
+						throw new NodeOperationError(
+							this.getNode(),
+							`Unknown message operation: ${operation}`,
+							{ itemIndex: i },
+						);
+				}
+				break;
+			}
+			case 'card': {
+				switch (operation) {
+					case 'send':
+						result = await card.send.execute(this, i, creds, bundles);
+						break;
+					default:
+						throw new NodeOperationError(
+							this.getNode(),
+							`Unknown card operation: ${operation}`,
+							{ itemIndex: i },
+						);
+				}
+				break;
+			}
+			// invokeResponse is handled by the early return above.
+			default: {
+				throw new NodeOperationError(
+					this.getNode(),
+					`Unsupported resource in per-item loop: ${String(resource)}`,
+					{ itemIndex: i },
+				);
+			}
+		}
+
+		// Preserve full input item — binary, metadata, everything — and only
+		// swap in the merged json. Earlier drafts dropped binary (manifest §12).
+		out.push({ ...items[i], json: result, pairedItem: i });
+	}
+
+	return [out];
+}
