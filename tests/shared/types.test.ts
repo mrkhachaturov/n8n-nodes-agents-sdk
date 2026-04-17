@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ConversationReference, ItemEnvelope, Operation } from '../../shared/types';
+import type { ConversationReference, ItemEnvelope } from '../../shared/types';
 
 describe('shared/types', () => {
 	it('ConversationReference has required routing fields', () => {
@@ -39,8 +39,4 @@ describe('shared/types', () => {
 		expect(env.activity).toBeDefined();
 	});
 
-	it('Operation type covers all five operations', () => {
-		const ops: Operation[] = ['reply', 'proactive', 'update', 'delete', 'replyInThread'];
-		expect(ops).toHaveLength(5);
-	});
 });
