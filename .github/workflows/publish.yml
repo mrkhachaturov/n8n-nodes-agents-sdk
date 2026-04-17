@@ -1,12 +1,14 @@
 name: Publish to npm
 
-# Triggered by tags produced by `npm run release` locally (release-it defaults
-# to bare-version tags, e.g. `0.1.1`, `0.2.0-beta.1`).
+# Triggered by pushing a version tag. Bump version in package.json, commit,
+# `git tag X.Y.Z`, `git push --follow-tags` — the rest is automatic.
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-*'
+      - '[0-9]+.[0-9]+.[0-9]+'         # bare: 0.1.2
+      - '[0-9]+.[0-9]+.[0-9]+-*'       # bare prerelease: 0.2.0-beta.1
+      - 'v[0-9]+.[0-9]+.[0-9]+'        # v-prefixed: v0.1.2 (npm version default)
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'      # v-prefixed prerelease: v0.2.0-beta.1
 
 permissions:
   id-token: write   # OIDC for npm Trusted Publisher + provenance
@@ -25,8 +27,17 @@ jobs:
 
       - run: npm ci
 
-      # `n8n-node release` (aliased as `npm run release`) auto-detects CI via
-      # GITHUB_ACTIONS and takes the CI branch: lint → build → npm publish
-      # with RELEASE_MODE=true + NPM_CONFIG_PROVENANCE=true. The tag, commit,
-      # and GitHub release were already created locally by the same command.
-      - run: npm run release
+      - run: npm run lint
+
+      - run: npm test
+
+      - run: npm run build
+
+      # RELEASE_MODE=true satisfies the `prepublishOnly` hook (n8n-node
+      # prerelease) which otherwise blocks `npm publish`.
+      # NPM_CONFIG_PROVENANCE=true requests provenance; works with the
+      # Trusted Publisher OIDC token injected via `id-token: write`.
+      - run: npm publish --access public
+        env:
+          RELEASE_MODE: 'true'
+          NPM_CONFIG_PROVENANCE: 'true'

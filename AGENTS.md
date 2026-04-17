@@ -129,7 +129,32 @@ npm run lint         # n8n-specific eslint rules
 npm run lint:fix     # auto-fix
 npm test             # vitest run
 npm run test:watch   # vitest --watch
-npm run release      # release-it (once published)
+```
+
+## Releasing
+
+CI-driven. You never run `npm publish` or `npm run release` locally — just
+bump the version, tag, push.
+
+```bash
+npm version patch                # bumps package.json + commits + tags (v0.1.2)
+git push --follow-tags           # pushes the commit and the tag together
+```
+
+`npm version patch | minor | major` works the same way. The tag push
+matches `.github/workflows/publish.yml` (accepts both bare `0.1.2` and
+v-prefixed `v0.1.2` tags). The workflow runs `npm ci` + lint + test +
+build + `npm publish` with `RELEASE_MODE=true` and `NPM_CONFIG_PROVENANCE=true`,
+and Trusted Publisher OIDC handles auth — no NPM_TOKEN needed.
+
+If you prefer not to use `npm version`, do it by hand:
+
+```bash
+# edit package.json "version" field manually
+git add package.json
+git commit -m "chore: release 0.1.2"
+git tag 0.1.2
+git push --follow-tags
 ```
 
 Or via `just` (same tasks, shorter):
