@@ -134,3 +134,38 @@ describe('M365AgentTrigger webhook()', () => {
 		expect(result.webhookResponse).toMatchObject({ status: 200 });
 	});
 });
+
+// ---------------------------------------------------------------------------
+// responseMode parameter tests
+// ---------------------------------------------------------------------------
+
+describe('M365AgentTrigger — responseMode parameter', () => {
+	it('displayName is "M365 Agent Trigger"', () => {
+		const node = new M365AgentTrigger();
+		expect(node.description.displayName).toBe('M365 Agent Trigger');
+	});
+
+	it('exposes a responseMode property with onReceived default', () => {
+		const node = new M365AgentTrigger();
+		const prop = node.description.properties.find((p) => p.name === 'responseMode');
+		expect(prop).toBeDefined();
+		expect(prop?.default).toBe('onReceived');
+		expect(prop?.noDataExpression).toBe(true);
+		const values = (prop?.options as { value: string }[] | undefined)
+			?.map((o) => o.value)
+			.sort();
+		expect(values).toEqual(['onReceived', 'responseNode']);
+	});
+
+	it('POST webhook responseMode is an expression referencing the parameter', () => {
+		const node = new M365AgentTrigger();
+		const post = (node.description.webhooks ?? []).find((w) => w.httpMethod === 'POST');
+		expect(post?.responseMode).toBe('={{$parameter["responseMode"]}}');
+	});
+
+	it('GET webhook responseMode stays onReceived', () => {
+		const node = new M365AgentTrigger();
+		const get = (node.description.webhooks ?? []).find((w) => w.httpMethod === 'GET');
+		expect(get?.responseMode).toBe('onReceived');
+	});
+});

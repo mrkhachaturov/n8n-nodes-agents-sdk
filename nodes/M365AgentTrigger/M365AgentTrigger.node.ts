@@ -30,7 +30,7 @@ export class M365AgentTrigger implements INodeType {
 			{
 				name: 'default',
 				httpMethod: 'POST',
-				responseMode: 'onReceived',
+				responseMode: '={{$parameter["responseMode"]}}',
 				path: 'messages',
 			},
 			{
@@ -41,6 +41,29 @@ export class M365AgentTrigger implements INodeType {
 			},
 		],
 		properties: [
+			{
+				displayName: 'Response Mode',
+				name: 'responseMode',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Immediate (onReceived)',
+						value: 'onReceived',
+						description:
+							'Reply 200 right away. Use for message activities where no synchronous response is needed.',
+					},
+					{
+						name: 'Wait For Response Node (responseNode)',
+						value: 'responseNode',
+						description:
+							'Keep the HTTP connection open until M365 Agent (resource: Invoke Response) writes to it. Required for Action.Execute and messaging-extension invokes.',
+					},
+				],
+				default: 'onReceived',
+				description:
+					'How the trigger replies to the incoming HTTP request. Most bots use Immediate; invoke activities require Wait For Response Node.',
+			},
 			{
 				displayName: 'Activity Types',
 				name: 'activityTypes',
