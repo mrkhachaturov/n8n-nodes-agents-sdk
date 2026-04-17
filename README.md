@@ -13,26 +13,25 @@ Built on `@microsoft/agents-hosting` (the successor to the archived `botbuilder`
 
 ## Why
 
-The typical Bot Framework integration in n8n today is a Webhook → Code → HTTP Request chain with OAuth2 credentials, hand-built URLs, and no JWT validation (anyone who finds the webhook URL can impersonate Azure Bot Service). This package replaces all of that with four nodes that speak the Activity protocol natively.
+The typical Bot Framework integration in n8n today is a Webhook → Code → HTTP Request chain with OAuth2 credentials, hand-built URLs, and no JWT validation (anyone who finds the webhook URL can impersonate Azure Bot Service). This package replaces all of that with two n8n-native nodes that speak the Activity protocol.
 
 | Without this package | With this package |
 |---|---|
 | Webhook node → Code to parse Activity | `M365 Agent Trigger` — parsed envelope |
 | Manual JWT validation (often skipped) | Validated on every POST against Microsoft JWKS |
 | OAuth2 credential + scope + token refresh plumbing | `M365 Agent API` credential — App ID + secret + tenant |
-| HTTP Request with hand-built URLs (`/v3/conversations/.../activities/...`) | `M365 Send Activity` — pick an operation from a dropdown |
-| Manual `;messageid=` thread suffix for Teams | `operation: replyInThread` |
+| HTTP Request with hand-built URLs (`/v3/conversations/.../activities/...`) | `M365 Agent` — pick resource + operation from dropdowns |
+| Manual `;messageid=` thread suffix for Teams | resource `Message`, operation `Reply in Thread` |
+| Three-node builder chain (TextMessage → CardTemplate → SendActivity) | One `M365 Agent` node, resource/operation UX |
 
 ## Nodes
 
 | Node | Purpose |
 |---|---|
-| **M365 Agent Trigger** | Receives POSTs from Azure Bot Service. Validates JWT. Parses incoming Activity into an envelope (`conversationReference`, `activity`, `parsed`, `raw`). Responds to GET for Azure's endpoint-verification ping. |
-| **M365 Text Message** | Builds a text Activity. Preserves envelope state. |
-| **M365 Card Template** | Renders an Adaptive Card template with `${field}` placeholders via `adaptivecards-templating`. Preserves envelope state. |
-| **M365 Send Activity** | Sends the envelope to Azure Bot Service. Five operations: `reply`, `proactive`, `update`, `delete`, `replyInThread`. Uses MSAL internally for token acquisition and caching. |
+| **M365 Agent Trigger** | Receives POSTs from Azure Bot Service. Validates JWT. Parses incoming Activity into an envelope (`conversationReference`, `activity`, `parsed`, `raw`). Responds to GET for Azure's endpoint-verification ping. `Response Mode` parameter picks `Immediate` (default, for message activities) vs `Wait For Response Node` (for invoke flows where the bot must respond synchronously). |
+| **M365 Agent** | Unified action node. Resources: `Message` (send / reply / update / delete / reply in thread), `Card` (send Adaptive Card with templating), `Invoke Response` (respond to invoke activities). `Conversation Source` toggle picks between reading the envelope's conversation reference (default) and specifying the routing fields manually for proactive sends. Not exposed as an AI tool — side-effecting by design (manifest §10.7). |
 
-All four nodes are marked `usableAsTool: true`, so an n8n AI Agent can use them directly.
+Both nodes use the same `M365 Agent API` credential. The Trigger is not exposed as an AI tool (triggers are not tools — manifest §10.3).
 
 ## Credential
 
