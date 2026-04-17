@@ -12,13 +12,13 @@ type Resource = 'message' | 'card' | 'invokeResponse';
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
 	const out: INodeExecutionData[] = [];
-	const creds = (await this.getCredentials('m365AgentApi')) as unknown as M365AgentCredentials;
-	const bundles = new Map<string, BotConnectorBundle>();
 
 	// Invoke Response is a webhook-response writer (see manifest §9 — mirrors
 	// RespondToWebhook). It must run ONCE for the batch, not per item, or we'd
 	// call `this.sendResponse(...)` multiple times against a single HTTP request.
 	// Special-case it before the per-item loop; pass items through unchanged.
+	// Credentials are NOT fetched on this path — respond.execute() only writes
+	// to the HTTP connection and never talks to Azure Bot Service.
 	const firstResource = this.getNodeParameter('resource', 0) as Resource;
 	if (firstResource === 'invokeResponse') {
 		const firstOp = this.getNodeParameter('operation', 0) as string;
@@ -34,6 +34,12 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 		// other execution metadata (manifest §12). pairedItem 1-to-1.
 		return [items.map((item, i) => ({ ...item, pairedItem: i }))];
 	}
+
+	// Credentials are only needed for message/card operations (both talk to the
+	// Bot Connector via MSAL). Fetching after the invokeResponse early-return
+	// avoids a pointless vault roundtrip on the response-only path.
+	const creds = (await this.getCredentials('m365AgentApi')) as unknown as M365AgentCredentials;
+	const bundles = new Map<string, BotConnectorBundle>();
 
 	for (let i = 0; i < items.length; i++) {
 		const resource = this.getNodeParameter('resource', i) as Resource;
@@ -85,7 +91,7 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 			default: {
 				throw new NodeOperationError(
 					this.getNode(),
-					`Unsupported resource in per-item loop: ${String(resource)}`,
+					`Unexpected resource "${String(resource)}" in the per-item loop. Invoke Response must be the only operation in this node execution; it responds to a single HTTP request and cannot be combined with other resources.`,
 					{ itemIndex: i },
 				);
 			}

@@ -1,5 +1,5 @@
 import type { IExecuteFunctions, IDataObject, INodeProperties, JsonObject } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import type { Activity, Attachment } from '@microsoft/agents-activity';
 import { Template } from 'adaptivecards-templating';
 
@@ -9,6 +9,26 @@ import type { M365AgentCredentials } from '../../../../shared/types';
 import { resolveConversationReference } from '../../descriptions/conversationReference';
 
 export const description: INodeProperties[] = [];
+
+function parseJsonParam(
+	ctx: IExecuteFunctions,
+	itemIndex: number,
+	fieldName: string,
+	raw: unknown,
+): Record<string, unknown> {
+	if (typeof raw !== 'string') {
+		return raw as Record<string, unknown>;
+	}
+	try {
+		return JSON.parse(raw) as Record<string, unknown>;
+	} catch (err) {
+		throw new NodeOperationError(
+			ctx.getNode(),
+			`Invalid JSON in ${fieldName}: ${(err as Error).message}`,
+			{ itemIndex },
+		);
+	}
+}
 
 export async function execute(
 	ctx: IExecuteFunctions,
@@ -20,23 +40,35 @@ export async function execute(
 	const ref = resolveConversationReference(ctx, itemIndex, item);
 
 	// cardTemplate may come in as a string or as an already-parsed object depending
-	// on how n8n serialized the json parameter. Normalize to an object.
-	const cardTemplateRaw = ctx.getNodeParameter('cardTemplate', itemIndex) as unknown;
-	const cardTemplate: Record<string, unknown> =
-		typeof cardTemplateRaw === 'string'
-			? (JSON.parse(cardTemplateRaw) as Record<string, unknown>)
-			: (cardTemplateRaw as Record<string, unknown>);
-
-	const bindingDataRaw = ctx.getNodeParameter('bindingData', itemIndex, {}) as unknown;
-	const bindingData: Record<string, unknown> =
-		typeof bindingDataRaw === 'string'
-			? (JSON.parse(bindingDataRaw) as Record<string, unknown>)
-			: (bindingDataRaw as Record<string, unknown>);
+	// on how n8n serialized the json parameter. Normalize to an object; surface
+	// parse failures as NodeOperationError (manifest §11) so users see the bad
+	// field name instead of a raw SyntaxError stack.
+	const cardTemplate = parseJsonParam(
+		ctx,
+		itemIndex,
+		'Card Template',
+		ctx.getNodeParameter('cardTemplate', itemIndex),
+	);
+	const bindingData = parseJsonParam(
+		ctx,
+		itemIndex,
+		'Binding Data',
+		ctx.getNodeParameter('bindingData', itemIndex, {}),
+	);
 
 	const options = ctx.getNodeParameter('options', itemIndex, {}) as IDataObject;
 
-	const tpl = new Template(cardTemplate);
-	const rendered = tpl.expand({ $root: bindingData });
+	let rendered: unknown;
+	try {
+		const tpl = new Template(cardTemplate);
+		rendered = tpl.expand({ $root: bindingData });
+	} catch (err) {
+		throw new NodeOperationError(
+			ctx.getNode(),
+			`Card Template expansion failed: ${(err as Error).message}`,
+			{ itemIndex },
+		);
+	}
 
 	const attachment: Attachment = {
 		contentType: 'application/vnd.microsoft.card.adaptive',

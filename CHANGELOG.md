@@ -21,7 +21,7 @@ The UX philosophy and refactor rationale live in the parent `n8n-workflows` work
 - `M365TextMessage` — replaced by `M365 Agent` (resource: Message, operation: send / reply / update, Text field).
 - `M365CardTemplate` — replaced by `M365 Agent` (resource: Card, operation: send).
 
-Source files remain in `nodes/` for one cycle and are deleted in 0.3.0.
+Source files and their unit tests are removed outright in 0.2.0 (the package is not widely deployed, so a one-cycle deprecation window is unnecessary).
 
 **Changed**
 - `usableAsTool` policy: OFF on the `M365 Agent` action (side-effecting — manifest §10.7) and OFF on the Trigger (triggers are not tools — manifest §10.3). 0.1.x had the flag on the builders (correct for pure-builder semantics) and on the Trigger (incorrect); the M0B refactor removes it from the consolidated node and the Trigger.

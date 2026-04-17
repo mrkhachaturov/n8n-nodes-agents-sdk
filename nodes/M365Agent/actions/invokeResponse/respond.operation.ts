@@ -1,4 +1,5 @@
 import type { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 export const description: INodeProperties[] = [];
 
@@ -12,10 +13,20 @@ export async function execute(ctx: IExecuteFunctions): Promise<void> {
 	const responseShape = ctx.getNodeParameter('responseShape', 0) as 'plain' | 'adaptiveCard';
 	const statusCode = (ctx.getNodeParameter('statusCode', 0) as number) ?? 200;
 	const bodyRaw = ctx.getNodeParameter('body', 0, '{}') as unknown;
-	const body: Record<string, unknown> =
-		typeof bodyRaw === 'string'
-			? JSON.parse(bodyRaw || '{}')
-			: (bodyRaw as Record<string, unknown>);
+	let body: Record<string, unknown>;
+	if (typeof bodyRaw === 'string') {
+		try {
+			body = JSON.parse(bodyRaw || '{}') as Record<string, unknown>;
+		} catch (err) {
+			throw new NodeOperationError(
+				ctx.getNode(),
+				`Invalid JSON in Body: ${(err as Error).message}`,
+				{ itemIndex: 0 },
+			);
+		}
+	} else {
+		body = bodyRaw as Record<string, unknown>;
+	}
 
 	let responsePayload: Record<string, unknown>;
 	if (responseShape === 'adaptiveCard') {

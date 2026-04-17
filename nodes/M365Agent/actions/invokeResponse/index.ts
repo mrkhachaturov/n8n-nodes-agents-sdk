@@ -14,7 +14,9 @@ export const description: INodeProperties[] = [
 		default: 'respond',
 	},
 
-	// Simple vs Advanced toggle (manifest §6.3)
+	// Simple vs Advanced toggle (manifest §6.3). Default (Plain) listed first
+	// so the top-of-dropdown matches the default value — trumps strict
+	// alphabetical ordering per manifest §6.3 intent.
 	{
 		displayName: 'Response Shape',
 		name: 'responseShape',
@@ -23,14 +25,14 @@ export const description: INodeProperties[] = [
 		displayOptions: { show: { resource: ['invokeResponse'], operation: ['respond'] } },
 		options: [
 			{
-				name: 'Adaptive Card (Advanced)',
-				value: 'adaptiveCard',
-				description: 'Full AdaptiveCardInvokeResponse — required by Action.Execute invokes',
-			},
-			{
 				name: 'Plain (Simple)',
 				value: 'plain',
 				description: 'Generic { status, body } invoke response for most invoke types',
+			},
+			{
+				name: 'Adaptive Card (Advanced)',
+				value: 'adaptiveCard',
+				description: 'Full AdaptiveCardInvokeResponse — required by Action.Execute invokes',
 			},
 		],
 		default: 'plain',

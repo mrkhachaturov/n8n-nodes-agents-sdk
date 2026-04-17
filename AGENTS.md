@@ -17,41 +17,40 @@ Teams / M365 Copilot / WebChat / Direct Line  (Azure Bot Service channels)
      Azure Bot Service              (routing + identity, free tier)
             │  Activity JSON + JWT
             ▼
-  M365AgentTrigger (this package)   ← receives, validates JWT, parses
-            │
+  M365AgentTrigger (this package)   ← receives, validates JWT, parses envelope
+            │                          Response Mode: Immediate / Wait For Response Node
             ▼
   n8n workflow (your business logic, 1C, AI, etc.)
             │
             ▼
-  M365 builders (TextMessage / CardTemplate / ...)  ← populate `activity`; preserve `conversationReference`
-            │
-            ▼
-  M365SendActivity (this package)   ← reply / proactive / update / delete / replyInThread
-            │
+  M365Agent (this package)          ← resource + operation: pick what to do
+            │                          - Message: send / reply / update / delete / replyInThread
+            │                          - Card: send (Adaptive Card + templating)
+            │                          - Invoke Response: respond (Plain / AdaptiveCard)
             ▼
      Azure Bot Service → channel → user
+                        OR → open HTTP connection (for invoke flows)
 ```
 
 ### Item envelope (contract between nodes)
 
-Every node in this package reads/writes items of this shape:
+`M365AgentTrigger` emits items of this shape; `M365Agent` reads the same shape on input and preserves ancillary fields on output:
 
 ```jsonc
 {
   "conversationReference": { "serviceUrl", "conversation": {"id", "conversationType"}, "activityId", "bot", "user", "channelId", "locale" },
-  "activity": { "type", "text", "attachments", ... },   // populated by builders
-  "parsed": { "action", "submitData", ... },             // convenience, Trigger only
+  "activity": { "type", "text", "attachments", ... },   // the inbound Activity
+  "parsed": { "action", "submitData", "userName", ... }, // convenience, Trigger only
   "raw": { /* full incoming Activity */ }                // Trigger only
 }
 ```
 
 **Contract:**
 
-- `M365AgentTrigger` emits the full envelope
-- Builder nodes (`M365TextMessage`, `M365CardTemplate`, etc.) populate/replace `activity`; must preserve `conversationReference` unchanged
-- `M365SendActivity` reads both fields; routes via `conversationReference`, sends `activity`
+- `M365AgentTrigger` emits the full envelope; its `Response Mode` parameter decides whether the inbound HTTP connection is closed immediately or held open for a downstream `M365Agent` (resource: Invoke Response) to write to.
+- `M365Agent` reads `conversationReference` (via the `Conversation Source: From Envelope` default) and sends its own constructed Activity to Azure Bot Service — OR writes back to the open HTTP connection when acting as Invoke Response. On output it spreads every input field through unchanged and adds an operation-specific result field (`sendResult` / `replyResult` / `updateResult` / `deleteResult` / `replyInThreadResult` / `cardSendResult`).
 
-Violating this (e.g., a builder that strips `conversationReference`) is a bug.
+Downstream workflow state carried through the envelope (e.g., `teamsMessageId`, custom user-added fields) must survive `M365Agent` unchanged — the router's output-spread preserves it. Stripping an ancillary field in `M365Agent` is a bug.
 
 ## Tech stack
 
@@ -223,15 +222,15 @@ N8N_SERVICE=n8n_app \
 just deploy-dev
 ```
 
-## Deprecated in 0.2.0
+## Removed in 0.2.0
 
-The following nodes were superseded by the single `M365Agent` action node in 0.2.0 (M0B refactor — see `docs/rkstack/plans/2026-04-17-n8n-nodes-m365-agents-m0b-refactor-plan.md` in the parent workspace):
+The following nodes were superseded by the single `M365Agent` action node in 0.2.0 (M0B refactor — see `docs/rkstack/plans/2026-04-17-n8n-nodes-m365-agents-m0b-refactor-plan.md` in the parent workspace) and removed outright (the package is not widely deployed):
 
 - `M365SendActivity` → `M365 Agent` (resource: Message, Card, Invoke Response)
 - `M365TextMessage` → `M365 Agent` (resource: Message, operation: send/reply/update)
 - `M365CardTemplate` → `M365 Agent` (resource: Card, operation: send)
 
-Source files remain in `nodes/` for one cycle but are not registered in `package.json#n8n.nodes`. They will be deleted in 0.3.0. Workflows saved against 0.1.x will not auto-migrate; rebuild them on `M365 Agent`.
+Workflows saved against 0.1.x will not auto-migrate — rebuild them on `M365 Agent`.
 
 ## Project layout
 
@@ -241,10 +240,7 @@ Source files remain in `nodes/` for one cycle but are not registered in `package
 │   └── M365AgentApi.credentials.ts        — App ID / secret / tenant / appType
 ├── nodes/                                  — M0B set (0.2.0+)
 │   ├── M365AgentTrigger/                   — JWT-validated webhook + GET health
-│   ├── M365Agent/                          — Unified action node: Message / Card / Invoke Response
-│   ├── M365SendActivity/                   — DEPRECATED (0.2.0) — see note above
-│   ├── M365TextMessage/                    — DEPRECATED (0.2.0) — see note above
-│   └── M365CardTemplate/                   — DEPRECATED (0.2.0) — see note above
+│   └── M365Agent/                          — Unified action node: Message / Card / Invoke Response
 ├── shared/
 │   ├── types.ts                            — envelope, credential, operation types
 │   ├── buildAuthConfig.ts                  — credential → SDK AuthConfiguration
