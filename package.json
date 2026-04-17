@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-agents-sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "n8n community nodes for the Microsoft 365 Agents SDK. Build Teams/Copilot/WebChat bots with n8n as the orchestration layer.",
   "license": "MIT",
   "homepage": "https://github.com/mrkhachaturov/n8n-nodes-agents-sdk",
@@ -62,6 +62,7 @@
   "dependencies": {
     "@microsoft/agents-activity": "^1.4.2",
     "@microsoft/agents-hosting": "^1.4.2",
+    "adaptive-expressions": "^4.11.0",
     "adaptivecards-templating": "^2.3.1",
     "axios": "^1.15.0",
     "jsonwebtoken": "^9.0.3",
