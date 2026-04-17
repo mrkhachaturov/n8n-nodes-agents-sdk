@@ -223,17 +223,28 @@ N8N_SERVICE=n8n_app \
 just deploy-dev
 ```
 
+## Deprecated in 0.2.0
+
+The following nodes were superseded by the single `M365Agent` action node in 0.2.0 (M0B refactor — see `docs/rkstack/plans/2026-04-17-n8n-nodes-m365-agents-m0b-refactor-plan.md` in the parent workspace):
+
+- `M365SendActivity` → `M365 Agent` (resource: Message, Card, Invoke Response)
+- `M365TextMessage` → `M365 Agent` (resource: Message, operation: send/reply/update)
+- `M365CardTemplate` → `M365 Agent` (resource: Card, operation: send)
+
+Source files remain in `nodes/` for one cycle but are not registered in `package.json#n8n.nodes`. They will be deleted in 0.3.0. Workflows saved against 0.1.x will not auto-migrate; rebuild them on `M365 Agent`.
+
 ## Project layout
 
 ```
 .
 ├── credentials/
 │   └── M365AgentApi.credentials.ts        — App ID / secret / tenant / appType
-├── nodes/                                  — Milestone 0 set
+├── nodes/                                  — M0B set (0.2.0+)
 │   ├── M365AgentTrigger/                   — JWT-validated webhook + GET health
-│   ├── M365SendActivity/                   — reply / proactive / update / delete / replyInThread
-│   ├── M365TextMessage/                    — text Activity builder
-│   └── M365CardTemplate/                   — Adaptive Card + data binding
+│   ├── M365Agent/                          — Unified action node: Message / Card / Invoke Response
+│   ├── M365SendActivity/                   — DEPRECATED (0.2.0) — see note above
+│   ├── M365TextMessage/                    — DEPRECATED (0.2.0) — see note above
+│   └── M365CardTemplate/                   — DEPRECATED (0.2.0) — see note above
 ├── shared/
 │   ├── types.ts                            — envelope, credential, operation types
 │   ├── buildAuthConfig.ts                  — credential → SDK AuthConfiguration

@@ -51,9 +51,7 @@
 		],
 		"nodes": [
 			"dist/nodes/M365AgentTrigger/M365AgentTrigger.node.js",
-			"dist/nodes/M365SendActivity/M365SendActivity.node.js",
-			"dist/nodes/M365TextMessage/M365TextMessage.node.js",
-			"dist/nodes/M365CardTemplate/M365CardTemplate.node.js"
+			"dist/nodes/M365Agent/M365Agent.node.js"
 		]
 	},
 	"engines": {
