@@ -2,6 +2,7 @@ import { updateDisplayOptions } from 'n8n-workflow';
 import type { INodeProperties } from 'n8n-workflow';
 import * as send from './send.operation';
 import * as reply from './reply.operation';
+import * as replyInThread from './replyInThread.operation';
 import * as update from './update.operation';
 import * as deleteMessage from './deleteMessage.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
@@ -18,6 +19,7 @@ export const description: INodeProperties[] = [
 		options: [
 			{ name: 'Delete', value: 'delete', action: 'Delete a message' },
 			{ name: 'Reply', value: 'reply', action: 'Reply to a message' },
+			{ name: 'Reply in Thread', value: 'replyInThread', action: 'Reply inside an existing thread' },
 			{ name: 'Send', value: 'send', action: 'Send a message' },
 			{ name: 'Update', value: 'update', action: 'Update a message' },
 		],
@@ -40,6 +42,19 @@ export const description: INodeProperties[] = [
 		displayOptions: {
 			show: { resource: ['message'], operation: ['send', 'reply', 'update', 'replyInThread'] },
 		},
+	},
+
+	// Parent Activity ID — required top-level field for replyInThread (manifest §6.5: required fields first)
+	{
+		displayName: 'Parent Activity ID',
+		name: 'parentActivityId',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. 1673348720590',
+		description:
+			'ID of the card or post that spawned the thread. Usually stored earlier in the workflow (e.g. teams_message_id), NOT the inbound activityId.',
+		displayOptions: { show: { resource: ['message'], operation: ['replyInThread'] } },
 	},
 
 	// Options collection — progressive disclosure per manifest §6.4
@@ -68,8 +83,9 @@ export const description: INodeProperties[] = [
 	// Per-operation spreads appended last for things only one op needs (currently empty)
 	...send.description,
 	...reply.description,
+	...replyInThread.description,
 	...update.description,
 	...deleteMessage.description,
 ];
 
-export { send, reply, update, deleteMessage };
+export { send, reply, replyInThread, update, deleteMessage };
