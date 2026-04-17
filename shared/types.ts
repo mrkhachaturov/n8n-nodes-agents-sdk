@@ -7,8 +7,9 @@ import type { Activity } from '@microsoft/agents-activity';
  *
  * activityId is OPTIONAL: the Trigger always populates it (see
  * activityToConversationReference), but user-crafted proactive targets
- * have no inbound activity to reference. M365SendActivity enforces
- * per-operation presence at runtime.
+ * have no inbound activity to reference. The M365 Agent node enforces
+ * per-operation presence at runtime — reply / update / delete throw
+ * NodeOperationError when activityId is missing.
  */
 export interface ConversationReference {
 	serviceUrl: string;
@@ -37,12 +38,11 @@ export interface ParsedActivity {
 
 /**
  * The shape every node in this package reads from and writes to.
- * See design spec, section "Item envelope convention".
  *
- * conversationReference is OPTIONAL — builder nodes may emit activity-only
- * items when used on proactive paths originating from non-bot webhooks
- * (e.g., a 1C ERP event). In that case M365SendActivity proactive receives
- * the target conversationReference as explicit node input.
+ * conversationReference is OPTIONAL — proactive sends originating from a
+ * non-bot webhook (a schedule, an external event, a database row) arrive
+ * without an inbound envelope, and the M365 Agent node's "Specify Manually"
+ * Conversation Source builds the reference from UI fields at execute time.
  */
 export interface ItemEnvelope {
 	conversationReference?: ConversationReference;
@@ -50,9 +50,6 @@ export interface ItemEnvelope {
 	parsed?: ParsedActivity;
 	raw?: Activity;
 }
-
-/** Operations supported by M365SendActivity. */
-export type Operation = 'reply' | 'proactive' | 'update' | 'delete' | 'replyInThread';
 
 /** Azure Bot Service app type selection on the credential. */
 export type AppType = 'SingleTenant' | 'MultiTenant' | 'UserAssignedMsi';

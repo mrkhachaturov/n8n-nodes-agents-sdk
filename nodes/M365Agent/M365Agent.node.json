@@ -1,0 +1,11 @@
+{
+	"node": "n8n-nodes-agents-sdk.m365Agent",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication"],
+	"resources": {
+		"primaryDocumentation": [
+			{ "url": "https://github.com/mrkhachaturov/n8n-nodes-agents-sdk#readme" }
+		]
+	}
+}
