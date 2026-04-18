@@ -10,8 +10,11 @@ import {
 } from '../../../../shared/botConnector';
 import type { M365AgentCredentials } from '../../../../shared/types';
 import { resolveConversationReference } from '../../descriptions/conversationReference';
+import { identityModeFields } from './identityModeFields';
 
-export const description: INodeProperties[] = [];
+export const description: INodeProperties[] = [
+	...identityModeFields('replyInThread'),
+];
 
 export async function execute(
 	ctx: IExecuteFunctions,

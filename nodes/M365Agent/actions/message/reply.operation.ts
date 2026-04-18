@@ -6,8 +6,11 @@ import { buildAuthConfig } from '../../../../shared/buildAuthConfig';
 import { createConnector, type BotConnectorBundle } from '../../../../shared/botConnector';
 import type { M365AgentCredentials } from '../../../../shared/types';
 import { resolveConversationReference } from '../../descriptions/conversationReference';
+import { identityModeFields } from './identityModeFields';
 
-export const description: INodeProperties[] = [];
+export const description: INodeProperties[] = [
+	...identityModeFields('reply'),
+];
 
 export async function execute(
 	ctx: IExecuteFunctions,
