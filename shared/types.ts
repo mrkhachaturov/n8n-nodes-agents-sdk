@@ -87,6 +87,13 @@ export type M365ClassicBotCred = M365AgentCredentials;
 export interface M365Agent365Cred {
 	tenantId: string;
 	blueprintAppId: string;
+	/**
+	 * Agent Identity instance appId (distinct from blueprintAppId).
+	 * Used as the `AgentIdentity` query param on sidecar calls.
+	 * Optional here for backwards compat with early fixtures; required at
+	 * runtime — backend falls back to blueprintAppId if unset.
+	 */
+	agentInstanceAppId?: string;
 	transport: M365Agent365Transport;
 	inlineCredKind?: M365Agent365InlineCredKind;
 	blueprintSecret?: string;

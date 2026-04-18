@@ -6,6 +6,7 @@ import type {
 } from '../types';
 import { acquireClassicBotToken } from './backends/classicBot';
 import { acquireAgent365InlineToken } from './backends/agent365Inline';
+import { acquireAgent365SidecarToken } from './backends/agent365Sidecar';
 
 export interface AcquireOutboundTokenArgs {
 	authKind: AuthKind;
@@ -33,7 +34,17 @@ export async function acquireOutboundToken(
 		if (cred.transport === 'inline') {
 			return acquireAgent365InlineToken(cred, args.identityMode, args.downstreamApi);
 		}
-		throw new Error(`Unsupported transport: ${cred.transport}`);  // temporary — sidecar added in Task 1.4
+		if (cred.transport === 'sidecar') {
+			return acquireAgent365SidecarToken(
+				cred,
+				args.identityMode,
+				args.downstreamApi,
+				args.agentUsername,
+				args.agentUserId,
+				args.inboundBearer,
+			);
+		}
+		throw new Error(`Unsupported transport: ${cred.transport}`);
 	}
 	throw new Error(`Unsupported authKind: ${args.authKind}`);
 }
