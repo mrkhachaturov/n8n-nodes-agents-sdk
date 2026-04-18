@@ -6,6 +6,8 @@ import { makeExecuteContext, makeCredentials } from '../../helpers/makeContext';
 // pattern and with Vitest's hoisted `vi.mock()` at the top of this file.
 import { replyInThread as mockReplyInThread } from '../../../shared/botConnector';
 
+const replyInThreadMock = mockReplyInThread as unknown as ReturnType<typeof vi.fn>;
+
 // ---------------------------------------------------------------------------
 // Mock the auth router and bot connector — no real network calls
 // ---------------------------------------------------------------------------
@@ -31,7 +33,6 @@ const fakeBundle = {
 const mockCreateConnectorFromBearer = vi.fn().mockReturnValue(fakeBundle);
 
 vi.mock('../../../shared/botConnector', () => ({
-	createConnector: vi.fn(),
 	createConnectorFromBearer: (...args: unknown[]) => mockCreateConnectorFromBearer(...args),
 	replyInThread: vi.fn(),
 }));
@@ -193,7 +194,7 @@ describe('Message/Reply with mentions + suggested actions', () => {
 		fakeClient.replyToActivity.mockResolvedValue({ id: 'new-reply-id' });
 	});
 
-	it('attaches mention entity + token AND suggestedActions to the reply', async () => {
+	it('prepends <at>Alice</at> token + attaches mention entity + suggestedActions to the reply', async () => {
 		const node = new M365Agent();
 		const ctx = makeExecuteContext({
 			inputItems: [PROACTIVE_ENVELOPE],
@@ -257,7 +258,11 @@ describe('Message/Update with mentions + suggested actions', () => {
 		expect(activity.text).toBe('<at>Alice</at> updated!');
 		expect(activity.entities?.[0]?.type).toBe('mention');
 		expect(activity.suggestedActions?.actions).toHaveLength(1);
-		expect(activity.suggestedActions?.actions[0].type).toBe('openUrl');
+		expect(activity.suggestedActions?.actions[0]).toEqual({
+			type: 'openUrl',
+			title: 'Details',
+			value: 'https://example.com/x',
+		});
 	});
 });
 
@@ -265,7 +270,7 @@ describe('Message/replyInThread with mentions + suggested actions', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
-		(mockReplyInThread as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+		replyInThreadMock.mockResolvedValue({
 			id: 'new-thread-id',
 		});
 	});
@@ -293,9 +298,8 @@ describe('Message/replyInThread with mentions + suggested actions', () => {
 		await node.execute.call(ctx as unknown as import('n8n-workflow').IExecuteFunctions);
 
 		// replyInThread(bundle, conversationId, parentActivityId, activity)
-		const [, , parentActivityIdArg, activity] = (
-			mockReplyInThread as unknown as ReturnType<typeof vi.fn>
-		).mock.calls[0];
+		const [, conversationIdArg, parentActivityIdArg, activity] = replyInThreadMock.mock.calls[0];
+		expect(conversationIdArg).toBe(PROACTIVE_ENVELOPE.conversationReference.conversation.id);
 		expect(parentActivityIdArg).toBe('correct-id-from-parameter');
 		expect(activity.text).toBe('<at>Everyone</at> ping');
 		expect(activity.entities?.[0]?.mentioned).toEqual({ id: '29:allchannel', name: 'Everyone' });

@@ -8,7 +8,6 @@ vi.mock('../../../shared/auth/router', () => ({
 }));
 
 vi.mock('../../../shared/botConnector', () => ({
-	createConnector: vi.fn(),
 	createConnectorFromBearer: vi.fn(),
 	replyInThread: vi.fn(),
 }));

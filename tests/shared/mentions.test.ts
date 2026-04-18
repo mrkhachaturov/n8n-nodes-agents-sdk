@@ -24,6 +24,24 @@ describe('buildMentions', () => {
 	it('throws on user mention with empty id', () => {
 		expect(() => buildMentions([{ type: 'user', id: '', name: 'Alice' }])).toThrow(/id/i);
 	});
+
+	it('throws on user mention with whitespace-only id', () => {
+		expect(() => buildMentions([{ type: 'user', id: '   ', name: 'Alice' }])).toThrow(/id/i);
+	});
+
+	it('throws on whitespace-only name', () => {
+		expect(() => buildMentions([{ type: 'user', id: '29:abc', name: '   ' }])).toThrow(/name/i);
+	});
+
+	it('preserves input order across multiple mentions', () => {
+		const result = buildMentions([
+			{ type: 'user', id: '29:b', name: 'Bob' },
+			{ type: 'everyone', name: 'Everyone' },
+			{ type: 'user', id: '29:a', name: 'Alice' },
+		]);
+		expect(result.entities.map((e) => e.mentioned.name)).toEqual(['Bob', 'Everyone', 'Alice']);
+		expect(result.textTokens).toEqual(['<at>Bob</at>', '<at>Everyone</at>', '<at>Alice</at>']);
+	});
 });
 
 describe('applyMentionsToActivity', () => {

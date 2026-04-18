@@ -1,42 +1,43 @@
 import { describe, it, expect } from 'vitest';
+import type { INodeProperties, INodePropertyCollection } from 'n8n-workflow';
 import { suggestedActionsOption } from '../../../../nodes/M365Agent/descriptions/suggestedActionsOption';
 
 describe('suggestedActionsOption property', () => {
+	const valuesRow = (suggestedActionsOption.options as INodePropertyCollection[])[0]
+		.values as INodeProperties[];
+
 	it('is a fixedCollection with multipleValues', () => {
 		expect(suggestedActionsOption.type).toBe('fixedCollection');
 		expect(suggestedActionsOption.typeOptions?.multipleValues).toBe(true);
 	});
 
-	it('has Values row with type + title + value + displayText', () => {
-		const values = (suggestedActionsOption.options as any[])[0].values;
-		const names = values.map((v: any) => v.name);
-		expect(names.sort()).toEqual(['displayText', 'title', 'type', 'value']);
+	it('has Values row with type + title + value + displayText (in display order)', () => {
+		const names = valuesRow.map((v) => v.name);
+		expect(names).toEqual(['type', 'title', 'value', 'displayText']);
 	});
 
 	it('type options are alphabetical by name (manifest community eslint rule)', () => {
-		const values = (suggestedActionsOption.options as any[])[0].values;
-		const typeField = values.find((v: any) => v.name === 'type');
-		const names = (typeField.options as any[]).map((o) => o.name);
-		expect(names).toEqual([...names].sort());
+		const typeField = valuesRow.find((v) => v.name === 'type');
+		const names = (typeField?.options as Array<{ name: string }> | undefined)?.map((o) => o.name);
+		expect(names).toEqual([...(names ?? [])].sort());
 	});
 
 	it('displayText shown only when type = messageBack', () => {
-		const values = (suggestedActionsOption.options as any[])[0].values;
-		const dt = values.find((v: any) => v.name === 'displayText');
-		expect(dt.displayOptions?.show?.type).toEqual(['messageBack']);
+		const dt = valuesRow.find((v) => v.name === 'displayText');
+		expect(dt?.displayOptions?.show?.type).toEqual(['messageBack']);
 	});
 
 	it('four action types exposed', () => {
-		const values = (suggestedActionsOption.options as any[])[0].values;
-		const typeField = values.find((v: any) => v.name === 'type');
-		const typeValues = (typeField.options as any[]).map((o) => o.value).sort();
+		const typeField = valuesRow.find((v) => v.name === 'type');
+		const typeValues = (typeField?.options as Array<{ value: string }> | undefined)
+			?.map((o) => o.value)
+			.sort();
 		expect(typeValues).toEqual(['imBack', 'messageBack', 'openUrl', 'postBack']);
 	});
 
 	// Repo lint convention (asymmetric period rule, see Task 3 / conversationReference.ts).
 	it('field descriptions follow the asymmetric period rule', () => {
-		const values = (suggestedActionsOption.options as any[])[0].values;
-		for (const v of values) {
+		for (const v of valuesRow) {
 			if (!v.description) continue;
 			const isMultiSentence = v.description.slice(0, -1).includes('. ');
 			expect(v.description.endsWith('.')).toBe(isMultiSentence);

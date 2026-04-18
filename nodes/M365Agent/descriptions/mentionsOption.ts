@@ -29,8 +29,17 @@ export const mentionsOption: INodeProperties = {
 					name: 'type',
 					type: 'options',
 					options: [
-						{ name: 'Everyone (Team)', value: 'everyone' },
-						{ name: 'User', value: 'user' },
+						{
+							name: 'Everyone (Team)',
+							value: 'everyone',
+							description:
+								"Pings every member of the team via Teams' built-in announcement mention",
+						},
+						{
+							name: 'User',
+							value: 'user',
+							description: 'Pings one specific person',
+						},
 					],
 					default: 'user',
 					description: 'Everyone pings every member of the team; User pings one person',

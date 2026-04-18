@@ -9,7 +9,7 @@ export interface SuggestedActionInput {
 	title: string;
 	/** Action payload — message text for imBack/postBack, hidden payload for messageBack, URL for openUrl. */
 	value: string;
-	/** Only for messageBack — the user-visible text shown in the transcript after the click. */
+	/** Only for messageBack — the user-visible text shown in the transcript after the click. Ignored for other action types. */
 	displayText?: string;
 }
 
@@ -41,6 +41,10 @@ export function buildSuggestedActions(inputs: SuggestedActionInput[]): Suggested
 			`Suggested action #${i + 1}: unknown type '${a.type}' (expected one of ${VALID_TYPES.join(', ')})`,
 		);
 		assert(a.title && a.title.trim().length > 0, `Suggested action #${i + 1}: title is required`);
+		assert(
+			a.value !== undefined && a.value !== null && String(a.value).length > 0,
+			`Suggested action #${i + 1}: value is required (action text for imBack/postBack, hidden payload for messageBack, URL for openUrl)`,
+		);
 		const out: CardActionShape = { type: a.type, title: a.title, value: a.value };
 		if (a.type === 'messageBack' && a.displayText) {
 			out.displayText = a.displayText;

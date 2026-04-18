@@ -49,7 +49,7 @@ export const suggestedActionsOption: INodeProperties = {
 					default: '',
 					required: true,
 					description:
-						'Message text for imBack/postBack, hidden payload for messageBack, URL for openUrl',
+						'Action payload — see the Type dropdown for what each action expects',
 				},
 				{
 					displayName: 'Display Text',
