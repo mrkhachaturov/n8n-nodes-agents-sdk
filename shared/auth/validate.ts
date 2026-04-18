@@ -34,21 +34,21 @@ export async function validateInline(
 	}
 	const c = cred as M365Agent365Cred;
 	const extraAudiences = (c.options?.allowedAudiences ?? '')
-		.split(',').map(s => s.trim()).filter(Boolean);
+		.split(',')
+		.map((s) => s.trim())
+		.filter(Boolean);
 	// Per Microsoft Learn (Entra SDK for AgentID — Troubleshooting), the inbound
 	// `aud` depends on the Blueprint's `requestedAccessTokenVersion`:
 	//   v2            → `{blueprintAppId}` (GUID)
 	//   v1 or null    → `api://{blueprintAppId}` (App ID URI)
 	// We accept both defaults so a default-configured Blueprint validates
 	// without the user needing to fill the Allowed Audiences override.
-	const audiences = [
-		c.blueprintAppId,
-		`api://${c.blueprintAppId}`,
-		...extraAudiences,
-	];
+	const audiences = [c.blueprintAppId, `api://${c.blueprintAppId}`, ...extraAudiences];
 
 	const extraIssuers = (c.options?.allowedIssuers ?? '')
-		.split(',').map(s => s.trim()).filter(Boolean);
+		.split(',')
+		.map((s) => s.trim())
+		.filter(Boolean);
 	const issuers = [...defaultAgent365Issuers(c.tenantId), ...extraIssuers];
 
 	const claims = await verifyJwt(raw, {
@@ -78,7 +78,7 @@ export async function validateViaSidecar(
 			signal: controller.signal,
 		});
 		if (!resp.ok) throw new Error(`sidecar /Validate ${resp.status}`);
-		const data = await resp.json() as { claims: Record<string, unknown> };
+		const data = (await resp.json()) as { claims: Record<string, unknown> };
 		return data;
 	} finally {
 		clearTimeout(timer);

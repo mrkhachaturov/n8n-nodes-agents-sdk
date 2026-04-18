@@ -1,9 +1,4 @@
-import type {
-	AuthKind,
-	IdentityMode,
-	M365ClassicBotCred,
-	M365Agent365Cred,
-} from '../types';
+import type { AuthKind, IdentityMode, M365ClassicBotCred, M365Agent365Cred } from '../types';
 import { acquireClassicBotToken } from './backends/classicBot';
 import { acquireAgent365InlineToken } from './backends/agent365Inline';
 import { acquireAgent365SidecarToken } from './backends/agent365Sidecar';
@@ -24,9 +19,7 @@ export interface TokenResult {
 	expiresAt?: Date;
 }
 
-export async function acquireOutboundToken(
-	args: AcquireOutboundTokenArgs,
-): Promise<TokenResult> {
+export async function acquireOutboundToken(args: AcquireOutboundTokenArgs): Promise<TokenResult> {
 	if (args.authKind === 'classicBot') {
 		return acquireClassicBotToken(args.credentials as M365ClassicBotCred);
 	}

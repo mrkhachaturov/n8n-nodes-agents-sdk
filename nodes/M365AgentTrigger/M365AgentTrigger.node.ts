@@ -14,8 +14,12 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeApiError } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
-import { activityToConversationReference, parseActivity, detectTokenSource } from '../../shared/envelope';
-import type { ItemEnvelope, M365AgentCredentials, AuthContext } from '../../shared/types';
+import {
+	activityToConversationReference,
+	parseActivity,
+	detectTokenSource,
+} from '../../shared/envelope';
+import type { ItemEnvelope, M365AgentCredentials, AuthContext, AuthKind } from '../../shared/types';
 import { agent365CredentialTest } from '../../shared/auth/credentialTest';
 import { validateInboundToken } from '../../shared/auth/router';
 
@@ -32,8 +36,17 @@ export class M365AgentTrigger implements INodeType {
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
-			{ name: 'm365AgentApi', required: true, displayOptions: { show: { authKind: ['classicBot'] } } },
-			{ name: 'm365Agent365Api', required: true, displayOptions: { show: { authKind: ['agent365'] } } },
+			{
+				name: 'm365AgentApi',
+				required: true,
+				displayOptions: { show: { authKind: ['classicBot'] } },
+			},
+			{
+				name: 'm365Agent365Api',
+				required: true,
+				testedBy: 'agent365CredentialTest',
+				displayOptions: { show: { authKind: ['agent365'] } },
+			},
 		],
 		webhooks: [
 			{
@@ -56,10 +69,16 @@ export class M365AgentTrigger implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{ name: 'Classic Bot (Azure Bot Service)', value: 'classicBot',
-						description: 'Existing Azure Bot resource + Entra App Registration.' },
-					{ name: 'Agent 365 (Entra Agent Identity)', value: 'agent365',
-						description: 'Agent Blueprint in Entra, no Azure Bot resource needed.' },
+					{
+						name: 'Classic Bot (Azure Bot Service)',
+						value: 'classicBot',
+						description: 'Existing Azure Bot resource + Entra App Registration',
+					},
+					{
+						name: 'Agent 365 (Entra Agent Identity)',
+						value: 'agent365',
+						description: 'Agent Blueprint in Entra, no Azure Bot resource needed',
+					},
 				],
 				default: 'classicBot',
 			},
@@ -138,7 +157,7 @@ export class M365AgentTrigger implements INodeType {
 		const credentials = (await this.getCredentials(credName)) as unknown as M365AgentCredentials;
 
 		// POST → JWT validation unless explicitly bypassed for Emulator (classicBot only).
-		const anonymousAllowed = (credentials as any).anonymousAllowed as boolean | undefined;
+		const anonymousAllowed = credentials.anonymousAllowed;
 		let validatedClaims: Record<string, unknown> | undefined;
 		if (!anonymousAllowed) {
 			const authHeader = req.headers.authorization as string | undefined;
@@ -148,7 +167,11 @@ export class M365AgentTrigger implements INodeType {
 				return { noWebhookResponse: true };
 			}
 			try {
-				const result = await validateInboundToken(authKind as any, credentials as any, authHeader);
+				const result = await validateInboundToken(
+					authKind as AuthKind,
+					credentials as M365AgentCredentials,
+					authHeader,
+				);
 				validatedClaims = result.claims;
 			} catch (err) {
 				const res = this.getResponseObject();

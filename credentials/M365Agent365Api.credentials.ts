@@ -93,6 +93,7 @@ export class M365Agent365Api implements ICredentialType {
 			displayName: 'Certificate Thumbprint',
 			name: 'blueprintCertThumbprint',
 			type: 'string',
+			typeOptions: { password: true },
 			default: '',
 			required: true,
 			displayOptions: { show: { transport: ['inline'], inlineCredKind: ['clientCert'] } },
@@ -120,8 +121,7 @@ export class M365Agent365Api implements ICredentialType {
 			name: 'defaultAgentUsername',
 			type: 'string',
 			default: '',
-			description:
-				'Optional default when operation picks Identity Mode = Agent User Account.',
+			description: 'Optional default when operation picks Identity Mode = Agent User Account.',
 		},
 		{
 			displayName: 'Inbound Token Validation',

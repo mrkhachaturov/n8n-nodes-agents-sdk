@@ -105,9 +105,7 @@ describe('v0.2.1 classic-path outbound parity', () => {
 	});
 
 	it('calls sendToConversation with the v0.2.1-captured conversation ID', async () => {
-		const { execute } = await import(
-			'../../nodes/M365Agent/actions/message/send.operation'
-		);
+		const { execute } = await import('../../nodes/M365Agent/actions/message/send.operation');
 
 		const ctx = buildExecuteCtx(fixture.inputs.text);
 		const bundles = new Map();
@@ -120,9 +118,7 @@ describe('v0.2.1 classic-path outbound parity', () => {
 	});
 
 	it('sends byte-identical Activity body to the v0.2.1 fixture', async () => {
-		const { execute } = await import(
-			'../../nodes/M365Agent/actions/message/send.operation'
-		);
+		const { execute } = await import('../../nodes/M365Agent/actions/message/send.operation');
 
 		const ctx = buildExecuteCtx(fixture.inputs.text);
 		const bundles = new Map();
@@ -137,9 +133,7 @@ describe('v0.2.1 classic-path outbound parity', () => {
 	});
 
 	it('constructs the correct URL pattern (v3/conversations/{id}/activities)', async () => {
-		const { execute } = await import(
-			'../../nodes/M365Agent/actions/message/send.operation'
-		);
+		const { execute } = await import('../../nodes/M365Agent/actions/message/send.operation');
 
 		const ctx = buildExecuteCtx(fixture.inputs.text);
 		const bundles = new Map();
@@ -153,9 +147,7 @@ describe('v0.2.1 classic-path outbound parity', () => {
 	});
 
 	it('does not append workflowFooter when options is empty', async () => {
-		const { execute } = await import(
-			'../../nodes/M365Agent/actions/message/send.operation'
-		);
+		const { execute } = await import('../../nodes/M365Agent/actions/message/send.operation');
 
 		// Confirm options.workflowFooter=false → text is not modified
 		const ctx = buildExecuteCtx(fixture.inputs.text);
@@ -163,15 +155,16 @@ describe('v0.2.1 classic-path outbound parity', () => {
 
 		await execute.call(ctx, 0, 'classicBot', CREDENTIALS, bundles);
 
-		const [, body] = mockSendToConversation.mock.calls[0] as [string, { type: string; text: string }];
+		const [, body] = mockSendToConversation.mock.calls[0] as [
+			string,
+			{ type: string; text: string },
+		];
 		expect(body.text).toBe(fixture.inputs.text);
 		expect(body.text).not.toContain('Sent from n8n workflow');
 	});
 
 	it('uses classicBot auth path (acquireOutboundToken called once)', async () => {
-		const { execute } = await import(
-			'../../nodes/M365Agent/actions/message/send.operation'
-		);
+		const { execute } = await import('../../nodes/M365Agent/actions/message/send.operation');
 		const { acquireOutboundToken } = await import('../../shared/auth/router');
 
 		const ctx = buildExecuteCtx(fixture.inputs.text);
@@ -186,9 +179,7 @@ describe('v0.2.1 classic-path outbound parity', () => {
 	});
 
 	it('caches the bundle — second call does not re-acquire token', async () => {
-		const { execute } = await import(
-			'../../nodes/M365Agent/actions/message/send.operation'
-		);
+		const { execute } = await import('../../nodes/M365Agent/actions/message/send.operation');
 		const { acquireOutboundToken } = await import('../../shared/auth/router');
 
 		const ctx = buildExecuteCtx(fixture.inputs.text);

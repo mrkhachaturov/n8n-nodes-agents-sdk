@@ -33,8 +33,11 @@ export function buildBlueprintAuthConfig(cred: M365Agent365Cred): AuthConfigurat
 /** Map downstream API name → OAuth2 scope string. */
 export function scopeForDownstream(api: string): string {
 	switch (api) {
-		case 'MessagingBotApi': return MESSAGING_BOT_API_SCOPE;
-		case 'Graph': return GRAPH_SCOPE;
-		default: throw new Error(`Unknown downstream API: ${api}`);
+		case 'MessagingBotApi':
+			return MESSAGING_BOT_API_SCOPE;
+		case 'Graph':
+			return GRAPH_SCOPE;
+		default:
+			throw new Error(`Unknown downstream API: ${api}`);
 	}
 }

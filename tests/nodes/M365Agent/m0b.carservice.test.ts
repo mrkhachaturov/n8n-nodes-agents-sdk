@@ -88,7 +88,9 @@ describe('M0B car-service parity — Message/Reply via new M365Agent', () => {
 		});
 
 		// Cast is safe in tests — the mock satisfies the call-site subset.
-		const result = await node.execute.call(ctx as unknown as import('n8n-workflow').IExecuteFunctions);
+		const result = await node.execute.call(
+			ctx as unknown as import('n8n-workflow').IExecuteFunctions,
+		);
 
 		// createConnectorFromBearer called once with the envelope's serviceUrl and auth header
 		expect(mockCreateConnectorFromBearer).toHaveBeenCalledTimes(1);

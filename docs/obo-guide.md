@@ -12,11 +12,11 @@ In the context of this package, OBO means: **the agent calls Microsoft Graph (or
 
 ### Comparing identity modes
 
-| Mode | Who the agent acts as | Permissions | License cost |
-|---|---|---|---|
-| `autonomous` | The agent's own Blueprint app identity | Application permissions granted to the Blueprint | 1 Agent 365 license per agent (Frontier) or covered by user's Agent 365/E7 (GA) |
-| `agentUser` | The agent's own M365 user account | User permissions of the agent's M365 account | Real M365 seat required (see [licensing-notes.md](licensing-notes.md)) |
-| `interactiveOBO` | The inbound requesting user | That user's delegated permissions (respects their CA, MFA, scope grants) | No extra cost — rides the requesting user's license |
+| Mode             | Who the agent acts as                  | Permissions                                                              | License cost                                                                    |
+| ---------------- | -------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `autonomous`     | The agent's own Blueprint app identity | Application permissions granted to the Blueprint                         | 1 Agent 365 license per agent (Frontier) or covered by user's Agent 365/E7 (GA) |
+| `agentUser`      | The agent's own M365 user account      | User permissions of the agent's M365 account                             | Real M365 seat required (see [licensing-notes.md](licensing-notes.md))          |
+| `interactiveOBO` | The inbound requesting user            | That user's delegated permissions (respects their CA, MFA, scope grants) | No extra cost — rides the requesting user's license                             |
 
 ---
 

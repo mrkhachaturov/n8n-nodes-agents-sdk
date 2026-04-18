@@ -77,9 +77,7 @@ const INPUT_TEXT = 'hello from n8n';
 
 describe('v0.2.1 classic-path outbound capture harness', () => {
 	it('captures sendToConversation call and writes fixture', async () => {
-		const { execute } = await import(
-			'../../nodes/M365Agent/actions/message/send.operation'
-		);
+		const { execute } = await import('../../nodes/M365Agent/actions/message/send.operation');
 
 		const item = {
 			json: { conversationReference: CONVERSATION_REFERENCE },
@@ -143,10 +141,7 @@ describe('v0.2.1 classic-path outbound capture harness', () => {
 			},
 		};
 
-		const outPath = resolve(
-			__dirname,
-			'../fixtures/v021-send-capture.json',
-		);
+		const outPath = resolve(__dirname, '../fixtures/v021-send-capture.json');
 		writeFileSync(outPath, JSON.stringify(fixture, null, 2) + '\n');
 		console.log(`Fixture written to ${outPath}`);
 		console.log(JSON.stringify(fixture, null, 2));

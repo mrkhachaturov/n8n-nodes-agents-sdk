@@ -3,8 +3,17 @@ import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
 
 import { acquireOutboundToken } from '../../../../shared/auth/router';
-import { createConnectorFromBearer, type BotConnectorBundle } from '../../../../shared/botConnector';
-import type { AuthKind, IdentityMode, M365ClassicBotCred, M365Agent365Cred, ConversationReference } from '../../../../shared/types';
+import {
+	createConnectorFromBearer,
+	type BotConnectorBundle,
+} from '../../../../shared/botConnector';
+import type {
+	AuthKind,
+	IdentityMode,
+	M365ClassicBotCred,
+	M365Agent365Cred,
+	ConversationReference,
+} from '../../../../shared/types';
 import { identityModeFields } from './identityModeFields';
 import { makeBundleKey } from '../bundleKey';
 
@@ -27,7 +36,11 @@ export async function execute(
 	// ── Conversation reference ─────────────────────────────────────────────────
 	// When conversationSource is 'manual', read from UI fields; any other value
 	// (including 'envelope' and legacy 'fromEnvelope') reads from the item.
-	const conversationSource = this.getNodeParameter('conversationSource', itemIndex, 'envelope') as string;
+	const conversationSource = this.getNodeParameter(
+		'conversationSource',
+		itemIndex,
+		'envelope',
+	) as string;
 	let ref: ConversationReference;
 	if (conversationSource === 'manual') {
 		const serviceUrl = this.getNodeParameter('serviceUrl', itemIndex) as string;
@@ -72,27 +85,40 @@ export async function execute(
 
 	// ── Auth routing ──────────────────────────────────────────────────────────
 	// Determine identity context from node params (shown only when authKind=agent365).
-	const identityMode: IdentityMode = authKind === 'agent365'
-		? (this.getNodeParameter('identityMode', itemIndex, 'autonomous') as IdentityMode)
-		: 'autonomous';
+	const identityMode: IdentityMode =
+		authKind === 'agent365'
+			? (this.getNodeParameter('identityMode', itemIndex, 'autonomous') as IdentityMode)
+			: 'autonomous';
 
 	let agentUsername: string | undefined;
 	let agentUserId: string | undefined;
 	if (authKind === 'agent365' && identityMode === 'agentUser') {
-		const userSelectorMode = this.getNodeParameter('userSelectorMode', itemIndex, 'byUpn') as string;
+		const userSelectorMode = this.getNodeParameter(
+			'userSelectorMode',
+			itemIndex,
+			'byUpn',
+		) as string;
 		if (userSelectorMode === 'byUpn') {
-			agentUsername = this.getNodeParameter('agentUsername', itemIndex, '') as string || undefined;
+			agentUsername =
+				(this.getNodeParameter('agentUsername', itemIndex, '') as string) || undefined;
 		} else {
-			agentUserId = this.getNodeParameter('agentUserId', itemIndex, '') as string || undefined;
+			agentUserId = (this.getNodeParameter('agentUserId', itemIndex, '') as string) || undefined;
 		}
 	}
 
-	const downstreamApi: string = authKind === 'agent365'
-		? ((credentials as M365Agent365Cred).outboundDownstreamApi ?? 'MessagingBotApi')
-		: 'BotFramework';
+	const downstreamApi: string =
+		authKind === 'agent365'
+			? ((credentials as M365Agent365Cred).outboundDownstreamApi ?? 'MessagingBotApi')
+			: 'BotFramework';
 
 	// ── Bundle cache ──────────────────────────────────────────────────────────
-	const bundleKey = makeBundleKey(ref.serviceUrl, authKind, identityMode, agentUsername, agentUserId);
+	const bundleKey = makeBundleKey(
+		ref.serviceUrl,
+		authKind,
+		identityMode,
+		agentUsername,
+		agentUserId,
+	);
 	let bundle = bundles.get(bundleKey);
 	if (!bundle) {
 		const { authorizationHeader } = await acquireOutboundToken({
@@ -109,7 +135,10 @@ export async function execute(
 
 	// ── Send ──────────────────────────────────────────────────────────────────
 	try {
-		const result = await bundle.client.sendToConversation(ref.conversation.id, activity as Activity);
+		const result = await bundle.client.sendToConversation(
+			ref.conversation.id,
+			activity as Activity,
+		);
 		return { ...item, sendResult: { id: result.id } };
 	} catch (err) {
 		const e = err as Error;

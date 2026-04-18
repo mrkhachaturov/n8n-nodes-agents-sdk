@@ -24,7 +24,7 @@ services:
         constraints:
           - node.role == manager
       labels:
-        - "traefik.enable=false"  # sidecar never exposed externally
+        - 'traefik.enable=false' # sidecar never exposed externally
 
 secrets:
   entra_cert_pfx:

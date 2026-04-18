@@ -129,9 +129,7 @@ describe('M365Agent card/update execute', () => {
 		expect(activity.type).toBe('message');
 		expect(activity.text).toBe('Job #42 updated');
 		expect(activity.attachments).toHaveLength(1);
-		expect(activity.attachments[0].contentType).toBe(
-			'application/vnd.microsoft.card.adaptive',
-		);
+		expect(activity.attachments[0].contentType).toBe('application/vnd.microsoft.card.adaptive');
 		// Template expansion rendered ${title} from bindingData
 		expect(JSON.stringify(activity.attachments[0].content)).toContain('Job #42');
 
@@ -171,9 +169,9 @@ describe('M365Agent card/update execute', () => {
 			},
 		});
 
-		await expect(
-			node.execute.call(ctx as unknown as IExecuteFunctions),
-		).rejects.toThrow(/activityId/);
+		await expect(node.execute.call(ctx as unknown as IExecuteFunctions)).rejects.toThrow(
+			/activityId/,
+		);
 		expect(fakeClient.updateActivity).not.toHaveBeenCalled();
 	});
 });

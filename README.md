@@ -13,14 +13,14 @@ This package wraps the [Microsoft 365 Agents SDK](https://learn.microsoft.com/mi
 
 ## What you get
 
-| Without this package | With this package |
-|---|---|
-| Webhook → Code node to parse Activity JSON | **M365 Agent Trigger** — parsed envelope out of the box |
-| Manual JWT validation (often skipped entirely) | Validated on every POST against Microsoft JWKS |
-| OAuth2 credential + scope + token-refresh plumbing | **M365 Agent API** credential — App ID + secret + tenant |
-| HTTP Request with hand-built `/v3/conversations/...` URLs | **M365 Agent** — pick a resource and an operation from dropdowns |
-| Manual `;messageid=` thread suffix for Teams threads | Resource `Message`, operation `Reply in Thread` |
-| Hand-written Adaptive Card JSON with string-concat templating | `adaptivecards-templating` + `${field}` bindings built in |
+| Without this package                                          | With this package                                                |
+| ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Webhook → Code node to parse Activity JSON                    | **M365 Agent Trigger** — parsed envelope out of the box          |
+| Manual JWT validation (often skipped entirely)                | Validated on every POST against Microsoft JWKS                   |
+| OAuth2 credential + scope + token-refresh plumbing            | **M365 Agent API** credential — App ID + secret + tenant         |
+| HTTP Request with hand-built `/v3/conversations/...` URLs     | **M365 Agent** — pick a resource and an operation from dropdowns |
+| Manual `;messageid=` thread suffix for Teams threads          | Resource `Message`, operation `Reply in Thread`                  |
+| Hand-written Adaptive Card JSON with string-concat templating | `adaptivecards-templating` + `${field}` bindings built in        |
 
 ---
 
@@ -80,30 +80,33 @@ The **Conversation Source** toggle picks between `From Envelope` (default — re
 <details>
   <summary><b>Resource: Message</b> — send / reply / update / delete / reply in thread</summary>
 
-  - ✅ **Send** — post a new message to a conversation
-  - ✅ **Reply** — reply to a specific activity (auto-threads on Teams)
-  - ✅ **Update** — edit a previously-sent activity
-  - ✅ **Delete** — delete a previously-sent activity
-  - ✅ **Reply in Thread** — reply inside an existing Teams thread via the `;messageid=<parentActivityId>` suffix
+- ✅ **Send** — post a new message to a conversation
+- ✅ **Reply** — reply to a specific activity (auto-threads on Teams)
+- ✅ **Update** — edit a previously-sent activity
+- ✅ **Delete** — delete a previously-sent activity
+- ✅ **Reply in Thread** — reply inside an existing Teams thread via the `;messageid=<parentActivityId>` suffix
 
-  All five operations share a **Text** field (with expression support), a **Conversation Source** selector, and an **Options** collection for optional knobs (`Workflow Footer`, and — in future milestones — mentions and suggested actions).
+All five operations share a **Text** field (with expression support), a **Conversation Source** selector, and an **Options** collection for optional knobs (`Workflow Footer`, and — in future milestones — mentions and suggested actions).
+
 </details>
 
 <details>
   <summary><b>Resource: Card</b> — send / update Adaptive Cards with templating</summary>
 
-  - ✅ **Send** — render an Adaptive Card template against a data object and send it as a card attachment
-  - ✅ **Update** — re-render the template with new binding data and update a card you already posted (requires `activityId` on the conversation reference)
+- ✅ **Send** — render an Adaptive Card template against a data object and send it as a card attachment
+- ✅ **Update** — re-render the template with new binding data and update a card you already posted (requires `activityId` on the conversation reference)
 
-  Author the card in the [Adaptive Cards Designer](https://adaptivecards.microsoft.com/designer), paste the JSON into **Card Template**, and reference fields with `${field}` placeholders. **Binding Data** defaults to the whole inbound item (`={{ $json }}`). **Options → Fallback Text** shows on clients that can't render Adaptive Cards (notifications, mobile lockscreens).
+Author the card in the [Adaptive Cards Designer](https://adaptivecards.microsoft.com/designer), paste the JSON into **Card Template**, and reference fields with `${field}` placeholders. **Binding Data** defaults to the whole inbound item (`={{ $json }}`). **Options → Fallback Text** shows on clients that can't render Adaptive Cards (notifications, mobile lockscreens).
+
 </details>
 
 <details>
   <summary><b>Resource: Invoke Response</b> — respond to Action.Execute / messaging-extension invokes</summary>
 
-  - ✅ **Respond** — write a synchronous response to an invoke activity
+- ✅ **Respond** — write a synchronous response to an invoke activity
 
-  Required when handling `Action.Execute` button callbacks, messaging-extension searches, or any other invoke flow where Teams expects a same-request response. Pair with the Trigger's `Response Mode: Wait For Response Node`. **Response Shape** offers Simple (`{ status, body }` for generic invokes) or Advanced (`{ statusCode, type, value }` for Adaptive Card refreshes and follow-up messages).
+Required when handling `Action.Execute` button callbacks, messaging-extension searches, or any other invoke flow where Teams expects a same-request response. Pair with the Trigger's `Response Mode: Wait For Response Node`. **Response Shape** offers Simple (`{ status, body }` for generic invokes) or Advanced (`{ statusCode, type, value }` for Adaptive Card refreshes and follow-up messages).
+
 </details>
 
 Both nodes use the same credential — either **M365 Agent API** (classic bot) or **M365 Agent 365 API** (Agent 365). Neither is exposed as an AI-agent tool — side effects (sending to Azure Bot Service) and triggers (external webhook) aren't safe for autonomous LLM invocation.
@@ -120,18 +123,18 @@ Used when `Authentication Kind = Agent 365`. Replaces the classic App ID + secre
 
 ### `authKind` parameter
 
-| Value | Credential required | Description |
-|---|---|---|
-| `classicBot` | `M365AgentApi` | Existing Azure Bot Service flow — unchanged from v0.2.1 |
-| `agent365` | `M365Agent365Api` | Entra Agent Identity Blueprint — inline MSAL or sidecar |
+| Value        | Credential required | Description                                             |
+| ------------ | ------------------- | ------------------------------------------------------- |
+| `classicBot` | `M365AgentApi`      | Existing Azure Bot Service flow — unchanged from v0.2.1 |
+| `agent365`   | `M365Agent365Api`   | Entra Agent Identity Blueprint — inline MSAL or sidecar |
 
 ### Identity modes (Agent 365 only)
 
-| Mode | When to use | Transport required |
-|---|---|---|
-| `autonomous` | Agent acts as its Blueprint app identity | inline or sidecar |
-| `agentUser` | Agent acts as its own M365 user (requires separate license) | sidecar only |
-| `interactiveOBO` | Delegated calls to Graph/MCP as inbound user | sidecar only (M2-preview, not UI-exposed in M1) |
+| Mode             | When to use                                                 | Transport required                              |
+| ---------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| `autonomous`     | Agent acts as its Blueprint app identity                    | inline or sidecar                               |
+| `agentUser`      | Agent acts as its own M365 user (requires separate license) | sidecar only                                    |
+| `interactiveOBO` | Delegated calls to Graph/MCP as inbound user                | sidecar only (M2-preview, not UI-exposed in M1) |
 
 ### Further reading
 
@@ -146,7 +149,7 @@ Used when `Authentication Kind = Agent 365`. Replaces the classic App ID + secre
 
 **M365 Agent API** — your Azure Bot registration's App ID, client secret, and tenant. Three app types:
 
-- **SingleTenant** *(recommended)* — token scoped to a single Entra tenant
+- **SingleTenant** _(recommended)_ — token scoped to a single Entra tenant
 - **MultiTenant** — kept for legacy registrations; Microsoft deprecated this path for new bots after 2025-07-31
 - **UserAssignedMsi** — Azure managed identity
 
@@ -162,7 +165,7 @@ The built-in credential test hits `login.microsoftonline.com` to verify network 
 
 1. **Credential.** Create an **M365 Agent API** credential with your Azure Bot App ID, client secret, and tenant.
 2. **Trigger.** Drop an **M365 Agent Trigger**, attach the credential. Copy the node's Production webhook URL.
-3. **Messaging endpoint.** Paste the URL into your Azure Bot registration's *Messaging endpoint* field.
+3. **Messaging endpoint.** Paste the URL into your Azure Bot registration's _Messaging endpoint_ field.
 4. **Compose the reply.** Drop a **Set** node (or just write an expression directly in step 5's Text field): `Echo: {{ $json.activity.text }}`.
 5. **Reply.** Drop an **M365 Agent** node. Set **Resource** = `Message`, **Operation** = `Reply`. Leave **Conversation Source** at `From Envelope`. Fill **Text** with the expression from step 4.
 6. **Activate** the workflow, message your bot in Teams, and the echo comes back within a second.
@@ -188,6 +191,7 @@ Every node in this package reads and writes items of this shape:
 ```
 
 **Contract:**
+
 - The **Trigger** emits the full envelope on every inbound activity.
 - The **M365 Agent** node reads `conversationReference` (via the `From Envelope` default) to route the outbound call. On output it spreads every input field through unchanged and adds an operation-specific result field (`sendResult` / `replyResult` / `updateResult` / `deleteResult` / `replyInThreadResult` / `cardSendResult` / `cardUpdateResult`).
 
@@ -201,15 +205,19 @@ Paste a template from the [Adaptive Cards Designer](https://adaptivecards.micros
 
 ```json
 {
-  "type": "AdaptiveCard",
-  "version": "1.6",
-  "body": [
-    { "type": "TextBlock", "text": "Order #${orderId}", "weight": "bolder", "size": "large" },
-    { "type": "TextBlock", "text": "${status}" }
-  ],
-  "actions": [
-    { "type": "Action.Submit", "title": "Acknowledge", "data": { "action": "ack", "orderId": "${orderId}" } }
-  ]
+	"type": "AdaptiveCard",
+	"version": "1.6",
+	"body": [
+		{ "type": "TextBlock", "text": "Order #${orderId}", "weight": "bolder", "size": "large" },
+		{ "type": "TextBlock", "text": "${status}" }
+	],
+	"actions": [
+		{
+			"type": "Action.Submit",
+			"title": "Acknowledge",
+			"data": { "action": "ack", "orderId": "${orderId}" }
+		}
+	]
 }
 ```
 

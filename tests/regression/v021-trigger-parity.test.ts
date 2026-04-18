@@ -16,7 +16,12 @@ describe('v0.2.1 classic-path trigger parity', () => {
 		const ctx = makeWebhookMock({
 			body: fixtureActivity,
 			headers: { authorization: 'Bearer signed.jwt.stub' },
-			nodeParams: { authKind: 'classicBot', responseMode: 'immediate', activityTypes: [], channelFilter: [] },
+			nodeParams: {
+				authKind: 'classicBot',
+				responseMode: 'immediate',
+				activityTypes: [],
+				channelFilter: [],
+			},
 			credentialName: 'm365AgentApi',
 			credentials: { appType: 'SingleTenant', clientId: 'cid', clientSecret: 's', tenantId: 'tid' },
 		});
@@ -35,7 +40,12 @@ describe('v0.2.1 classic-path trigger parity', () => {
 		const ctx = makeWebhookMock({
 			body: fixtureActivity,
 			headers: { authorization: 'Bearer signed.jwt.stub' },
-			nodeParams: { authKind: 'classicBot', responseMode: 'immediate', activityTypes: [], channelFilter: [] },
+			nodeParams: {
+				authKind: 'classicBot',
+				responseMode: 'immediate',
+				activityTypes: [],
+				channelFilter: [],
+			},
 			credentialName: 'm365AgentApi',
 			credentials: { appType: 'SingleTenant', clientId: 'cid', clientSecret: 's', tenantId: 'tid' },
 		});

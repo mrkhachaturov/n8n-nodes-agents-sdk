@@ -8,11 +8,11 @@ Cost and license requirements for each Agent 365 identity mode, across the Front
 
 ## Frontier preview (until 2026-05-01)
 
-| Identity mode | License required | Notes |
-|---|---|---|
-| `autonomous` | 1 **Agent 365 Frontier** license per agent instance | 25-agent limit per tenant during preview |
-| `agentUser` | Frontier license + real M365 seat (E5 + Teams Enterprise) on the agent's user account | The agent account must be a real, licensed M365 user |
-| `interactiveOBO` | No extra cost beyond the requesting user's existing license | M2-only; not UI-exposed in M1 |
+| Identity mode    | License required                                                                      | Notes                                                |
+| ---------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `autonomous`     | 1 **Agent 365 Frontier** license per agent instance                                   | 25-agent limit per tenant during preview             |
+| `agentUser`      | Frontier license + real M365 seat (E5 + Teams Enterprise) on the agent's user account | The agent account must be a real, licensed M365 user |
+| `interactiveOBO` | No extra cost beyond the requesting user's existing license                           | M2-only; not UI-exposed in M1                        |
 
 The 25-agent-per-tenant cap during Frontier applies to `autonomous` instances. `agentUser` accounts consume a full user seat and do not count against the agent cap separately — they are treated as regular M365 users.
 
@@ -20,11 +20,11 @@ The 25-agent-per-tenant cap during Frontier applies to `autonomous` instances. `
 
 ## GA (from 2026-05-01)
 
-| Identity mode | License required | Notes |
-|---|---|---|
-| `autonomous` | Covered under the requesting user's **Agent 365** or **M365 E7** license when acting on their behalf | No separate per-agent license if the agent acts on behalf of a licensed user |
-| `agentUser` | Real M365 seat still required: **E5 + Teams Enterprise + Agent 365** (or **M365 E7**) | No change from Frontier — a real user account with a full suite license |
-| `interactiveOBO` | No extra cost | User's license covers the Graph/MCP call |
+| Identity mode    | License required                                                                                     | Notes                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `autonomous`     | Covered under the requesting user's **Agent 365** or **M365 E7** license when acting on their behalf | No separate per-agent license if the agent acts on behalf of a licensed user |
+| `agentUser`      | Real M365 seat still required: **E5 + Teams Enterprise + Agent 365** (or **M365 E7**)                | No change from Frontier — a real user account with a full suite license      |
+| `interactiveOBO` | No extra cost                                                                                        | User's license covers the Graph/MCP call                                     |
 
 ---
 
@@ -51,12 +51,12 @@ For automation that simply sends messages or cards on behalf of a workflow, `aut
 
 ## Safer defaults
 
-| Goal | Recommended mode |
-|---|---|
-| Automate message/card sending without user-context Graph calls | `autonomous` |
-| Agent needs M365 presence (Teams participant, mailbox) | `agentUser` — accept the license cost |
-| Graph/MCP calls as the inbound user (M2) | `interactiveOBO` — wait for M2, no extra cost |
-| Unsure | Start with `autonomous`; switch only when a concrete requirement demands `agentUser` |
+| Goal                                                           | Recommended mode                                                                     |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Automate message/card sending without user-context Graph calls | `autonomous`                                                                         |
+| Agent needs M365 presence (Teams participant, mailbox)         | `agentUser` — accept the license cost                                                |
+| Graph/MCP calls as the inbound user (M2)                       | `interactiveOBO` — wait for M2, no extra cost                                        |
+| Unsure                                                         | Start with `autonomous`; switch only when a concrete requirement demands `agentUser` |
 
 ---
 

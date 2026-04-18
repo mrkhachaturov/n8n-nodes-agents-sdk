@@ -4,15 +4,21 @@ import type { Activity, Attachment } from '@microsoft/agents-activity';
 import { Template } from 'adaptivecards-templating';
 
 import { acquireOutboundToken } from '../../../../shared/auth/router';
-import { createConnectorFromBearer, type BotConnectorBundle } from '../../../../shared/botConnector';
-import type { AuthKind, IdentityMode, M365ClassicBotCred, M365Agent365Cred } from '../../../../shared/types';
+import {
+	createConnectorFromBearer,
+	type BotConnectorBundle,
+} from '../../../../shared/botConnector';
+import type {
+	AuthKind,
+	IdentityMode,
+	M365ClassicBotCred,
+	M365Agent365Cred,
+} from '../../../../shared/types';
 import { resolveConversationReference } from '../../descriptions/conversationReference';
 import { identityModeFields } from '../identityModeFields';
 import { makeBundleKey } from '../bundleKey';
 
-export const description: INodeProperties[] = [
-	...identityModeFields('card', 'update'),
-];
+export const description: INodeProperties[] = [...identityModeFields('card', 'update')];
 
 function parseJsonParam(
 	ctx: IExecuteFunctions,
@@ -91,27 +97,40 @@ export async function execute(
 	};
 
 	// ── Auth routing ──────────────────────────────────────────────────────────
-	const identityMode: IdentityMode = authKind === 'agent365'
-		? (this.getNodeParameter('identityMode', itemIndex, 'autonomous') as IdentityMode)
-		: 'autonomous';
+	const identityMode: IdentityMode =
+		authKind === 'agent365'
+			? (this.getNodeParameter('identityMode', itemIndex, 'autonomous') as IdentityMode)
+			: 'autonomous';
 
 	let agentUsername: string | undefined;
 	let agentUserId: string | undefined;
 	if (authKind === 'agent365' && identityMode === 'agentUser') {
-		const userSelectorMode = this.getNodeParameter('userSelectorMode', itemIndex, 'byUpn') as string;
+		const userSelectorMode = this.getNodeParameter(
+			'userSelectorMode',
+			itemIndex,
+			'byUpn',
+		) as string;
 		if (userSelectorMode === 'byUpn') {
-			agentUsername = this.getNodeParameter('agentUsername', itemIndex, '') as string || undefined;
+			agentUsername =
+				(this.getNodeParameter('agentUsername', itemIndex, '') as string) || undefined;
 		} else {
-			agentUserId = this.getNodeParameter('agentUserId', itemIndex, '') as string || undefined;
+			agentUserId = (this.getNodeParameter('agentUserId', itemIndex, '') as string) || undefined;
 		}
 	}
 
-	const downstreamApi: string = authKind === 'agent365'
-		? ((credentials as M365Agent365Cred).outboundDownstreamApi ?? 'MessagingBotApi')
-		: 'BotFramework';
+	const downstreamApi: string =
+		authKind === 'agent365'
+			? ((credentials as M365Agent365Cred).outboundDownstreamApi ?? 'MessagingBotApi')
+			: 'BotFramework';
 
 	// ── Bundle cache ──────────────────────────────────────────────────────────
-	const bundleKey = makeBundleKey(ref.serviceUrl, authKind, identityMode, agentUsername, agentUserId);
+	const bundleKey = makeBundleKey(
+		ref.serviceUrl,
+		authKind,
+		identityMode,
+		agentUsername,
+		agentUserId,
+	);
 	let bundle = bundles.get(bundleKey);
 	if (!bundle) {
 		const { authorizationHeader } = await acquireOutboundToken({

@@ -25,8 +25,11 @@ describe('router — validateInboundToken', () => {
 	it('agent365 validateVia=inline extends issuer list', async () => {
 		mockVerifyJwt.mockResolvedValueOnce({ aud: 'msgbot-audience' });
 		const cred: M365Agent365Cred = {
-			tenantId: 't', blueprintAppId: 'bp', transport: 'sidecar',
-			sidecarUrl: 'http://s:5000', validateVia: 'inline',
+			tenantId: 't',
+			blueprintAppId: 'bp',
+			transport: 'sidecar',
+			sidecarUrl: 'http://s:5000',
+			validateVia: 'inline',
 		};
 		const r = await validateInboundToken('agent365', cred, 'eyJ...');
 		expect(r.claims.aud).toBe('msgbot-audience');
@@ -37,8 +40,11 @@ describe('router — validateInboundToken', () => {
 	it('agent365 default audience list covers both v1 (api://) and v2 (GUID) aud forms', async () => {
 		mockVerifyJwt.mockResolvedValue({ aud: 'api://bp' });
 		const cred: M365Agent365Cred = {
-			tenantId: 't', blueprintAppId: 'bp', transport: 'sidecar',
-			sidecarUrl: 'http://s:5000', validateVia: 'inline',
+			tenantId: 't',
+			blueprintAppId: 'bp',
+			transport: 'sidecar',
+			sidecarUrl: 'http://s:5000',
+			validateVia: 'inline',
 		};
 		await validateInboundToken('agent365', cred, 'eyJ...');
 		const call = mockVerifyJwt.mock.calls[mockVerifyJwt.mock.calls.length - 1];
@@ -51,8 +57,11 @@ describe('router — validateInboundToken', () => {
 			json: () => Promise.resolve({ claims: { upn: 'user@x.com' } }),
 		});
 		const cred: M365Agent365Cred = {
-			tenantId: 't', blueprintAppId: 'bp', transport: 'sidecar',
-			sidecarUrl: 'http://s:5000', validateVia: 'sidecar',
+			tenantId: 't',
+			blueprintAppId: 'bp',
+			transport: 'sidecar',
+			sidecarUrl: 'http://s:5000',
+			validateVia: 'sidecar',
 		};
 		const r = await validateInboundToken('agent365', cred, 'Bearer eyJ...');
 		expect(r.claims.upn).toBe('user@x.com');
@@ -65,8 +74,11 @@ describe('router — validateInboundToken', () => {
 			json: () => Promise.resolve({ claims: {} }),
 		});
 		const cred: M365Agent365Cred = {
-			tenantId: 't', blueprintAppId: 'bp', transport: 'sidecar',
-			sidecarUrl: 'http://s:5000', validateVia: 'sameAsOutbound',
+			tenantId: 't',
+			blueprintAppId: 'bp',
+			transport: 'sidecar',
+			sidecarUrl: 'http://s:5000',
+			validateVia: 'sameAsOutbound',
 		};
 		await validateInboundToken('agent365', cred, 'Bearer eyJ...');
 		expect(mockFetch).toHaveBeenCalled();

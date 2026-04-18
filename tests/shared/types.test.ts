@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import type {
-  ConversationReference,
-  ItemEnvelope,
-  AuthKind,
-  IdentityMode,
-  M365ClassicBotCred,
-  M365Agent365Cred,
-  M365Agent365Transport,
+	ConversationReference,
+	ItemEnvelope,
+	AuthKind,
+	IdentityMode,
+	M365ClassicBotCred,
+	M365Agent365Cred,
+	M365Agent365Transport,
 } from '../../shared/types';
 
 describe('shared/types', () => {
@@ -46,7 +46,6 @@ describe('shared/types', () => {
 		expect(env.conversationReference).toBeUndefined();
 		expect(env.activity).toBeDefined();
 	});
-
 });
 
 describe('auth types', () => {

@@ -12,11 +12,11 @@ Deploy the Microsoft Entra Agent ID auth sidecar alongside n8n so n8n-nodes-m365
 
 ## Env vars
 
-| Var | Required | Description |
-|---|---|---|
-| `TENANT_ID` | Yes | Entra tenant GUID |
-| `BLUEPRINT_APP_ID` | Yes | Agent Identity Blueprint appId (NOT the instance appId) |
-| `BLUEPRINT_CLIENT_SECRET` | Dev only | Client secret for the Blueprint app |
+| Var                       | Required | Description                                             |
+| ------------------------- | -------- | ------------------------------------------------------- |
+| `TENANT_ID`               | Yes      | Entra tenant GUID                                       |
+| `BLUEPRINT_APP_ID`        | Yes      | Agent Identity Blueprint appId (NOT the instance appId) |
+| `BLUEPRINT_CLIENT_SECRET` | Dev only | Client secret for the Blueprint app                     |
 
 ## Dev (Docker Compose)
 
@@ -51,23 +51,26 @@ curl http://localhost:8080/healthz   # expect 200
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| `sidecar 400: AgentIdentity required` | Missing AgentIdentity query param | Check credential's `agentInstanceAppId` is set |
-| `sidecar 401: unauthorized` on outbound | Wrong Blueprint secret/cert | Verify Blueprint app credentials in Entra portal |
-| `sidecar 404: unknown downstream` | DownstreamApi name not configured | Check `DownstreamApis__<name>__*` env vars |
-| `TypeError: Failed to parse URL` in n8n | `sidecarUrl` credential field empty | Set the sidecar URL in the n8n M365 Agent 365 API credential |
-| Sidecar won't start on distroless | Health check configured on distroless image | Distroless has no shell — disable healthcheck per swarm compose |
+| Symptom                                 | Likely cause                                | Fix                                                             |
+| --------------------------------------- | ------------------------------------------- | --------------------------------------------------------------- |
+| `sidecar 400: AgentIdentity required`   | Missing AgentIdentity query param           | Check credential's `agentInstanceAppId` is set                  |
+| `sidecar 401: unauthorized` on outbound | Wrong Blueprint secret/cert                 | Verify Blueprint app credentials in Entra portal                |
+| `sidecar 404: unknown downstream`       | DownstreamApi name not configured           | Check `DownstreamApis__<name>__*` env vars                      |
+| `TypeError: Failed to parse URL` in n8n | `sidecarUrl` credential field empty         | Set the sidecar URL in the n8n M365 Agent 365 API credential    |
+| Sidecar won't start on distroless       | Health check configured on distroless image | Distroless has no shell — disable healthcheck per swarm compose |
 
 ## Scope syntax (Phase 0 verified)
 
 The Messaging Bot API scope uses the bare GUID form:
+
 ```
 a6c6ce43-d3ed-40ae-a6d2-4f9c028e0355/.default
 ```
+
 NOT `api://a6c6ce43-.../.default`.
 
 Microsoft Graph uses the full URL form:
+
 ```
 https://graph.microsoft.com/.default
 ```

@@ -151,9 +151,7 @@ describe('M365AgentTrigger — responseMode parameter', () => {
 		expect(prop).toBeDefined();
 		expect(prop?.default).toBe('onReceived');
 		expect(prop?.noDataExpression).toBe(true);
-		const values = (prop?.options as { value: string }[] | undefined)
-			?.map((o) => o.value)
-			.sort();
+		const values = (prop?.options as { value: string }[] | undefined)?.map((o) => o.value).sort();
 		expect(values).toEqual(['onReceived', 'responseNode']);
 	});
 

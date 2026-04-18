@@ -30,6 +30,7 @@ No migration is needed if you are upgrading from v0.2.x — the `M365AgentApi` c
 Use when you want Agent 365 identity without running a separate sidecar process.
 
 **When to choose inline:**
+
 - Your workload only needs the `autonomous` identity mode (agent acts as its Blueprint app identity).
 - You are comfortable storing the Blueprint client secret in the n8n credential store.
 - You do not need cert-based auth.
@@ -48,6 +49,7 @@ Use when you want Agent 365 identity without running a separate sidecar process.
 5. On outbound operations (Message, Card), set **Identity Mode** = `autonomous`.
 
 **Limitations in M1:**
+
 - Only `autonomous` identity mode is supported with the inline transport.
 - Certificate-based auth for the Blueprint app is NOT supported in inline mode in M1. Use the sidecar if cert-based auth is required for production.
 
@@ -58,6 +60,7 @@ Use when you want Agent 365 identity without running a separate sidecar process.
 Use when you need agent-user tokens, cert-based auth, or want auth logic isolated in a dedicated runtime.
 
 **When to choose sidecar:**
+
 - You need the `agentUser` identity mode (agent acts as its own M365 user).
 - You want certificate-based auth for the Blueprint app registration (preferred for production).
 - You are planning to use M2 Graph/MCP operations with `interactiveOBO` mode.
@@ -81,13 +84,13 @@ Use when you need agent-user tokens, cert-based auth, or want auth logic isolate
 
 ## Decision matrix
 
-| Need | Pick |
-|---|---|
-| Existing Azure Bot, don't want to migrate | Classic Bot |
-| Want Agent 365 identity, simple workload, client secret OK | Agent 365 Inline |
-| Need agent-user tokens (agent as M365 user) | Agent 365 Sidecar |
-| Cert-based auth for production | Agent 365 Sidecar |
-| M2 Graph/MCP operations coming | Agent 365 Sidecar |
+| Need                                                       | Pick              |
+| ---------------------------------------------------------- | ----------------- |
+| Existing Azure Bot, don't want to migrate                  | Classic Bot       |
+| Want Agent 365 identity, simple workload, client secret OK | Agent 365 Inline  |
+| Need agent-user tokens (agent as M365 user)                | Agent 365 Sidecar |
+| Cert-based auth for production                             | Agent 365 Sidecar |
+| M2 Graph/MCP operations coming                             | Agent 365 Sidecar |
 
 ---
 

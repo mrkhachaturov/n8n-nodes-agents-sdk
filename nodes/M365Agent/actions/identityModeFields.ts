@@ -11,10 +11,7 @@ export function identityModeFields(
 	resource: 'message',
 	operation: MessageOperation,
 ): INodeProperties[];
-export function identityModeFields(
-	resource: 'card',
-	operation: CardOperation,
-): INodeProperties[];
+export function identityModeFields(resource: 'card', operation: CardOperation): INodeProperties[];
 export function identityModeFields(
 	resource: SupportedResource,
 	operation: string,
@@ -36,13 +33,13 @@ export function identityModeFields(
 				{
 					name: 'Autonomous',
 					value: 'autonomous',
-					description: 'Agent acts as its Blueprint app identity.',
+					description: 'Agent acts as its Blueprint app identity',
 				},
 				{
 					name: 'Agent User Account',
 					value: 'agentUser',
 					description:
-						'Agent acts as its own M365 user (requires sidecar transport and a separate license).',
+						'Agent acts as its own M365 user (requires sidecar transport and a separate license)',
 				},
 			],
 			default: 'autonomous',
@@ -66,8 +63,7 @@ export function identityModeFields(
 			default: '={{ $credentials.defaultAgentUsername || "" }}',
 			placeholder: 'agent@contoso.com',
 			displayOptions: { show: { ...withAgentUser, userSelectorMode: ['byUpn' as const] } },
-			description:
-				"UPN of the agentic user. Defaults to credential's Default Agent Username.",
+			description: "UPN of the agentic user. Defaults to credential's Default Agent Username.",
 		},
 		{
 			displayName: 'Agent User ID',
@@ -76,7 +72,7 @@ export function identityModeFields(
 			default: '',
 			placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
 			displayOptions: { show: { ...withAgentUser, userSelectorMode: ['byObjectId' as const] } },
-			description: 'Object ID of the agentic user.',
+			description: 'Object ID of the agentic user',
 		},
 		{
 			displayName:

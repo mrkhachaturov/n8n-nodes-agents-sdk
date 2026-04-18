@@ -1,11 +1,7 @@
-import type {
-	IDataObject, IExecuteFunctions, INodeExecutionData,
-} from 'n8n-workflow';
+import type { IDataObject, IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { BotConnectorBundle } from '../../../shared/botConnector';
-import type {
-	AuthKind, M365ClassicBotCred, M365Agent365Cred,
-} from '../../../shared/types';
+import type { AuthKind, M365ClassicBotCred, M365Agent365Cred } from '../../../shared/types';
 
 import * as message from './message';
 import * as card from './card';
@@ -31,7 +27,9 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 	if (firstResource === 'invokeResponse') {
 		const firstOp = this.getNodeParameter('operation', 0) as string;
 		if (firstOp !== 'respond') {
-			throw new NodeOperationError(this.getNode(), `Unknown invokeResponse operation: ${firstOp}`, { itemIndex: 0 });
+			throw new NodeOperationError(this.getNode(), `Unknown invokeResponse operation: ${firstOp}`, {
+				itemIndex: 0,
+			});
 		}
 		await invokeResponse.respond.execute(this);
 		return [items.map((item, i) => ({ ...item, pairedItem: i }))];
@@ -44,9 +42,10 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 	// legacy M365AgentApi credential (App ID + secret/MSI), agent365 uses the
 	// new M365Agent365Api credential (Blueprint App + sidecar/inline transport).
 	const authKind = this.getNodeParameter('authKind', 0, 'classicBot') as AuthKind;
-	const credentialsRaw = authKind === 'classicBot'
-		? await this.getCredentials('m365AgentApi')
-		: await this.getCredentials('m365Agent365Api');
+	const credentialsRaw =
+		authKind === 'classicBot'
+			? await this.getCredentials('m365AgentApi')
+			: await this.getCredentials('m365Agent365Api');
 	const credentials = credentialsRaw as unknown as M365ClassicBotCred | M365Agent365Cred;
 
 	const bundles = new Map<string, BotConnectorBundle>();
@@ -69,13 +68,29 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 						result = await message.update.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					case 'delete':
-						result = await message.deleteMessage.execute.call(this, i, authKind, credentials, bundles);
+						result = await message.deleteMessage.execute.call(
+							this,
+							i,
+							authKind,
+							credentials,
+							bundles,
+						);
 						break;
 					case 'replyInThread':
-						result = await message.replyInThread.execute.call(this, i, authKind, credentials, bundles);
+						result = await message.replyInThread.execute.call(
+							this,
+							i,
+							authKind,
+							credentials,
+							bundles,
+						);
 						break;
 					default:
-						throw new NodeOperationError(this.getNode(), `Unknown message operation: ${operation}`, { itemIndex: i });
+						throw new NodeOperationError(
+							this.getNode(),
+							`Unknown message operation: ${operation}`,
+							{ itemIndex: i },
+						);
 				}
 				break;
 			}
@@ -88,7 +103,9 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 						result = await card.update.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					default:
-						throw new NodeOperationError(this.getNode(), `Unknown card operation: ${operation}`, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), `Unknown card operation: ${operation}`, {
+							itemIndex: i,
+						});
 				}
 				break;
 			}
