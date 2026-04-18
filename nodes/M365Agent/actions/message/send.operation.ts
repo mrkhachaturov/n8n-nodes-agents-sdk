@@ -4,7 +4,7 @@ import type { Activity } from '@microsoft/agents-activity';
 
 import { buildAuthConfig } from '../../../../shared/buildAuthConfig';
 import { createConnector, type BotConnectorBundle } from '../../../../shared/botConnector';
-import type { M365AgentCredentials } from '../../../../shared/types';
+import type { AuthKind, M365ClassicBotCred, M365Agent365Cred } from '../../../../shared/types';
 import { resolveConversationReference } from '../../descriptions/conversationReference';
 import { identityModeFields } from './identityModeFields';
 
@@ -18,7 +18,8 @@ export const description: INodeProperties[] = [
 export async function execute(
 	ctx: IExecuteFunctions,
 	itemIndex: number,
-	creds: M365AgentCredentials,
+	authKind: AuthKind,
+	credentials: M365ClassicBotCred | M365Agent365Cred,
 	bundles: Map<string, BotConnectorBundle>,
 ): Promise<IDataObject> {
 	const item = ctx.getInputData()[itemIndex].json as IDataObject;
@@ -35,7 +36,7 @@ export async function execute(
 
 	let bundle = bundles.get(ref.serviceUrl);
 	if (!bundle) {
-		bundle = await createConnector(buildAuthConfig(creds), ref.serviceUrl);
+		bundle = await createConnector(buildAuthConfig(credentials as M365ClassicBotCred), ref.serviceUrl);
 		bundles.set(ref.serviceUrl, bundle);
 	}
 
