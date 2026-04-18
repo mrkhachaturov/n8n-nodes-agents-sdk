@@ -33,7 +33,6 @@ const fakeBundle = {
 const mockCreateConnectorFromBearer = vi.fn().mockReturnValue(fakeBundle);
 
 vi.mock('../../../shared/botConnector', () => ({
-	createConnector: vi.fn(),
 	createConnectorFromBearer: (...args: unknown[]) => mockCreateConnectorFromBearer(...args),
 	replyInThread: vi.fn(),
 }));
