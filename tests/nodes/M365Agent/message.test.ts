@@ -44,11 +44,9 @@ describe('message resource description', () => {
 
 	it('Options collection includes mentions and suggestedActions', () => {
 		const opts = message.description.find((p) => p.name === 'options');
-		const inner = (opts?.options as any[]) ?? [];
+		const inner = (opts?.options as Array<{ name: string }>) ?? [];
 		const names = inner.map((o) => o.name);
-		expect(names).toContain('workflowFooter');
-		expect(names).toContain('mentions');
-		expect(names).toContain('suggestedActions');
+		expect(names).toEqual(['workflowFooter', 'mentions', 'suggestedActions']);
 	});
 
 	it('mentions and suggestedActions are gated to body-carrying operations', () => {

@@ -49,6 +49,29 @@ describe('buildSuggestedActions', () => {
 			buildSuggestedActions([{ type: 'bogus' as any, title: 't', value: 'v' }]),
 		).toThrow(/type/i);
 	});
+
+	it('throws on empty value (all action types)', () => {
+		expect(() => buildSuggestedActions([{ type: 'imBack', title: 't', value: '' }])).toThrow(
+			/value/i,
+		);
+	});
+
+	it('drops displayText on non-messageBack action types', () => {
+		const result = buildSuggestedActions([
+			// displayText supplied but should be silently dropped for imBack
+			{ type: 'imBack', title: 't', value: 'v', displayText: 'should-be-dropped' },
+		]);
+		expect(result.actions[0]).toEqual({ type: 'imBack', title: 't', value: 'v' });
+		expect(result.actions[0]).not.toHaveProperty('displayText');
+	});
+
+	it('messageBack without displayText omits the field (does not set undefined)', () => {
+		const result = buildSuggestedActions([
+			{ type: 'messageBack', title: 't', value: 'v' },
+		]);
+		expect(result.actions[0]).toEqual({ type: 'messageBack', title: 't', value: 'v' });
+		expect(result.actions[0]).not.toHaveProperty('displayText');
+	});
 });
 
 describe('applySuggestedActionsToActivity', () => {
