@@ -106,7 +106,39 @@ The **Conversation Source** toggle picks between `From Envelope` (default — re
   Required when handling `Action.Execute` button callbacks, messaging-extension searches, or any other invoke flow where Teams expects a same-request response. Pair with the Trigger's `Response Mode: Wait For Response Node`. **Response Shape** offers Simple (`{ status, body }` for generic invokes) or Advanced (`{ statusCode, type, value }` for Adaptive Card refreshes and follow-up messages).
 </details>
 
-Both nodes use the same **M365 Agent API** credential. Neither is exposed as an AI-agent tool — side effects (sending to Azure Bot Service) and triggers (external webhook) aren't safe for autonomous LLM invocation.
+Both nodes use the same credential — either **M365 Agent API** (classic bot) or **M365 Agent 365 API** (Agent 365). Neither is exposed as an AI-agent tool — side effects (sending to Azure Bot Service) and triggers (external webhook) aren't safe for autonomous LLM invocation.
+
+---
+
+## Agent 365 support (v0.3.0)
+
+v0.3.0 adds first-class support for the **Entra Agent Identity Blueprint** alongside the existing classic Azure Bot credential. This lets you register your bot as a Microsoft 365 Agent Identity (preview) and issue tokens through MSAL or an isolated auth sidecar — no changes required for existing classic bot deployments.
+
+### New credential: `M365Agent365Api`
+
+Used when `Authentication Kind = Agent 365`. Replaces the classic App ID + secret fields with blueprint-aware fields (inline MSAL or sidecar URL).
+
+### `authKind` parameter
+
+| Value | Credential required | Description |
+|---|---|---|
+| `classicBot` | `M365AgentApi` | Existing Azure Bot Service flow — unchanged from v0.2.1 |
+| `agent365` | `M365Agent365Api` | Entra Agent Identity Blueprint — inline MSAL or sidecar |
+
+### Identity modes (Agent 365 only)
+
+| Mode | When to use | Transport required |
+|---|---|---|
+| `autonomous` | Agent acts as its Blueprint app identity | inline or sidecar |
+| `agentUser` | Agent acts as its own M365 user (requires separate license) | sidecar only |
+| `interactiveOBO` | Delegated calls to Graph/MCP as inbound user | sidecar only (M2-preview, not UI-exposed in M1) |
+
+### Further reading
+
+- **Sidecar deployment**: [examples/sidecar/README.md](examples/sidecar/README.md)
+- **Auth guide** (choosing between classic, inline, and sidecar): [docs/auth-guide.md](docs/auth-guide.md)
+- **OBO guide** (why OBO is M2-only and what it unlocks): [docs/obo-guide.md](docs/obo-guide.md)
+- **Licensing notes** (Frontier preview vs GA cost implications): [docs/licensing-notes.md](docs/licensing-notes.md)
 
 ---
 
