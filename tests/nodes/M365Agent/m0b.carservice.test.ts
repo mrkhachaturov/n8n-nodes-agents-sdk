@@ -124,3 +124,60 @@ describe('M0B car-service parity — Message/Reply via new M365Agent', () => {
 		});
 	});
 });
+
+describe('Message/Send with mentions + suggested actions', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
+		fakeClient.sendToConversation.mockResolvedValue({ id: 'new-send-id' });
+	});
+
+	it('prepends <at>Alice</at> token + attaches mention entity + suggestedActions', async () => {
+		const node = new M365Agent();
+		const ctx = makeExecuteContext({
+			inputItems: [
+				{
+					conversationReference: {
+						serviceUrl: 'https://smba.trafficmanager.net/emea/',
+						conversation: { id: '19:x@thread.tacv2' },
+						channelId: 'msteams',
+					},
+					activity: {},
+				},
+			],
+			credentials: makeCredentials(),
+			parameters: {
+				resource: 'message',
+				operation: 'send',
+				conversationSource: 'envelope',
+				text: 'hello there',
+				options: {
+					mentions: {
+						values: [{ type: 'user', id: '29:abc', name: 'Alice' }],
+					},
+					suggestedActions: {
+						values: [
+							{ type: 'imBack', title: 'Yes', value: 'yes' },
+							{ type: 'imBack', title: 'No', value: 'no' },
+						],
+					},
+				},
+			},
+		});
+
+		await node.execute.call(ctx as unknown as import('n8n-workflow').IExecuteFunctions);
+
+		expect(fakeClient.sendToConversation).toHaveBeenCalledTimes(1);
+		const [, activity] = fakeClient.sendToConversation.mock.calls[0];
+		expect(activity.text).toBe('<at>Alice</at> hello there');
+		expect(activity.entities).toEqual([
+			{ type: 'mention', mentioned: { id: '29:abc', name: 'Alice' }, text: '<at>Alice</at>' },
+		]);
+		expect(activity.suggestedActions?.actions).toHaveLength(2);
+		expect(activity.suggestedActions?.actions[0]).toEqual({
+			type: 'imBack',
+			title: 'Yes',
+			value: 'yes',
+		});
+	});
+});

@@ -7,6 +7,11 @@ import {
 	createConnectorFromBearer,
 	type BotConnectorBundle,
 } from '../../../../shared/botConnector';
+import { applyMentionsToActivity, type MentionInput } from '../../../../shared/mentions';
+import {
+	applySuggestedActionsToActivity,
+	type SuggestedActionInput,
+} from '../../../../shared/suggestedActions';
 import type {
 	AuthKind,
 	IdentityMode,
@@ -81,7 +86,27 @@ export async function execute(
 		renderedText = `${text}\n\n_Sent from n8n workflow._`;
 	}
 
-	const activity: Partial<Activity> = { type: 'message', text: renderedText };
+	let activity: Partial<Activity> = { type: 'message', text: renderedText };
+
+	const mentionsCollection = (options.mentions as { values?: MentionInput[] } | undefined)?.values;
+	if (mentionsCollection && mentionsCollection.length > 0) {
+		try {
+			activity = applyMentionsToActivity(activity, mentionsCollection);
+		} catch (err) {
+			throw new NodeOperationError(this.getNode(), (err as Error).message, { itemIndex });
+		}
+	}
+
+	const actionsCollection = (
+		options.suggestedActions as { values?: SuggestedActionInput[] } | undefined
+	)?.values;
+	if (actionsCollection && actionsCollection.length > 0) {
+		try {
+			activity = applySuggestedActionsToActivity(activity, actionsCollection);
+		} catch (err) {
+			throw new NodeOperationError(this.getNode(), (err as Error).message, { itemIndex });
+		}
+	}
 
 	// ── Auth routing ──────────────────────────────────────────────────────────
 	// Determine identity context from node params (shown only when authKind=agent365).
