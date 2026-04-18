@@ -42,7 +42,7 @@ export const description: INodeProperties[] = [
 		required: true,
 		default: '',
 		placeholder: 'Hello, {{ $json.parsed.userName }}!',
-		description: 'Message content. For @mentions, use the Options collection (M1+).',
+		description: 'Message content. For @mentions, use the Options collection.',
 		displayOptions: {
 			show: { resource: ['message'], operation: ['send', 'reply', 'update', 'replyInThread'] },
 		},
@@ -80,7 +80,7 @@ export const description: INodeProperties[] = [
 				description:
 					'Whether to append "_Sent from n8n workflow._" as a plain-text marker at the end of the message. Helpful for debugging and auditing. (A clickable link with instance URL + workflow ID is deferred to a later milestone.)',
 			},
-			// M1 will extend this with mentions, suggestedActions, etc.
+			// Future releases will extend this collection with mentions, suggestedActions, etc.
 		],
 	},
 

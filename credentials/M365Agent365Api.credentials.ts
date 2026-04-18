@@ -46,14 +46,16 @@ export class M365Agent365Api implements ICredentialType {
 			required: true,
 			options: [
 				{
-					name: 'Sidecar (Entra SDK for Agent ID)',
+					name: 'Companion Container (Sidecar)',
 					value: 'sidecar',
-					description: 'HTTP calls to a companion container. Enables all three identity modes.',
+					description:
+						'Authenticates via a separate entra-auth-sidecar container that you deploy next to n8n. Required for Agent User Account mode and certificate-based auth. See the auth guide for how to deploy the sidecar.',
 				},
 				{
-					name: 'Inline (Agents SDK)',
+					name: 'Built-in (No Sidecar)',
 					value: 'inline',
-					description: 'In-process via @microsoft/agents-hosting. Autonomous only in M1.',
+					description:
+						'Authenticates directly from n8n using a client secret — nothing extra to deploy. Supports the Autonomous identity mode only. Pick the companion container option for Agent User Account mode or certificate-based auth.',
 				},
 			],
 			default: 'sidecar',

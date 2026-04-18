@@ -19,7 +19,7 @@ export async function acquireAgent365InlineToken(
 	if (identityMode === 'interactiveOBO') {
 		throw new NodeOperationError(
 			node ?? ({} as INode),
-			'Interactive OBO inline transport is not implemented in M1. Use sidecar transport, or wait for M2 Graph/MCP operations.',
+			'Interactive OBO is not supported on the inline transport. Switch the credential to the sidecar transport — OBO is only valid for Graph / MCP downstream calls (not the Bot Connector used by Message and Card operations).',
 		);
 	}
 	// autonomous
