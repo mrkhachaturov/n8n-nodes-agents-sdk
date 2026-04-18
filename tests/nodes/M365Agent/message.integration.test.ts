@@ -221,3 +221,38 @@ describe('Message/Reply with mentions + suggested actions', () => {
 		});
 	});
 });
+
+describe('Message/Update with mentions + suggested actions', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
+		fakeClient.updateActivity.mockResolvedValue({ id: 'updated-id' });
+	});
+
+	it('updateActivity body includes <at> token + mention entity + suggestedActions', async () => {
+		const node = new M365Agent();
+		const ctx = makeExecuteContext({
+			inputItems: [PROACTIVE_ENVELOPE],
+			credentials: makeCredentials(),
+			parameters: {
+				resource: 'message',
+				operation: 'update',
+				conversationSource: 'envelope',
+				text: 'updated!',
+				options: {
+					mentions: { values: [{ type: 'user', id: 'alice-user-id', name: 'Alice' }] },
+					suggestedActions: {
+						values: [{ type: 'openUrl', title: 'Details', value: 'https://example.com/x' }],
+					},
+				},
+			},
+		});
+
+		await node.execute.call(ctx as unknown as import('n8n-workflow').IExecuteFunctions);
+		const [, , activity] = fakeClient.updateActivity.mock.calls[0];
+		expect(activity.text).toBe('<at>Alice</at> updated!');
+		expect(activity.entities?.[0]?.type).toBe('mention');
+		expect(activity.suggestedActions?.actions).toHaveLength(1);
+		expect(activity.suggestedActions?.actions[0].type).toBe('openUrl');
+	});
+});
