@@ -53,3 +53,7 @@ check: lint test build
 # Watch tests during development.
 watch:
 	npm run test:watch
+
+# Live smoke — requires LIVE_SMOKE=1 and sidecar env vars. See scripts/live-smoke.ts.
+test-smoke:
+	LIVE_SMOKE=1 node --import tsx scripts/live-smoke.ts
