@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { M365Agent } from '../../../nodes/M365Agent/M365Agent.node';
 import { makeExecuteContext, makeCredentials } from '../../helpers/makeContext';
+// Import the mocked `replyInThread` symbol directly so we can drive it
+// without a fresh require() — consistent with the existing test's import
+// pattern and with Vitest's hoisted `vi.mock()` at the top of this file.
+import { replyInThread as mockReplyInThread } from '../../../shared/botConnector';
 
 // ---------------------------------------------------------------------------
 // Mock the auth router and bot connector — no real network calls
@@ -254,5 +258,48 @@ describe('Message/Update with mentions + suggested actions', () => {
 		expect(activity.entities?.[0]?.type).toBe('mention');
 		expect(activity.suggestedActions?.actions).toHaveLength(1);
 		expect(activity.suggestedActions?.actions[0].type).toBe('openUrl');
+	});
+});
+
+describe('Message/replyInThread with mentions + suggested actions', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
+		(mockReplyInThread as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+			id: 'new-thread-id',
+		});
+	});
+
+	it('thread activity carries mention token + entity + suggestedActions AND uses the node parameter for parentActivityId', async () => {
+		const node = new M365Agent();
+		const ctx = makeExecuteContext({
+			inputItems: [{ ...PROACTIVE_ENVELOPE, teamsMessageId: 'wrong-id-from-item' }],
+			credentials: makeCredentials(),
+			parameters: {
+				resource: 'message',
+				operation: 'replyInThread',
+				conversationSource: 'envelope',
+				text: 'ping',
+				parentActivityId: 'correct-id-from-parameter',
+				options: {
+					mentions: { values: [{ type: 'everyone', name: 'Everyone' }] },
+					suggestedActions: {
+						values: [{ type: 'messageBack', title: 'Ack', value: 'ack', displayText: '👍' }],
+					},
+				},
+			},
+		});
+
+		await node.execute.call(ctx as unknown as import('n8n-workflow').IExecuteFunctions);
+
+		// replyInThread(bundle, conversationId, parentActivityId, activity)
+		const [, , parentActivityIdArg, activity] = (
+			mockReplyInThread as unknown as ReturnType<typeof vi.fn>
+		).mock.calls[0];
+		expect(parentActivityIdArg).toBe('correct-id-from-parameter');
+		expect(activity.text).toBe('<at>Everyone</at> ping');
+		expect(activity.entities?.[0]?.mentioned).toEqual({ id: '29:allchannel', name: 'Everyone' });
+		expect(activity.suggestedActions?.actions).toHaveLength(1);
+		expect(activity.suggestedActions?.actions[0].type).toBe('messageBack');
 	});
 });
