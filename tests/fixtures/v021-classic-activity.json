@@ -1,0 +1,12 @@
+{
+  "type": "message",
+  "id": "1700000000000",
+  "timestamp": "2026-04-17T10:00:00.000Z",
+  "serviceUrl": "https://smba.trafficmanager.net/amer/",
+  "channelId": "msteams",
+  "from": { "id": "29:1abc", "name": "Test User", "aadObjectId": "user-guid" },
+  "conversation": { "id": "19:chat@thread.v2", "conversationType": "personal" },
+  "recipient": { "id": "28:bot", "name": "Test Bot" },
+  "text": "hello",
+  "locale": "en-US"
+}
