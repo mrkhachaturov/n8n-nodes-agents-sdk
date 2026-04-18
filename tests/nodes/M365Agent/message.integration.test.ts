@@ -181,3 +181,43 @@ describe('Message/Send with mentions + suggested actions', () => {
 		});
 	});
 });
+
+describe('Message/Reply with mentions + suggested actions', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
+		fakeClient.replyToActivity.mockResolvedValue({ id: 'new-reply-id' });
+	});
+
+	it('attaches mention entity + token AND suggestedActions to the reply', async () => {
+		const node = new M365Agent();
+		const ctx = makeExecuteContext({
+			inputItems: [PROACTIVE_ENVELOPE],
+			credentials: makeCredentials(),
+			parameters: {
+				resource: 'message',
+				operation: 'reply',
+				conversationSource: 'envelope',
+				text: 'thanks!',
+				options: {
+					mentions: { values: [{ type: 'user', id: 'alice-user-id', name: 'Alice' }] },
+					suggestedActions: {
+						values: [{ type: 'imBack', title: 'OK', value: 'ok' }],
+					},
+				},
+			},
+		});
+
+		await node.execute.call(ctx as unknown as import('n8n-workflow').IExecuteFunctions);
+
+		const [, , activity] = fakeClient.replyToActivity.mock.calls[0];
+		expect(activity.text).toBe('<at>Alice</at> thanks!');
+		expect(activity.entities?.[0]?.type).toBe('mention');
+		expect(activity.suggestedActions?.actions).toHaveLength(1);
+		expect(activity.suggestedActions?.actions[0]).toEqual({
+			type: 'imBack',
+			title: 'OK',
+			value: 'ok',
+		});
+	});
+});
