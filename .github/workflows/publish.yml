@@ -12,7 +12,7 @@ on:
 
 permissions:
   id-token: write # OIDC for npm Trusted Publisher + provenance
-  contents: read
+  contents: write # needed by softprops/action-gh-release to create a Release
 
 jobs:
   publish:
@@ -41,3 +41,24 @@ jobs:
         env:
           RELEASE_MODE: 'true'
           NPM_CONFIG_PROVENANCE: 'true'
+
+      # Extract the matching CHANGELOG.md section for this tag. Handles
+      # both heading depths used in the file: `## 0.3.0 …` (recent) and
+      # `#### 0.1.3 …` (older entries).
+      - name: Extract release notes from CHANGELOG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v ver="$VERSION" '
+            BEGIN { esc = ver; gsub(/\./, "\\.", esc) }
+            !started && $0 ~ "^(##|####) +"esc"\\>" { started = 1; next }
+            started && /^(##|####) +[0-9]/ { exit }
+            started { print }
+          ' CHANGELOG.md > .release-notes.md
+          echo "---release notes for ${VERSION}---"
+          cat .release-notes.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: .release-notes.md
+          make_latest: true
+          fail_on_unmatched_files: false
