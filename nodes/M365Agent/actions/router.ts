@@ -4,24 +4,18 @@ import type {
 import { NodeOperationError } from 'n8n-workflow';
 import type { BotConnectorBundle } from '../../../shared/botConnector';
 import type {
-	AuthKind, IdentityMode, M365ClassicBotCred, M365Agent365Cred,
+	AuthKind, M365ClassicBotCred, M365Agent365Cred,
 } from '../../../shared/types';
 
 import * as message from './message';
 import * as card from './card';
 import * as invokeResponse from './invokeResponse';
+import { makeBundleKey } from './bundleKey';
+
+// Re-export so external callers (tests, docs) can still import from 'router'.
+export { makeBundleKey };
 
 type Resource = 'message' | 'card' | 'invokeResponse';
-
-export function makeBundleKey(
-	serviceUrl: string,
-	authKind: AuthKind,
-	identityMode: IdentityMode,
-	agentUsername?: string,
-	agentUserId?: string,
-): string {
-	return [serviceUrl, authKind, identityMode, agentUsername ?? '', agentUserId ?? ''].join('::');
-}
 
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
@@ -66,7 +60,7 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 			case 'message': {
 				switch (operation) {
 					case 'send':
-						result = await message.send.execute(this, i, authKind, credentials, bundles);
+						result = await message.send.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					case 'reply':
 						result = await message.reply.execute(this, i, authKind, credentials, bundles);

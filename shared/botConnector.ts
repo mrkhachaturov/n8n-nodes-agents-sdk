@@ -20,9 +20,35 @@ export interface BotConnectorBundle {
 }
 
 /**
+ * Build a BotConnectorBundle from a pre-acquired Authorization header.
+ * Used by operations that go through the shared auth router (acquireOutboundToken),
+ * which handles both classicBot (MSAL) and agent365 (sidecar / inline) paths.
+ * The header should be in "Bearer <token>" form; a bare token is also accepted.
+ */
+export function createConnectorFromBearer(
+	serviceUrl: string,
+	authorizationHeader: string,
+): BotConnectorBundle {
+	const baseURL = serviceUrl.endsWith('/') ? serviceUrl : `${serviceUrl}/`;
+	const token = authorizationHeader.startsWith('Bearer ')
+		? authorizationHeader.slice('Bearer '.length)
+		: authorizationHeader;
+	const client = ConnectorClient.createClientWithToken(baseURL, token);
+	const ax = axios.create({
+		baseURL,
+		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+	});
+	return { client, axios: ax, token, baseURL };
+}
+
+/**
  * Build a BotConnectorBundle for outbound Bot Connector calls.
  * Acquires a token via the SDK's MSAL provider and wraps both the SDK client
  * and a raw axios instance sharing the same bearer token.
+ *
+ * @deprecated Use createConnectorFromBearer with acquireOutboundToken instead.
+ *   This function will be removed in Task 4.8 once all operations migrate to
+ *   the shared auth router.
  */
 export async function createConnector(
 	authConfig: AuthConfiguration,
