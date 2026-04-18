@@ -1,13 +1,18 @@
-import type { ICredentialTestFunctions, INodeCredentialTestResult } from 'n8n-workflow';
+import type {
+	ICredentialTestFunctions,
+	ICredentialsDecrypted,
+	ICredentialDataDecryptedObject,
+	INodeCredentialTestResult,
+} from 'n8n-workflow';
 import type { M365Agent365Cred } from '../types';
 import { acquireAgent365InlineToken } from './backends/agent365Inline';
 import { acquireAgent365SidecarToken } from './backends/agent365Sidecar';
 
 export async function agent365CredentialTest(
 	this: ICredentialTestFunctions,
-	credential: { data: M365Agent365Cred },
+	credential: ICredentialsDecrypted<ICredentialDataDecryptedObject>,
 ): Promise<INodeCredentialTestResult> {
-	const cred = credential.data;
+	const cred = credential.data as unknown as M365Agent365Cred;
 	try {
 		if (cred.transport === 'inline') {
 			await acquireAgent365InlineToken(

@@ -17,6 +17,7 @@ import type { Activity } from '@microsoft/agents-activity';
 import { verifyJwt } from '../../shared/verifyJwt';
 import { activityToConversationReference, parseActivity } from '../../shared/envelope';
 import type { ItemEnvelope, M365AgentCredentials } from '../../shared/types';
+import { agent365CredentialTest } from '../../shared/auth/credentialTest';
 
 export class M365AgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -30,7 +31,10 @@ export class M365AgentTrigger implements INodeType {
 		defaults: { name: 'M365 Agent Trigger' },
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
-		credentials: [{ name: 'm365AgentApi', required: true }],
+		credentials: [
+			{ name: 'm365AgentApi', required: true, displayOptions: { show: { authKind: ['classicBot'] } } },
+			{ name: 'm365Agent365Api', required: true, displayOptions: { show: { authKind: ['agent365'] } } },
+		],
 		webhooks: [
 			{
 				name: 'default',
@@ -46,6 +50,19 @@ export class M365AgentTrigger implements INodeType {
 			},
 		],
 		properties: [
+			{
+				displayName: 'Authentication Kind',
+				name: 'authKind',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{ name: 'Classic Bot (Azure Bot Service)', value: 'classicBot',
+						description: 'Existing Azure Bot resource + Entra App Registration.' },
+					{ name: 'Agent 365 (Entra Agent Identity)', value: 'agent365',
+						description: 'Agent Blueprint in Entra, no Azure Bot resource needed.' },
+				],
+				default: 'classicBot',
+			},
 			{
 				displayName: 'Response Mode',
 				name: 'responseMode',
@@ -100,6 +117,10 @@ export class M365AgentTrigger implements INodeType {
 				description: 'If set, only emit activities from these channels. Empty = all.',
 			},
 		],
+	};
+
+	methods = {
+		credentialTest: { agent365CredentialTest },
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
