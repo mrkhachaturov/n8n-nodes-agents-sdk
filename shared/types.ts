@@ -62,3 +62,45 @@ export interface M365AgentCredentials {
 	tenantId?: string;
 	anonymousAllowed?: boolean;
 }
+
+// === Agent 365 additions (v0.3.0) ===
+
+/** Top-level node parameter that picks the credential family. */
+export type AuthKind = 'classicBot' | 'agent365';
+
+/** Per-outbound-operation identity selector for Agent 365 credentials. */
+export type IdentityMode = 'autonomous' | 'agentUser' | 'interactiveOBO';
+
+/** Inline vs sidecar token-acquisition transport for Agent 365. */
+export type M365Agent365Transport = 'inline' | 'sidecar';
+
+/** Inline-only credential kind. */
+export type M365Agent365InlineCredKind = 'clientSecret' | 'clientCert';
+
+/** Validator routing when authKind=agent365. */
+export type M365Agent365ValidateVia = 'sameAsOutbound' | 'inline' | 'sidecar';
+
+/** Classic bot credential shape — alias of M365AgentCredentials for router typing clarity. */
+export type M365ClassicBotCred = M365AgentCredentials;
+
+/** Agent 365 credential shape (new in v0.3.0). */
+export interface M365Agent365Cred {
+	tenantId: string;
+	blueprintAppId: string;
+	transport: M365Agent365Transport;
+	inlineCredKind?: M365Agent365InlineCredKind;
+	blueprintSecret?: string;
+	blueprintCertPem?: string;
+	blueprintCertThumbprint?: string;
+	sidecarUrl?: string;
+	outboundDownstreamApi?: string;
+	defaultAgentUsername?: string;
+	validateVia: M365Agent365ValidateVia;
+	validatorSidecarUrl?: string;
+	options?: {
+		allowedIssuers?: string;
+		allowedAudiences?: string;
+		sidecarTimeoutMs?: number;
+		tokenCacheTtlSec?: number;
+	};
+}
