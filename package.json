@@ -69,13 +69,16 @@
 	"devDependencies": {
 		"@eslint/js": "^9.39.4",
 		"@n8n/node-cli": "^0.23.1",
+		"@types/express": "^4.17.25",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^22.19.17",
 		"eslint": "^9.39.4",
 		"eslint-import-resolver-typescript": "^4.4.4",
 		"eslint-plugin-import-x": "^4.16.2",
+		"express": "^4.22.1",
 		"prettier": "^3.8.3",
 		"release-it": "^20.0.0",
+		"tsx": "^4.21.0",
 		"typescript": "^6.0.2",
 		"vitest": "^4.1.4"
 	},
