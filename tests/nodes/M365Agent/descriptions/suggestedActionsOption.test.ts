@@ -26,7 +26,7 @@ describe('suggestedActionsOption property', () => {
 		expect(dt.displayOptions?.show?.type).toEqual(['messageBack']);
 	});
 
-	it('four action types exposed (M1 scope)', () => {
+	it('four action types exposed', () => {
 		const values = (suggestedActionsOption.options as any[])[0].values;
 		const typeField = values.find((v: any) => v.name === 'type');
 		const typeValues = (typeField.options as any[]).map((o) => o.value).sort();

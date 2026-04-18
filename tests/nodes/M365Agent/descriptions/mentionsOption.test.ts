@@ -19,7 +19,7 @@ describe('mentionsOption property', () => {
 		expect(idField.displayOptions?.show?.type).toEqual(['user']);
 	});
 
-	it('type options include User and Everyone only (M1 scope)', () => {
+	it('type options include User and Everyone only', () => {
 		const values = (mentionsOption.options as any[])[0].values;
 		const typeField = values.find((v: any) => v.name === 'type');
 		const typeValues = (typeField.options as any[]).map((o) => o.value);

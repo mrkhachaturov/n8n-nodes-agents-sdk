@@ -33,16 +33,16 @@ vi.mock('../../../shared/botConnector', () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Car-service envelope — representative inbound item from M365AgentTrigger
+// Proactive envelope — representative inbound item from M365AgentTrigger
 // ---------------------------------------------------------------------------
 
-const CAR_SERVICE_ENVELOPE = {
+const PROACTIVE_ENVELOPE = {
 	conversationReference: {
 		serviceUrl: 'https://smba.trafficmanager.net/emea/',
-		conversation: { id: '19:carservice@thread.tacv2' },
-		activityId: 'act-carservice-inbound-001',
+		conversation: { id: '19:sample@thread.tacv2' },
+		activityId: 'act-sample-inbound-001',
 		channelId: 'msteams',
-		bot: { id: '28:bot-id', name: 'CarServiceBot' },
+		bot: { id: '28:bot-id', name: 'SampleBot' },
 		user: { id: 'alice-user-id', name: 'Alice' },
 		locale: 'en-US',
 	},
@@ -63,20 +63,20 @@ const CAR_SERVICE_ENVELOPE = {
 };
 
 // ---------------------------------------------------------------------------
-// M0B car-service parity test suite
+// Message resource — Reply with proactive (envelope-driven) activity
 // ---------------------------------------------------------------------------
 
-describe('M0B car-service parity — Message/Reply via new M365Agent', () => {
+describe('Message resource — Reply with proactive (envelope-driven) activity', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
 		fakeClient.replyToActivity.mockResolvedValue({ id: 'new-reply-id' });
 	});
 
-	it('routes a car-service reply through resolveConversationReference → replyToActivity', async () => {
+	it('routes a reply through resolveConversationReference → replyToActivity', async () => {
 		const node = new M365Agent();
 		const ctx = makeExecuteContext({
-			inputItems: [CAR_SERVICE_ENVELOPE],
+			inputItems: [PROACTIVE_ENVELOPE],
 			credentials: makeCredentials(),
 			parameters: {
 				resource: 'message',
@@ -95,15 +95,15 @@ describe('M0B car-service parity — Message/Reply via new M365Agent', () => {
 		// createConnectorFromBearer called once with the envelope's serviceUrl and auth header
 		expect(mockCreateConnectorFromBearer).toHaveBeenCalledTimes(1);
 		expect(mockCreateConnectorFromBearer).toHaveBeenCalledWith(
-			CAR_SERVICE_ENVELOPE.conversationReference.serviceUrl,
+			PROACTIVE_ENVELOPE.conversationReference.serviceUrl,
 			'Bearer fake-token',
 		);
 
 		// replyToActivity called once with (conversationId, activityId, activity)
 		expect(fakeClient.replyToActivity).toHaveBeenCalledTimes(1);
 		const [convId, actId, activity] = fakeClient.replyToActivity.mock.calls[0];
-		expect(convId).toBe(CAR_SERVICE_ENVELOPE.conversationReference.conversation.id);
-		expect(actId).toBe(CAR_SERVICE_ENVELOPE.conversationReference.activityId);
+		expect(convId).toBe(PROACTIVE_ENVELOPE.conversationReference.conversation.id);
+		expect(actId).toBe(PROACTIVE_ENVELOPE.conversationReference.activityId);
 		expect(activity.type).toBe('message');
 		expect(activity.text).toBe('Hello, Alice!');
 
@@ -114,9 +114,9 @@ describe('M0B car-service parity — Message/Reply via new M365Agent', () => {
 		expect(outItem.pairedItem).toBe(0);
 		expect(outItem.json).toMatchObject({
 			// Input envelope preserved (manifest §12)
-			conversationReference: CAR_SERVICE_ENVELOPE.conversationReference,
-			activity: CAR_SERVICE_ENVELOPE.activity,
-			parsed: CAR_SERVICE_ENVELOPE.parsed,
+			conversationReference: PROACTIVE_ENVELOPE.conversationReference,
+			activity: PROACTIVE_ENVELOPE.activity,
+			parsed: PROACTIVE_ENVELOPE.parsed,
 			teamsMessageId: 'stored-parent-id',
 			customWorkflowField: 'preserved-value',
 			// New field added by M365Agent reply operation

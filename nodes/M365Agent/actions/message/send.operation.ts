@@ -24,7 +24,7 @@ import { makeBundleKey } from '../bundleKey';
 
 export const description: INodeProperties[] = [
 	// All send-specific fields are already in message/index.ts (Text, Options).
-	// No extra properties unique to send at M0B — left as [] so future send-only
+	// No extra properties unique to send — left as [] so future send-only
 	// fields have a home.
 	...identityModeFields('send'),
 ];

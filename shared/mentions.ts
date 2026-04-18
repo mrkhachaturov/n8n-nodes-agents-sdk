@@ -4,9 +4,9 @@ import type { Activity } from '@microsoft/agents-activity';
  * Minimal mention input vocabulary the M365 Agent node's Mentions option
  * exposes. User covers individual @-mentions (most common); Everyone is the
  * Teams team-wide announcement mention backed by the magic ID `29:allchannel`.
- * Channel / Team mentions are deferred to a later milestone — the magic IDs
- * require the inbound activity's channelData, which belongs in M2's Teams
- * channel-info work.
+ * Channel / Team mentions are deferred — the magic IDs require the inbound
+ * activity's channelData, which belongs in a future Teams channel-info
+ * iteration.
  */
 export type MentionKind = 'user' | 'everyone';
 
