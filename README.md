@@ -223,6 +223,16 @@ Paste a template from the [Adaptive Cards Designer](https://adaptivecards.micros
 
 Any `[Parsing] Unknown property` warnings the designer shows on `Action.Submit.data` custom keys are [false positives](https://github.com/microsoft/AdaptiveCards/blob/main/samples/v1.0/Tests/Feedback.json) — they're part of the Adaptive Cards spec, just not typed in the designer's bundled schema.
 
+### State-driven variants
+
+You don't need a separate "pick-a-template-by-state" node. `adaptivecards-templating` already supports this with three features:
+
+1. **`${field}`** — scalar binding. Change a value across the card with one variable: `"style": "${statusStyle}"`, `"text": "${statusBadgeText}"`.
+2. **`$when`** — conditional rendering. Show/hide whole sections per state: `{ "$when": "${status == 'completed'}", "type": "TextBlock", "text": "Done" }`.
+3. **`$data`** — iterate over an array. Render one button per item in `cardButtons`.
+
+Templating handles state-driven cards (new / accepted / in_progress / paused / completed, etc.) from a single template — no dedicated picker node needed. See the upstream [`adaptivecards-templating` docs](https://www.npmjs.com/package/adaptivecards-templating) for the full templating reference.
+
 ---
 
 ## Proactive sends (no inbound activity)
