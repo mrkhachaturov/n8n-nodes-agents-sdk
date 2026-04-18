@@ -88,7 +88,7 @@ describe('card resource description', () => {
 const CARD_UPDATE_ENVELOPE = {
 	conversationReference: {
 		serviceUrl: 'https://smba.trafficmanager.net/emea/',
-		conversation: { id: '19:carservice@thread.tacv2' },
+		conversation: { id: '19:sample@thread.tacv2' },
 		activityId: 'act-card-to-update-001',
 		channelId: 'msteams',
 	},
@@ -150,7 +150,7 @@ describe('M365Agent card/update execute', () => {
 		const envelopeNoActId = {
 			conversationReference: {
 				serviceUrl: 'https://smba.trafficmanager.net/emea/',
-				conversation: { id: '19:carservice@thread.tacv2' },
+				conversation: { id: '19:sample@thread.tacv2' },
 				channelId: 'msteams',
 				// activityId missing
 			},

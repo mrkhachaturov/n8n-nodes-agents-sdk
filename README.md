@@ -86,7 +86,12 @@ The **Conversation Source** toggle picks between `From Envelope` (default — re
 - ✅ **Delete** — delete a previously-sent activity
 - ✅ **Reply in Thread** — reply inside an existing Teams thread via the `;messageid=<parentActivityId>` suffix
 
-All five operations share a **Text** field (with expression support), a **Conversation Source** selector, and an **Options** collection for optional knobs (`Workflow Footer`, and — in future milestones — mentions and suggested actions).
+All five operations share a **Text** field (with expression support), a **Conversation Source** selector, and an **Options** collection for optional knobs (`Workflow Footer`, Mentions, Suggested Actions).
+
+  **Options (inside every body-carrying operation: Send / Reply / Update / replyInThread):**
+
+  - **Mentions** — add Teams @-mentions. `User` pings one person (paste the user's Teams/AAD object id and display name from your inbound trigger envelope). `Everyone` pings the whole team (uses Teams' magic ID internally). The node inserts matching `<at>Name</at>` tokens into the text and attaches the entities — no hand-assembly needed.
+  - **Suggested Actions** — quick-reply chip buttons under the message. Four types: `imBack` (send a message back), `messageBack` (send with a user-visible text and a hidden payload), `postBack` (send hidden), `openUrl` (open a URL).
 
 </details>
 
@@ -222,6 +227,16 @@ Paste a template from the [Adaptive Cards Designer](https://adaptivecards.micros
 ```
 
 Any `[Parsing] Unknown property` warnings the designer shows on `Action.Submit.data` custom keys are [false positives](https://github.com/microsoft/AdaptiveCards/blob/main/samples/v1.0/Tests/Feedback.json) — they're part of the Adaptive Cards spec, just not typed in the designer's bundled schema.
+
+### State-driven variants
+
+You don't need a separate "pick-a-template-by-state" node. `adaptivecards-templating` already supports this with three features:
+
+1. **`${field}`** — scalar binding. Change a value across the card with one variable: `"style": "${statusStyle}"`, `"text": "${statusBadgeText}"`.
+2. **`$when`** — conditional rendering. Show/hide whole sections per state: `{ "$when": "${status == 'completed'}", "type": "TextBlock", "text": "Done" }`.
+3. **`$data`** — iterate over an array. Render one button per item in `cardButtons`.
+
+Templating handles state-driven cards (new / accepted / in_progress / paused / completed, etc.) from a single template — no dedicated picker node needed. See the upstream [`adaptivecards-templating` docs](https://www.npmjs.com/package/adaptivecards-templating) for the full templating reference.
 
 ---
 

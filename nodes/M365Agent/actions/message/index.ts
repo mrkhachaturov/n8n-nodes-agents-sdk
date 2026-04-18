@@ -6,6 +6,8 @@ import * as replyInThread from './replyInThread.operation';
 import * as update from './update.operation';
 import * as deleteMessage from './deleteMessage.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
+import { mentionsOption } from '../../descriptions/mentionsOption';
+import { suggestedActionsOption } from '../../descriptions/suggestedActionsOption';
 
 const resourceDisplayOptions = { show: { resource: ['message'] } };
 
@@ -80,7 +82,8 @@ export const description: INodeProperties[] = [
 				description:
 					'Whether to append "_Sent from n8n workflow._" as a plain-text marker at the end of the message. Helpful for debugging and auditing. (A clickable link with instance URL + workflow ID is deferred to a later milestone.)',
 			},
-			// Future releases will extend this collection with mentions, suggestedActions, etc.
+			mentionsOption,
+			suggestedActionsOption,
 		],
 	},
 

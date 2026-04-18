@@ -7,6 +7,7 @@ import {
 	createConnectorFromBearer,
 	type BotConnectorBundle,
 } from '../../../../shared/botConnector';
+import { applyMessageOptionsToActivity } from '../../../../shared/applyMessageOptionsToActivity';
 import type {
 	AuthKind,
 	IdentityMode,
@@ -19,7 +20,7 @@ import { makeBundleKey } from '../bundleKey';
 
 export const description: INodeProperties[] = [
 	// All send-specific fields are already in message/index.ts (Text, Options).
-	// No extra properties unique to send at M0B — left as [] so future send-only
+	// No extra properties unique to send — left as [] so future send-only
 	// fields have a home.
 	...identityModeFields('send'),
 ];
@@ -81,7 +82,12 @@ export async function execute(
 		renderedText = `${text}\n\n_Sent from n8n workflow._`;
 	}
 
-	const activity: Partial<Activity> = { type: 'message', text: renderedText };
+	let activity: Partial<Activity> = { type: 'message', text: renderedText };
+	try {
+		activity = applyMessageOptionsToActivity(activity, options);
+	} catch (err) {
+		throw new NodeOperationError(this.getNode(), (err as Error).message, { itemIndex });
+	}
 
 	// ── Auth routing ──────────────────────────────────────────────────────────
 	// Determine identity context from node params (shown only when authKind=agent365).

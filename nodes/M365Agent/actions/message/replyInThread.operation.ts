@@ -8,6 +8,7 @@ import {
 	replyInThread as replyInThreadApi,
 	type BotConnectorBundle,
 } from '../../../../shared/botConnector';
+import { applyMessageOptionsToActivity } from '../../../../shared/applyMessageOptionsToActivity';
 import type {
 	AuthKind,
 	IdentityMode,
@@ -43,7 +44,12 @@ export async function execute(
 		renderedText = `${text}\n\n_Sent from n8n workflow._`;
 	}
 
-	const activity: Partial<Activity> = { type: 'message', text: renderedText };
+	let activity: Partial<Activity> = { type: 'message', text: renderedText };
+	try {
+		activity = applyMessageOptionsToActivity(activity, options);
+	} catch (err) {
+		throw new NodeOperationError(this.getNode(), (err as Error).message, { itemIndex });
+	}
 
 	// ── Auth routing ──────────────────────────────────────────────────────────
 	const identityMode: IdentityMode =
