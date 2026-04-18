@@ -63,16 +63,16 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 						result = await message.send.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					case 'reply':
-						result = await message.reply.execute(this, i, authKind, credentials, bundles);
+						result = await message.reply.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					case 'update':
-						result = await message.update.execute(this, i, authKind, credentials, bundles);
+						result = await message.update.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					case 'delete':
-						result = await message.deleteMessage.execute(this, i, authKind, credentials, bundles);
+						result = await message.deleteMessage.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					case 'replyInThread':
-						result = await message.replyInThread.execute(this, i, authKind, credentials, bundles);
+						result = await message.replyInThread.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					default:
 						throw new NodeOperationError(this.getNode(), `Unknown message operation: ${operation}`, { itemIndex: i });
