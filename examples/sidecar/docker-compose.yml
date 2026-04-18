@@ -1,0 +1,26 @@
+# Dev Docker Compose for Entra Agent ID auth sidecar.
+# Use for local development; production swarm overlay lives in docker-compose.swarm.yml.
+# Copy .env.example to .env and fill before `docker compose up -d`.
+
+services:
+  entra-auth-sidecar:
+    image: mcr.microsoft.com/entra-sdk/auth-sidecar:1.0.0-azurelinux3.0
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AzureAd__Instance=https://login.microsoftonline.com/
+      - AzureAd__TenantId=${TENANT_ID}
+      - AzureAd__ClientId=${BLUEPRINT_APP_ID}
+      - AzureAd__ClientCredentials__0__SourceType=ClientSecret
+      - AzureAd__ClientCredentials__0__ClientSecret=${BLUEPRINT_CLIENT_SECRET}
+    env_file:
+      - .env
+      - compose-config/downstream-apis.env
+      - compose-config/logging.env
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
