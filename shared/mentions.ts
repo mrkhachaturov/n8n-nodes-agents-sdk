@@ -22,6 +22,7 @@ export interface MentionEntity {
 	type: 'mention';
 	mentioned: { id: string; name: string };
 	text: string;
+	[key: string]: unknown;
 }
 
 export interface MentionResult {
@@ -59,8 +60,10 @@ export function buildMentions(inputs: MentionInput[]): MentionResult {
 
 /**
  * Returns a new activity with mention entities merged in and text tokens
- * prepended. Idempotent on text — if the token already appears anywhere in
- * the existing text, it is not prepended a second time. Never mutates input.
+ * prepended. Idempotent on text only — if a token is already present in the
+ * existing text, it is not prepended a second time. The entities array always
+ * grows; do not call this twice on the same activity unless duplicate Mention
+ * entities are intended. Never mutates input.
  */
 export function applyMentionsToActivity(
 	activity: Partial<Activity>,
@@ -81,6 +84,6 @@ export function applyMentionsToActivity(
 	return {
 		...activity,
 		text: newText.length > 0 ? newText : activity.text,
-		entities: [...existingEntities, ...entities] as Activity['entities'],
+		entities: [...existingEntities, ...entities],
 	};
 }
