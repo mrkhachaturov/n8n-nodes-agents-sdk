@@ -5,7 +5,7 @@ import type { ConversationReference } from '../../../shared/types';
 /**
  * Simple vs Advanced conversation-target input.
  * Simple (default): reads the envelope's conversationReference from the item —
- *   exactly the M0 behaviour, no UI fields shown.
+ *   no UI fields shown.
  * Advanced: the user fills serviceUrl / conversation id / channel id / activity id
  *   manually. Used for proactive flows originating outside the bot webhook (e.g.,
  *   a 1C ERP event) where there is no inbound envelope to read.

@@ -17,14 +17,15 @@ export function buildBlueprintAuthConfig(cred: M365Agent365Cred): AuthConfigurat
 		};
 	}
 	if (cred.inlineCredKind === 'clientCert') {
-		// Inline cert transport is NOT supported in M1.
-		// The SDK's AuthConfiguration uses certPemFile/certKeyFile (filesystem paths),
-		// not inline PEM content. Supporting this would require writing the PEM to a
-		// temp file on every token acquisition (sec/perf concerns) or switching to
-		// @azure/msal-node directly. For cert-based auth, use sidecar transport —
-		// the sidecar mounts the cert from a Docker secret and handles MSAL internally.
+		// Inline cert transport is not wired up. The SDK's AuthConfiguration
+		// uses certPemFile/certKeyFile (filesystem paths), not inline PEM
+		// content. Supporting this would require writing the PEM to a temp
+		// file on every token acquisition (sec/perf concerns) or switching
+		// to @azure/msal-node directly. For cert-based auth, use sidecar
+		// transport — the sidecar mounts the cert from a Docker secret and
+		// handles MSAL internally.
 		throw new Error(
-			'Inline transport with clientCert is not supported in M1. Use sidecar transport for certificate-based authentication.',
+			'Inline transport with clientCert is not supported. Use sidecar transport for certificate-based authentication — the sidecar mounts the PFX from a Docker secret and handles MSAL internally.',
 		);
 	}
 	throw new Error(`Unsupported inlineCredKind: ${cred.inlineCredKind}`);

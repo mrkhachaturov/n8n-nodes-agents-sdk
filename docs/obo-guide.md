@@ -1,6 +1,6 @@
-# OBO Guide (M2-preview)
+# OBO Guide
 
-Conceptual explainer for the `interactiveOBO` identity mode. This mode is implemented in the shared auth router but is **not exposed as a UI option** in M1 — it is reserved for M2 Graph/MCP operations.
+Conceptual explainer for the `interactiveOBO` identity mode. The auth router already supports this flow through the sidecar, but it is **not yet surfaced as a UI option on the Message or Card operations** — OBO is only valid for downstream Graph / MCP calls, not for the Bot Connector (see below).
 
 ---
 
@@ -26,13 +26,13 @@ The Bot Framework Connector API (`https://smba.trafficmanager.net/...`) is an ap
 
 OBO tokens are issued to user audiences — they carry a `scp` (scope) claim instead of `roles`, and their `aud` is the target resource (Graph, a tenant API), not the Bot Framework audience. Presenting an OBO token to the Bot Connector will result in a `401 Unauthorized`.
 
-**Consequence:** OBO is NOT a valid identity mode for Message or Card operations, which write to the Bot Connector. This is why the `interactiveOBO` option is absent from the Message and Card operation UIs in M1. Exposing it there would allow users to construct a configuration that always fails at runtime.
+**Consequence:** OBO is NOT a valid identity mode for Message or Card operations, which write to the Bot Connector. This is why the `interactiveOBO` option is deliberately absent from the Message and Card operation UIs. Exposing it there would allow users to construct a configuration that always fails at runtime.
 
 ---
 
-## What OBO unlocks in M2
+## What OBO enables
 
-M2 will introduce Graph and MCP operation resources on `M365Agent`. These call Microsoft Graph or tenant-hosted MCP servers rather than the Bot Connector, which means:
+A future release will introduce Graph and MCP operation resources on `M365Agent`. These call Microsoft Graph or tenant-hosted MCP servers rather than the Bot Connector, which means:
 
 - **User-context Graph calls** — read/write files, calendar, mail, or Teams data as the inbound user, subject to their actual permissions and any Conditional Access policies applied to their account.
 - **Tenant MCP server calls** — forward a user's bearer token to a tenant-internal MCP server, so the MCP server sees a delegated-permission token and can enforce its own authorization.
@@ -49,16 +49,16 @@ The shared auth router (`shared/auth/router.ts`) already supports the `interacti
 This means:
 
 1. The sidecar is already capable of OBO exchange with no additional changes.
-2. M2 work is limited to surfacing the OBO path in the Graph/MCP operation UI and wiring the outbound call to use the returned header.
-3. No router or sidecar protocol changes are planned for M2.
+2. Surfacing OBO as a user-visible option is limited to adding Graph / MCP operation UIs and wiring the outbound call to use the returned header.
+3. No router or sidecar protocol changes are required.
 
 ---
 
 ## Summary
 
-- OBO lets the agent act as the inbound user for Graph/MCP calls — not for messaging.
+- OBO lets the agent act as the inbound user for Graph / MCP calls — not for messaging.
 - The Bot Connector API only accepts application-permission tokens; OBO tokens will always be rejected there.
-- The sidecar already performs OBO exchange; M2 exposes it via Graph/MCP operation fields.
+- The sidecar already performs OBO exchange; it just isn't exposed on the Message / Card UIs (by design).
 - OBO costs the agent nothing extra — the requesting user's license covers it.
 
 ---

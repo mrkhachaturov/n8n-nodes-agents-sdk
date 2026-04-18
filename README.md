@@ -130,17 +130,17 @@ Used when `Authentication Kind = Agent 365`. Replaces the classic App ID + secre
 
 ### Identity modes (Agent 365 only)
 
-| Mode             | When to use                                                 | Transport required                              |
-| ---------------- | ----------------------------------------------------------- | ----------------------------------------------- |
-| `autonomous`     | Agent acts as its Blueprint app identity                    | inline or sidecar                               |
-| `agentUser`      | Agent acts as its own M365 user (requires separate license) | sidecar only                                    |
-| `interactiveOBO` | Delegated calls to Graph/MCP as inbound user                | sidecar only (M2-preview, not UI-exposed in M1) |
+| Mode             | When to use                                                 | Transport required                                                 |
+| ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
+| `autonomous`     | Agent acts as its Blueprint app identity                    | inline or sidecar                                                  |
+| `agentUser`      | Agent acts as its own M365 user (requires separate license) | sidecar only                                                       |
+| `interactiveOBO` | Delegated calls to Graph / MCP as the inbound user          | sidecar only (router-only; not yet surfaced on Message / Card UIs) |
 
 ### Further reading
 
 - **Sidecar deployment**: [examples/sidecar/README.md](examples/sidecar/README.md)
 - **Auth guide** (choosing between classic, inline, and sidecar): [docs/auth-guide.md](docs/auth-guide.md)
-- **OBO guide** (why OBO is M2-only and what it unlocks): [docs/obo-guide.md](docs/obo-guide.md)
+- **OBO guide** (what `interactiveOBO` is and why it's router-only today): [docs/obo-guide.md](docs/obo-guide.md)
 - **Licensing notes** (Frontier preview vs GA cost implications): [docs/licensing-notes.md](docs/licensing-notes.md)
 
 ---

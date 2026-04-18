@@ -48,10 +48,10 @@ Use when you want Agent 365 identity without running a separate sidecar process.
 4. On your `M365AgentTrigger` and `M365Agent` nodes, set **Authentication Kind** = `Agent 365` and attach the credential.
 5. On outbound operations (Message, Card), set **Identity Mode** = `autonomous`.
 
-**Limitations in M1:**
+**Limitations:**
 
 - Only `autonomous` identity mode is supported with the inline transport.
-- Certificate-based auth for the Blueprint app is NOT supported in inline mode in M1. Use the sidecar if cert-based auth is required for production.
+- Certificate-based auth for the Blueprint app is not supported on the inline transport. Use the sidecar if cert-based auth is required for production.
 
 ---
 
@@ -63,7 +63,7 @@ Use when you need agent-user tokens, cert-based auth, or want auth logic isolate
 
 - You need the `agentUser` identity mode (agent acts as its own M365 user).
 - You want certificate-based auth for the Blueprint app registration (preferred for production).
-- You are planning to use M2 Graph/MCP operations with `interactiveOBO` mode.
+- You plan to use delegated Graph / MCP calls with `interactiveOBO` identity mode (not yet surfaced on the Message / Card operation UIs — see obo-guide.md).
 - You want to keep token acquisition outside the n8n process for auditability.
 
 **Setup:**
@@ -76,7 +76,7 @@ Use when you need agent-user tokens, cert-based auth, or want auth logic isolate
    - **Sidecar URL** — the sidecar's internal base URL
    - **Agent Instance App ID** — the runtime app ID the sidecar uses for this agent instance
    - **Blueprint App ID** — the Blueprint's Application (client) ID
-   - **Outbound Downstream API** (optional) — target API audience for downstream calls (M2)
+   - **Outbound Downstream API** (optional) — target API audience for downstream calls (Graph, MCP, etc.)
 5. On your nodes, set **Authentication Kind** = `Agent 365` and attach the credential.
 6. On outbound operations, set **Identity Mode** to the appropriate value (`autonomous` or `agentUser`).
 
@@ -90,12 +90,12 @@ Use when you need agent-user tokens, cert-based auth, or want auth logic isolate
 | Want Agent 365 identity, simple workload, client secret OK | Agent 365 Inline  |
 | Need agent-user tokens (agent as M365 user)                | Agent 365 Sidecar |
 | Cert-based auth for production                             | Agent 365 Sidecar |
-| M2 Graph/MCP operations coming                             | Agent 365 Sidecar |
+| Delegated Graph / MCP calls with `interactiveOBO`          | Agent 365 Sidecar |
 
 ---
 
 ## See also
 
-- [obo-guide.md](obo-guide.md) — why `interactiveOBO` is M2-only and what it unlocks
+- [obo-guide.md](obo-guide.md) — what `interactiveOBO` is and why it's currently router-only (not exposed on Message / Card UIs)
 - [licensing-notes.md](licensing-notes.md) — Frontier preview vs GA cost implications per identity mode
 - [examples/sidecar/README.md](../examples/sidecar/README.md) — sidecar deployment (dev + swarm)

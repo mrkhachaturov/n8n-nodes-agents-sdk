@@ -54,6 +54,6 @@ describe('router — agent365 inline backend', () => {
 				downstreamApi: 'Graph',
 				inboundBearer: 'Bearer abc',
 			}),
-		).rejects.toThrow(/not implemented in M1/i);
+		).rejects.toThrow(/not supported on the inline transport/i);
 	});
 });

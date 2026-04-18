@@ -12,7 +12,7 @@ Cost and license requirements for each Agent 365 identity mode, across the Front
 | ---------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | `autonomous`     | 1 **Agent 365 Frontier** license per agent instance                                   | 25-agent limit per tenant during preview             |
 | `agentUser`      | Frontier license + real M365 seat (E5 + Teams Enterprise) on the agent's user account | The agent account must be a real, licensed M365 user |
-| `interactiveOBO` | No extra cost beyond the requesting user's existing license                           | M2-only; not UI-exposed in M1                        |
+| `interactiveOBO` | No extra cost beyond the requesting user's existing license                           | Router-only; not surfaced on Message / Card UIs      |
 
 The 25-agent-per-tenant cap during Frontier applies to `autonomous` instances. `agentUser` accounts consume a full user seat and do not count against the agent cap separately — they are treated as regular M365 users.
 
@@ -55,7 +55,7 @@ For automation that simply sends messages or cards on behalf of a workflow, `aut
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | Automate message/card sending without user-context Graph calls | `autonomous`                                                                         |
 | Agent needs M365 presence (Teams participant, mailbox)         | `agentUser` — accept the license cost                                                |
-| Graph/MCP calls as the inbound user (M2)                       | `interactiveOBO` — wait for M2, no extra cost                                        |
+| Graph / MCP calls as the inbound user                          | `interactiveOBO` — no extra cost, once Graph / MCP operations are surfaced on the UI |
 | Unsure                                                         | Start with `autonomous`; switch only when a concrete requirement demands `agentUser` |
 
 ---
@@ -63,4 +63,4 @@ For automation that simply sends messages or cards on behalf of a workflow, `aut
 ## See also
 
 - [auth-guide.md](auth-guide.md) — credential and transport setup
-- [obo-guide.md](obo-guide.md) — why OBO has no extra license cost and what it unlocks in M2
+- [obo-guide.md](obo-guide.md) — why OBO has no extra license cost and what it enables
