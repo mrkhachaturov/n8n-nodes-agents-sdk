@@ -47,7 +47,8 @@
 		"n8nNodesApiVersion": 1,
 		"strict": false,
 		"credentials": [
-			"dist/credentials/M365AgentApi.credentials.js"
+			"dist/credentials/M365AgentApi.credentials.js",
+			"dist/credentials/M365Agent365Api.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/M365AgentTrigger/M365AgentTrigger.node.js",
