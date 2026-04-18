@@ -86,7 +86,12 @@ The **Conversation Source** toggle picks between `From Envelope` (default — re
 - ✅ **Delete** — delete a previously-sent activity
 - ✅ **Reply in Thread** — reply inside an existing Teams thread via the `;messageid=<parentActivityId>` suffix
 
-All five operations share a **Text** field (with expression support), a **Conversation Source** selector, and an **Options** collection for optional knobs (`Workflow Footer`, and — in future milestones — mentions and suggested actions).
+All five operations share a **Text** field (with expression support), a **Conversation Source** selector, and an **Options** collection for optional knobs (`Workflow Footer`, Mentions, Suggested Actions).
+
+  **Options (inside every body-carrying operation: Send / Reply / Update / replyInThread):**
+
+  - **Mentions** — add Teams @-mentions. `User` pings one person (paste the user's Teams/AAD object id and display name from your inbound trigger envelope). `Everyone` pings the whole team (uses Teams' magic ID internally). The node inserts matching `<at>Name</at>` tokens into the text and attaches the entities — no hand-assembly needed.
+  - **Suggested Actions** — quick-reply chip buttons under the message. Four types: `imBack` (send a message back), `messageBack` (send with a user-visible text and a hidden payload), `postBack` (send hidden), `openUrl` (open a URL).
 
 </details>
 

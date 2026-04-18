@@ -25,6 +25,7 @@ Teams / M365 Copilot / WebChat / Direct Line  (Azure Bot Service channels)
             ▼
   M365Agent (this package)          ← resource + operation: pick what to do
             │                          - Message: send / reply / update / delete / replyInThread
+            │                            · Options: Mentions (User, Everyone) + Suggested Actions (imBack/messageBack/postBack/openUrl)
             │                          - Card: send / update (Adaptive Card + templating)
             │                          - Invoke Response: respond (Plain / AdaptiveCard)
             ▼
