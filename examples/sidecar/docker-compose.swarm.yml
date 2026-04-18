@@ -1,0 +1,35 @@
+# Swarm overlay for Entra Agent ID auth sidecar.
+# Apply alongside docker-compose.yml:
+#   docker stack deploy -c docker-compose.yml -c docker-compose.swarm.yml entra-auth
+# Assumes cert-based auth via a Docker secret (see README).
+
+services:
+  entra-auth-sidecar:
+    image: mcr.microsoft.com/entra-sdk/auth-sidecar:1.0.0-azurelinux3.0-distroless
+    # Distroless has no curl/wget — rely on Swarm task restart on crash.
+    healthcheck:
+      disable: true
+    environment:
+      # Override the non-distroless compose defaults for cert-based auth.
+      - AzureAd__ClientCredentials__0__SourceType=Path
+      - AzureAd__ClientCredentials__0__CertificateDiskPath=/run/secrets/entra_cert_pfx
+      - AzureAd__ClientCredentials__0__CertificatePassword=
+    secrets:
+      - entra_cert_pfx
+    networks:
+      - internal
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - 'traefik.enable=false' # sidecar never exposed externally
+
+secrets:
+  entra_cert_pfx:
+    external: true
+
+networks:
+  internal:
+    driver: overlay

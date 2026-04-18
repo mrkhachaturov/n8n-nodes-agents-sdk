@@ -6,7 +6,7 @@ import { globalIgnores } from 'eslint/config';
 // It cannot run on the n8n Cloud sandbox, so we use the lint config variant
 // that drops the cloud-specific no-restricted-imports rule.
 export default [
-	globalIgnores(['vitest.config.ts', 'tests/**', 'coverage/**']),
+	globalIgnores(['vitest.config.ts', 'tests/**', 'coverage/**', 'scripts/**']),
 	...configWithoutCloudSupport,
 	// n8n-nodes-base/node-filename-against-convention expects every .ts under
 	// nodes/XXX/ to be named XXX.node.ts. The M0B refactor (Task 3+) uses the

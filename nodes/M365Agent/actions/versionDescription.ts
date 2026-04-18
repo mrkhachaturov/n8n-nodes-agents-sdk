@@ -18,8 +18,39 @@ export const versionDescription: INodeTypeDescription = {
 	// usableAsTool intentionally OMITTED — this node performs side effects
 	// (sends/updates/deletes activities to Azure Bot Service) and should not be
 	// invocable from an AI Agent's reasoning loop. See manifest §10.7.
-	credentials: [{ name: 'm365AgentApi', required: true }],
+	credentials: [
+		{
+			name: 'm365AgentApi',
+			required: true,
+			displayOptions: { show: { authKind: ['classicBot'] } },
+		},
+		{
+			name: 'm365Agent365Api',
+			required: true,
+			testedBy: 'agent365CredentialTest',
+			displayOptions: { show: { authKind: ['agent365'] } },
+		},
+	],
 	properties: [
+		{
+			displayName: 'Authentication Kind',
+			name: 'authKind',
+			type: 'options',
+			noDataExpression: true,
+			options: [
+				{
+					name: 'Classic Bot (Azure Bot Service)',
+					value: 'classicBot',
+					description: 'Existing Azure Bot resource + Entra App Registration',
+				},
+				{
+					name: 'Agent 365 (Entra Agent Identity)',
+					value: 'agent365',
+					description: 'Agent Blueprint in Entra, no Azure Bot resource needed',
+				},
+			],
+			default: 'classicBot',
+		},
 		{
 			displayName: 'Resource',
 			name: 'resource',

@@ -1,28 +1,80 @@
 import type { IExecuteFunctions, IDataObject, INodeProperties, JsonObject } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
 
-import { buildAuthConfig } from '../../../../shared/buildAuthConfig';
-import { createConnector, type BotConnectorBundle } from '../../../../shared/botConnector';
-import type { M365AgentCredentials } from '../../../../shared/types';
-import { resolveConversationReference } from '../../descriptions/conversationReference';
+import { acquireOutboundToken } from '../../../../shared/auth/router';
+import {
+	createConnectorFromBearer,
+	type BotConnectorBundle,
+} from '../../../../shared/botConnector';
+import type {
+	AuthKind,
+	IdentityMode,
+	M365ClassicBotCred,
+	M365Agent365Cred,
+	ConversationReference,
+} from '../../../../shared/types';
+import { identityModeFields } from './identityModeFields';
+import { makeBundleKey } from '../bundleKey';
 
 export const description: INodeProperties[] = [
 	// All send-specific fields are already in message/index.ts (Text, Options).
 	// No extra properties unique to send at M0B — left as [] so future send-only
 	// fields have a home.
+	...identityModeFields('send'),
 ];
 
 export async function execute(
-	ctx: IExecuteFunctions,
+	this: IExecuteFunctions,
 	itemIndex: number,
-	creds: M365AgentCredentials,
+	authKind: AuthKind,
+	credentials: M365ClassicBotCred | M365Agent365Cred,
 	bundles: Map<string, BotConnectorBundle>,
 ): Promise<IDataObject> {
-	const item = ctx.getInputData()[itemIndex].json as IDataObject;
-	const ref = resolveConversationReference(ctx, itemIndex, item);
-	const text = ctx.getNodeParameter('text', itemIndex) as string;
-	const options = ctx.getNodeParameter('options', itemIndex, {}) as IDataObject;
+	const item = this.getInputData()[itemIndex].json as IDataObject;
+
+	// ── Conversation reference ─────────────────────────────────────────────────
+	// When conversationSource is 'manual', read from UI fields; any other value
+	// (including 'envelope' and legacy 'fromEnvelope') reads from the item.
+	const conversationSource = this.getNodeParameter(
+		'conversationSource',
+		itemIndex,
+		'envelope',
+	) as string;
+	let ref: ConversationReference;
+	if (conversationSource === 'manual') {
+		const serviceUrl = this.getNodeParameter('serviceUrl', itemIndex) as string;
+		const conversationId = this.getNodeParameter('conversationId', itemIndex) as string;
+		const channelId = this.getNodeParameter('channelId', itemIndex, 'msteams') as string;
+		const activityId = this.getNodeParameter('activityId', itemIndex, '') as string;
+		if (!serviceUrl || !conversationId) {
+			throw new NodeOperationError(
+				this.getNode(),
+				'Manual Conversation Source requires both Service URL and Conversation ID.',
+				{ itemIndex },
+			);
+		}
+		ref = {
+			serviceUrl,
+			conversation: { id: conversationId },
+			channelId,
+			...(activityId ? { activityId } : {}),
+		};
+	} else {
+		const fromItem = item.conversationReference as ConversationReference | undefined;
+		if (!fromItem) {
+			throw new NodeOperationError(
+				this.getNode(),
+				'conversationReference is missing on the input item. Switch Conversation Source to "Specify Manually" or route through M365 Agent Trigger.',
+				{ itemIndex },
+			);
+		}
+		ref = fromItem;
+	}
+
+	// ── Message text ──────────────────────────────────────────────────────────
+	const text = this.getNodeParameter('text', itemIndex, '') as string;
+	const options = this.getNodeParameter('options', itemIndex, {}) as IDataObject;
 
 	let renderedText = text;
 	if (options.workflowFooter) {
@@ -31,18 +83,66 @@ export async function execute(
 
 	const activity: Partial<Activity> = { type: 'message', text: renderedText };
 
-	let bundle = bundles.get(ref.serviceUrl);
-	if (!bundle) {
-		bundle = await createConnector(buildAuthConfig(creds), ref.serviceUrl);
-		bundles.set(ref.serviceUrl, bundle);
+	// ── Auth routing ──────────────────────────────────────────────────────────
+	// Determine identity context from node params (shown only when authKind=agent365).
+	const identityMode: IdentityMode =
+		authKind === 'agent365'
+			? (this.getNodeParameter('identityMode', itemIndex, 'autonomous') as IdentityMode)
+			: 'autonomous';
+
+	let agentUsername: string | undefined;
+	let agentUserId: string | undefined;
+	if (authKind === 'agent365' && identityMode === 'agentUser') {
+		const userSelectorMode = this.getNodeParameter(
+			'userSelectorMode',
+			itemIndex,
+			'byUpn',
+		) as string;
+		if (userSelectorMode === 'byUpn') {
+			agentUsername =
+				(this.getNodeParameter('agentUsername', itemIndex, '') as string) || undefined;
+		} else {
+			agentUserId = (this.getNodeParameter('agentUserId', itemIndex, '') as string) || undefined;
+		}
 	}
 
+	const downstreamApi: string =
+		authKind === 'agent365'
+			? ((credentials as M365Agent365Cred).outboundDownstreamApi ?? 'MessagingBotApi')
+			: 'BotFramework';
+
+	// ── Bundle cache ──────────────────────────────────────────────────────────
+	const bundleKey = makeBundleKey(
+		ref.serviceUrl,
+		authKind,
+		identityMode,
+		agentUsername,
+		agentUserId,
+	);
+	let bundle = bundles.get(bundleKey);
+	if (!bundle) {
+		const { authorizationHeader } = await acquireOutboundToken({
+			authKind,
+			credentials,
+			identityMode,
+			downstreamApi,
+			agentUsername,
+			agentUserId,
+		});
+		bundle = createConnectorFromBearer(ref.serviceUrl, authorizationHeader);
+		bundles.set(bundleKey, bundle);
+	}
+
+	// ── Send ──────────────────────────────────────────────────────────────────
 	try {
-		const result = await bundle.client.sendToConversation(ref.conversation.id, activity as Activity);
+		const result = await bundle.client.sendToConversation(
+			ref.conversation.id,
+			activity as Activity,
+		);
 		return { ...item, sendResult: { id: result.id } };
 	} catch (err) {
 		const e = err as Error;
-		throw new NodeApiError(ctx.getNode(), { message: e.message } as JsonObject, {
+		throw new NodeApiError(this.getNode(), { message: e.message } as JsonObject, {
 			message: `M365 Agent send failed: ${e.message}`,
 		});
 	}

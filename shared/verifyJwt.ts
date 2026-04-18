@@ -12,6 +12,11 @@ export interface VerifyJwtOptions {
 	getSigningKey?: GetSigningKey;
 	/** Override allowed algorithms (tests use HS256 for simplicity). */
 	verifyAlgorithms?: jwt.Algorithm[];
+	/** Optional audience list override. If set, replaces the default
+	 *  [clientId, 'https://api.botframework.com'] completely. */
+	audiences?: string[];
+	/** Optional issuer list override (passed to jsonwebtoken's `issuer` field). */
+	issuers?: string[];
 }
 
 /**
@@ -42,11 +47,14 @@ export async function verifyJwt(raw: string, opts: VerifyJwtOptions): Promise<Jw
 			.catch((err) => callback(err as Error));
 	};
 
+	const audienceList = opts.audiences ?? [opts.clientId, 'https://api.botframework.com'];
 	const verifyOptions: VerifyOptions = {
-		audience: [opts.clientId, 'https://api.botframework.com'],
+		// jsonwebtoken typings require [string,...] — cast is safe here
+		audience: audienceList as [string, ...string[]],
 		ignoreExpiration: false,
 		algorithms,
 		clockTolerance: 300,
+		...(opts.issuers ? { issuer: opts.issuers as [string, ...string[]] } : {}),
 	};
 
 	return await new Promise<JwtPayload>((resolve, reject) => {

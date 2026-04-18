@@ -27,25 +27,41 @@ describe('M365Agent router — unknown operation defaults', () => {
 	it('throws NodeOperationError for an unknown message operation', async () => {
 		const node = new M365Agent();
 		const ctx = makeExecuteContext({
-			inputItems: [{ conversationReference: { serviceUrl: 'x', conversation: { id: 'c' }, channelId: 'msteams' } }],
+			inputItems: [
+				{
+					conversationReference: {
+						serviceUrl: 'x',
+						conversation: { id: 'c' },
+						channelId: 'msteams',
+					},
+				},
+			],
 			credentials: makeCredentials(),
 			parameters: { resource: 'message', operation: 'bogus' },
 		});
-		await expect(
-			node.execute.call(ctx as unknown as IExecuteFunctions),
-		).rejects.toThrow(/Unknown message operation: bogus/);
+		await expect(node.execute.call(ctx as unknown as IExecuteFunctions)).rejects.toThrow(
+			/Unknown message operation: bogus/,
+		);
 	});
 
 	it('throws NodeOperationError for an unknown card operation', async () => {
 		const node = new M365Agent();
 		const ctx = makeExecuteContext({
-			inputItems: [{ conversationReference: { serviceUrl: 'x', conversation: { id: 'c' }, channelId: 'msteams' } }],
+			inputItems: [
+				{
+					conversationReference: {
+						serviceUrl: 'x',
+						conversation: { id: 'c' },
+						channelId: 'msteams',
+					},
+				},
+			],
 			credentials: makeCredentials(),
 			parameters: { resource: 'card', operation: 'bogus' },
 		});
-		await expect(
-			node.execute.call(ctx as unknown as IExecuteFunctions),
-		).rejects.toThrow(/Unknown card operation: bogus/);
+		await expect(node.execute.call(ctx as unknown as IExecuteFunctions)).rejects.toThrow(
+			/Unknown card operation: bogus/,
+		);
 	});
 
 	it('throws NodeOperationError for an unknown invokeResponse operation', async () => {
@@ -55,8 +71,8 @@ describe('M365Agent router — unknown operation defaults', () => {
 			credentials: makeCredentials(),
 			parameters: { resource: 'invokeResponse', operation: 'bogus' },
 		});
-		await expect(
-			node.execute.call(ctx as unknown as IExecuteFunctions),
-		).rejects.toThrow(/Unknown invokeResponse operation: bogus/);
+		await expect(node.execute.call(ctx as unknown as IExecuteFunctions)).rejects.toThrow(
+			/Unknown invokeResponse operation: bogus/,
+		);
 	});
 });

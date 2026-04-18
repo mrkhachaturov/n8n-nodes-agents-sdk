@@ -5,8 +5,12 @@ import { makeExecuteContext, makeCredentials } from '../../helpers/makeContext';
 import type { IExecuteFunctions } from 'n8n-workflow';
 
 // ---------------------------------------------------------------------------
-// Mock the bot connector — no real network calls
+// Mock the auth router and bot connector — no real network calls
 // ---------------------------------------------------------------------------
+
+vi.mock('../../../shared/auth/router', () => ({
+	acquireOutboundToken: vi.fn().mockResolvedValue({ authorizationHeader: 'Bearer fake-token' }),
+}));
 
 const fakeClient = {
 	replyToActivity: vi.fn(),
@@ -22,10 +26,10 @@ const fakeBundle = {
 	baseURL: 'https://smba.trafficmanager.net/emea/',
 };
 
-const mockCreateConnector = vi.fn().mockResolvedValue(fakeBundle);
+const mockCreateConnectorFromBearer = vi.fn().mockReturnValue(fakeBundle);
 
 vi.mock('../../../shared/botConnector', () => ({
-	createConnector: (...args: unknown[]) => mockCreateConnector(...args),
+	createConnectorFromBearer: (...args: unknown[]) => mockCreateConnectorFromBearer(...args),
 	replyInThread: vi.fn(),
 }));
 
@@ -96,7 +100,7 @@ const CARD_UPDATE_ENVELOPE = {
 describe('M365Agent card/update execute', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockCreateConnector.mockResolvedValue(fakeBundle);
+		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
 		fakeClient.updateActivity.mockResolvedValue({ id: 'updated-activity-id' });
 	});
 
@@ -125,9 +129,7 @@ describe('M365Agent card/update execute', () => {
 		expect(activity.type).toBe('message');
 		expect(activity.text).toBe('Job #42 updated');
 		expect(activity.attachments).toHaveLength(1);
-		expect(activity.attachments[0].contentType).toBe(
-			'application/vnd.microsoft.card.adaptive',
-		);
+		expect(activity.attachments[0].contentType).toBe('application/vnd.microsoft.card.adaptive');
 		// Template expansion rendered ${title} from bindingData
 		expect(JSON.stringify(activity.attachments[0].content)).toContain('Job #42');
 
@@ -167,9 +169,9 @@ describe('M365Agent card/update execute', () => {
 			},
 		});
 
-		await expect(
-			node.execute.call(ctx as unknown as IExecuteFunctions),
-		).rejects.toThrow(/activityId/);
+		await expect(node.execute.call(ctx as unknown as IExecuteFunctions)).rejects.toThrow(
+			/activityId/,
+		);
 		expect(fakeClient.updateActivity).not.toHaveBeenCalled();
 	});
 });

@@ -9,6 +9,7 @@
 import type { IExecuteFunctions, INodeType, INodeTypeDescription } from 'n8n-workflow';
 import { router } from './actions/router';
 import { versionDescription } from './actions/versionDescription';
+import { agent365CredentialTest } from '../../shared/auth/credentialTest';
 
 export class M365Agent implements INodeType {
 	// Inline spread so @n8n/community-nodes/icon-validation can read `icon`
@@ -18,6 +19,10 @@ export class M365Agent implements INodeType {
 	description: INodeTypeDescription = {
 		...versionDescription,
 		icon: { light: 'file:../../icons/m365.svg', dark: 'file:../../icons/m365.dark.svg' },
+	};
+
+	methods = {
+		credentialTest: { agent365CredentialTest },
 	};
 
 	async execute(this: IExecuteFunctions) {

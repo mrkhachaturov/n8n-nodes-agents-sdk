@@ -19,7 +19,11 @@ export const description: INodeProperties[] = [
 		options: [
 			{ name: 'Delete', value: 'delete', action: 'Delete a message' },
 			{ name: 'Reply', value: 'reply', action: 'Reply to a message' },
-			{ name: 'Reply in Thread', value: 'replyInThread', action: 'Reply inside an existing thread' },
+			{
+				name: 'Reply in Thread',
+				value: 'replyInThread',
+				action: 'Reply inside an existing thread',
+			},
 			{ name: 'Send', value: 'send', action: 'Send a message' },
 			{ name: 'Update', value: 'update', action: 'Update a message' },
 		],

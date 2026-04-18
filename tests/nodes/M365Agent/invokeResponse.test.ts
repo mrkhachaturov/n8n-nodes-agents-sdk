@@ -20,7 +20,8 @@ describe('invokeResponse resource description', () => {
 
 	it('cardResponseType shown only for adaptiveCard', () => {
 		const card = invokeResponse.description.find((p) => p.name === 'cardResponseType');
-		const shown = (card?.displayOptions?.show as Record<string, string[]> | undefined)?.responseShape;
+		const shown = (card?.displayOptions?.show as Record<string, string[]> | undefined)
+			?.responseShape;
 		expect(shown).toEqual(['adaptiveCard']);
 	});
 });
@@ -28,12 +29,14 @@ describe('invokeResponse resource description', () => {
 describe('invokeResponse respond execute', () => {
 	it('calls sendResponse exactly once regardless of item count', async () => {
 		const sendResponse = vi.fn();
-		const getNodeParameter = vi.fn().mockImplementation((name: string, _: number, def?: unknown) => {
-			if (name === 'responseShape') return 'plain';
-			if (name === 'statusCode') return 200;
-			if (name === 'body') return '{}';
-			return def;
-		});
+		const getNodeParameter = vi
+			.fn()
+			.mockImplementation((name: string, _: number, def?: unknown) => {
+				if (name === 'responseShape') return 'plain';
+				if (name === 'statusCode') return 200;
+				if (name === 'body') return '{}';
+				return def;
+			});
 		const ctx = {
 			sendResponse,
 			getNodeParameter,

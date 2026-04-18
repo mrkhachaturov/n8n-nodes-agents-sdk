@@ -14,9 +14,14 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeApiError } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
-import { verifyJwt } from '../../shared/verifyJwt';
-import { activityToConversationReference, parseActivity } from '../../shared/envelope';
-import type { ItemEnvelope, M365AgentCredentials } from '../../shared/types';
+import {
+	activityToConversationReference,
+	parseActivity,
+	detectTokenSource,
+} from '../../shared/envelope';
+import type { ItemEnvelope, M365AgentCredentials, AuthContext, AuthKind } from '../../shared/types';
+import { agent365CredentialTest } from '../../shared/auth/credentialTest';
+import { validateInboundToken } from '../../shared/auth/router';
 
 export class M365AgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -30,7 +35,19 @@ export class M365AgentTrigger implements INodeType {
 		defaults: { name: 'M365 Agent Trigger' },
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
-		credentials: [{ name: 'm365AgentApi', required: true }],
+		credentials: [
+			{
+				name: 'm365AgentApi',
+				required: true,
+				displayOptions: { show: { authKind: ['classicBot'] } },
+			},
+			{
+				name: 'm365Agent365Api',
+				required: true,
+				testedBy: 'agent365CredentialTest',
+				displayOptions: { show: { authKind: ['agent365'] } },
+			},
+		],
 		webhooks: [
 			{
 				name: 'default',
@@ -46,6 +63,25 @@ export class M365AgentTrigger implements INodeType {
 			},
 		],
 		properties: [
+			{
+				displayName: 'Authentication Kind',
+				name: 'authKind',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Classic Bot (Azure Bot Service)',
+						value: 'classicBot',
+						description: 'Existing Azure Bot resource + Entra App Registration',
+					},
+					{
+						name: 'Agent 365 (Entra Agent Identity)',
+						value: 'agent365',
+						description: 'Agent Blueprint in Entra, no Azure Bot resource needed',
+					},
+				],
+				default: 'classicBot',
+			},
 			{
 				displayName: 'Response Mode',
 				name: 'responseMode',
@@ -102,6 +138,10 @@ export class M365AgentTrigger implements INodeType {
 		],
 	};
 
+	methods = {
+		credentialTest: { agent365CredentialTest },
+	};
+
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const req = this.getRequestObject();
 
@@ -112,24 +152,27 @@ export class M365AgentTrigger implements INodeType {
 			return { noWebhookResponse: true };
 		}
 
-		const credentials = (await this.getCredentials(
-			'm365AgentApi',
-		)) as unknown as M365AgentCredentials;
+		const authKind = this.getNodeParameter('authKind', 'classicBot') as string;
+		const credName = authKind === 'classicBot' ? 'm365AgentApi' : 'm365Agent365Api';
+		const credentials = (await this.getCredentials(credName)) as unknown as M365AgentCredentials;
 
-		// POST → JWT validation unless explicitly bypassed for Emulator.
-		if (!credentials.anonymousAllowed) {
+		// POST → JWT validation unless explicitly bypassed for Emulator (classicBot only).
+		const anonymousAllowed = credentials.anonymousAllowed;
+		let validatedClaims: Record<string, unknown> | undefined;
+		if (!anonymousAllowed) {
 			const authHeader = req.headers.authorization as string | undefined;
 			if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
 				const res = this.getResponseObject();
 				res.status(401).json({ error: 'Missing bearer token' });
 				return { noWebhookResponse: true };
 			}
-			const token = authHeader.slice(7).trim();
 			try {
-				await verifyJwt(token, {
-					clientId: credentials.clientId,
-					tenantId: credentials.tenantId,
-				});
+				const result = await validateInboundToken(
+					authKind as AuthKind,
+					credentials as M365AgentCredentials,
+					authHeader,
+				);
+				validatedClaims = result.claims;
 			} catch (err) {
 				const res = this.getResponseObject();
 				res.status(401).json({ error: 'JWT verification failed', detail: (err as Error).message });
@@ -151,14 +194,24 @@ export class M365AgentTrigger implements INodeType {
 			return { webhookResponse: { status: 200 }, workflowData: [[]] };
 		}
 
+		const authHeader = req.headers.authorization as string | undefined;
 		let envelope: ItemEnvelope;
 		try {
-			envelope = {
+			const base: ItemEnvelope = {
 				conversationReference: activityToConversationReference(body),
 				activity: body,
 				parsed: parseActivity(body),
 				raw: body,
 			};
+			if (authKind === 'agent365' && validatedClaims && authHeader) {
+				const authContext: AuthContext = {
+					inboundBearer: authHeader,
+					tokenSource: detectTokenSource(validatedClaims),
+					validatedClaims,
+				};
+				base.authContext = authContext;
+			}
+			envelope = base;
 		} catch (err) {
 			const e = err as Error;
 			throw new NodeApiError(this.getNode(), { message: e.message } as JsonObject, {

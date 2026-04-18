@@ -3,8 +3,12 @@ import { M365Agent } from '../../../nodes/M365Agent/M365Agent.node';
 import { makeExecuteContext, makeCredentials } from '../../helpers/makeContext';
 
 // ---------------------------------------------------------------------------
-// Mock the bot connector — no real network calls
+// Mock the auth router and bot connector — no real network calls
 // ---------------------------------------------------------------------------
+
+vi.mock('../../../shared/auth/router', () => ({
+	acquireOutboundToken: vi.fn().mockResolvedValue({ authorizationHeader: 'Bearer fake-token' }),
+}));
 
 const fakeClient = {
 	replyToActivity: vi.fn().mockResolvedValue({ id: 'new-reply-id' }),
@@ -20,10 +24,11 @@ const fakeBundle = {
 	baseURL: 'https://smba.trafficmanager.net/emea/',
 };
 
-const mockCreateConnector = vi.fn().mockResolvedValue(fakeBundle);
+const mockCreateConnectorFromBearer = vi.fn().mockReturnValue(fakeBundle);
 
 vi.mock('../../../shared/botConnector', () => ({
-	createConnector: (...args: unknown[]) => mockCreateConnector(...args),
+	createConnector: vi.fn(),
+	createConnectorFromBearer: (...args: unknown[]) => mockCreateConnectorFromBearer(...args),
 	replyInThread: vi.fn(),
 }));
 
@@ -64,7 +69,7 @@ const CAR_SERVICE_ENVELOPE = {
 describe('M0B car-service parity — Message/Reply via new M365Agent', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockCreateConnector.mockResolvedValue(fakeBundle);
+		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
 		fakeClient.replyToActivity.mockResolvedValue({ id: 'new-reply-id' });
 	});
 
@@ -83,13 +88,15 @@ describe('M0B car-service parity — Message/Reply via new M365Agent', () => {
 		});
 
 		// Cast is safe in tests — the mock satisfies the call-site subset.
-		const result = await node.execute.call(ctx as unknown as import('n8n-workflow').IExecuteFunctions);
+		const result = await node.execute.call(
+			ctx as unknown as import('n8n-workflow').IExecuteFunctions,
+		);
 
-		// createConnector called once with the envelope's serviceUrl
-		expect(mockCreateConnector).toHaveBeenCalledTimes(1);
-		expect(mockCreateConnector).toHaveBeenCalledWith(
-			expect.anything(), // AuthConfiguration
+		// createConnectorFromBearer called once with the envelope's serviceUrl and auth header
+		expect(mockCreateConnectorFromBearer).toHaveBeenCalledTimes(1);
+		expect(mockCreateConnectorFromBearer).toHaveBeenCalledWith(
 			CAR_SERVICE_ENVELOPE.conversationReference.serviceUrl,
+			'Bearer fake-token',
 		);
 
 		// replyToActivity called once with (conversationId, activityId, activity)

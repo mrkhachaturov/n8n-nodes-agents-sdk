@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-agents-sdk",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "n8n community nodes for the Microsoft 365 Agents SDK. Build Teams/Copilot/WebChat bots with n8n as the orchestration layer.",
 	"license": "MIT",
 	"homepage": "https://github.com/mrkhachaturov/n8n-nodes-agents-sdk",
@@ -47,7 +47,8 @@
 		"n8nNodesApiVersion": 1,
 		"strict": false,
 		"credentials": [
-			"dist/credentials/M365AgentApi.credentials.js"
+			"dist/credentials/M365AgentApi.credentials.js",
+			"dist/credentials/M365Agent365Api.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/M365AgentTrigger/M365AgentTrigger.node.js",
@@ -69,13 +70,16 @@
 	"devDependencies": {
 		"@eslint/js": "^9.39.4",
 		"@n8n/node-cli": "^0.23.1",
+		"@types/express": "^4.17.25",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^22.19.17",
 		"eslint": "^9.39.4",
 		"eslint-import-resolver-typescript": "^4.4.4",
 		"eslint-plugin-import-x": "^4.16.2",
+		"express": "^4.22.1",
 		"prettier": "^3.8.3",
 		"release-it": "^20.0.0",
+		"tsx": "^4.21.0",
 		"typescript": "^6.0.2",
 		"vitest": "^4.1.4"
 	},

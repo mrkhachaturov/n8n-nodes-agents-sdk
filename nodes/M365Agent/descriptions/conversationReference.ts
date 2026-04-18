@@ -54,7 +54,8 @@ export const conversationReferenceProperties: INodeProperties[] = [
 		required: true,
 		displayOptions: { show: { conversationSource: ['manual'] } },
 		placeholder: '19:xxx@thread.tacv2',
-		description: 'The conversation ID. For Teams channels this looks like 19:…@thread.tacv2. Paste an expression such as {{ $JSON.channelId }} if you stored it upstream.',
+		description:
+			'The conversation ID. For Teams channels this looks like 19:…@thread.tacv2. Paste an expression such as {{ $JSON.channelId }} if you stored it upstream.',
 	},
 	{
 		displayName: 'Channel ID',
