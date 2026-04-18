@@ -7,6 +7,7 @@ import type {
 import { acquireClassicBotToken } from './backends/classicBot';
 import { acquireAgent365InlineToken } from './backends/agent365Inline';
 import { acquireAgent365SidecarToken } from './backends/agent365Sidecar';
+import { effectiveValidateVia, validateInline, validateViaSidecar } from './validate';
 
 export interface AcquireOutboundTokenArgs {
 	authKind: AuthKind;
@@ -50,9 +51,13 @@ export async function acquireOutboundToken(
 }
 
 export async function validateInboundToken(
-	_authKind: AuthKind,
-	_credentials: M365ClassicBotCred | M365Agent365Cred,
-	_bearer: string,
+	authKind: AuthKind,
+	credentials: M365ClassicBotCred | M365Agent365Cred,
+	bearer: string,
 ): Promise<{ claims: Record<string, unknown> }> {
-	throw new Error('validateInboundToken not yet implemented');
+	const via = effectiveValidateVia(authKind, credentials);
+	if (via === 'sidecar') {
+		return validateViaSidecar(credentials as M365Agent365Cred, bearer);
+	}
+	return validateInline(authKind, credentials, bearer);
 }
