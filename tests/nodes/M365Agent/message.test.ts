@@ -41,4 +41,20 @@ describe('message resource description', () => {
 		expect(shown).toEqual(['send', 'reply', 'update', 'replyInThread']); // exact order asserted
 		expect(shown).not.toContain('delete');
 	});
+
+	it('Options collection includes mentions and suggestedActions', () => {
+		const opts = message.description.find((p) => p.name === 'options');
+		const inner = (opts?.options as any[]) ?? [];
+		const names = inner.map((o) => o.name);
+		expect(names).toContain('workflowFooter');
+		expect(names).toContain('mentions');
+		expect(names).toContain('suggestedActions');
+	});
+
+	it('mentions and suggestedActions are gated to body-carrying operations', () => {
+		const opts = message.description.find((p) => p.name === 'options');
+		const shown = (opts?.displayOptions?.show as Record<string, string[]> | undefined)?.operation;
+		// Inherited from Options collection — same gate as the existing workflowFooter.
+		expect(shown).toEqual(['send', 'reply', 'update', 'replyInThread']);
+	});
 });
