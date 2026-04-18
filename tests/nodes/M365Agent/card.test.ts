@@ -5,8 +5,12 @@ import { makeExecuteContext, makeCredentials } from '../../helpers/makeContext';
 import type { IExecuteFunctions } from 'n8n-workflow';
 
 // ---------------------------------------------------------------------------
-// Mock the bot connector — no real network calls
+// Mock the auth router and bot connector — no real network calls
 // ---------------------------------------------------------------------------
+
+vi.mock('../../../shared/auth/router', () => ({
+	acquireOutboundToken: vi.fn().mockResolvedValue({ authorizationHeader: 'Bearer fake-token' }),
+}));
 
 const fakeClient = {
 	replyToActivity: vi.fn(),
@@ -22,10 +26,10 @@ const fakeBundle = {
 	baseURL: 'https://smba.trafficmanager.net/emea/',
 };
 
-const mockCreateConnector = vi.fn().mockResolvedValue(fakeBundle);
+const mockCreateConnectorFromBearer = vi.fn().mockReturnValue(fakeBundle);
 
 vi.mock('../../../shared/botConnector', () => ({
-	createConnector: (...args: unknown[]) => mockCreateConnector(...args),
+	createConnectorFromBearer: (...args: unknown[]) => mockCreateConnectorFromBearer(...args),
 	replyInThread: vi.fn(),
 }));
 
@@ -96,7 +100,7 @@ const CARD_UPDATE_ENVELOPE = {
 describe('M365Agent card/update execute', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockCreateConnector.mockResolvedValue(fakeBundle);
+		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
 		fakeClient.updateActivity.mockResolvedValue({ id: 'updated-activity-id' });
 	});
 

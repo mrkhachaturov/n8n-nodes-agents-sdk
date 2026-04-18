@@ -1,12 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
-import {
-	ConnectorClient,
-	MsalTokenProvider,
-	type AuthConfiguration,
-} from '@microsoft/agents-hosting';
+import { ConnectorClient } from '@microsoft/agents-hosting';
 import type { Activity } from '@microsoft/agents-activity';
-
-const BOT_FRAMEWORK_SCOPE = 'https://api.botframework.com';
 
 export interface BotConnectorBundle {
 	/** SDK client for reply/proactive/update/delete. */
@@ -38,35 +32,6 @@ export function createConnectorFromBearer(
 		baseURL,
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 	});
-	return { client, axios: ax, token, baseURL };
-}
-
-/**
- * Build a BotConnectorBundle for outbound Bot Connector calls.
- * Acquires a token via the SDK's MSAL provider and wraps both the SDK client
- * and a raw axios instance sharing the same bearer token.
- *
- * @deprecated Use createConnectorFromBearer with acquireOutboundToken instead.
- *   This function will be removed in Task 4.8 once all operations migrate to
- *   the shared auth router.
- */
-export async function createConnector(
-	authConfig: AuthConfiguration,
-	serviceUrl: string,
-): Promise<BotConnectorBundle> {
-	const baseURL = serviceUrl.endsWith('/') ? serviceUrl : `${serviceUrl}/`;
-	const provider = new MsalTokenProvider();
-	const token = await provider.getAccessToken(authConfig, BOT_FRAMEWORK_SCOPE);
-
-	const client = ConnectorClient.createClientWithToken(baseURL, token);
-	const ax = axios.create({
-		baseURL,
-		headers: {
-			Authorization: `Bearer ${token}`,
-			'Content-Type': 'application/json',
-		},
-	});
-
 	return { client, axios: ax, token, baseURL };
 }
 

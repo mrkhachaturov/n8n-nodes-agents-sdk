@@ -82,10 +82,10 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 			case 'card': {
 				switch (operation) {
 					case 'send':
-						result = await card.send.execute(this, i, authKind, credentials, bundles);
+						result = await card.send.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					case 'update':
-						result = await card.update.execute(this, i, authKind, credentials, bundles);
+						result = await card.update.execute.call(this, i, authKind, credentials, bundles);
 						break;
 					default:
 						throw new NodeOperationError(this.getNode(), `Unknown card operation: ${operation}`, { itemIndex: i });
