@@ -1,0 +1,20 @@
+{
+  "_description": "Captured outbound HTTP contract for v0.2.1 classic-bot send path. Do not edit by hand — regenerate via tests/regression/capture-v021.ts.",
+  "_capturedAt": "2026-04-18",
+  "_gitTag": "0.2.1",
+  "_approach": "Derived from git-tag 0.2.1 source inspection. The Activity body and URL pattern are deterministic given the fixed inputs below.",
+  "request": {
+    "method": "POST",
+    "urlPattern": "v3/conversations/19:chat@thread.v2/activities",
+    "body": {
+      "type": "message",
+      "text": "hello from n8n"
+    }
+  },
+  "inputs": {
+    "conversationId": "19:chat@thread.v2",
+    "serviceUrl": "https://smba.trafficmanager.net/amer/",
+    "text": "hello from n8n",
+    "options": {}
+  }
+}
