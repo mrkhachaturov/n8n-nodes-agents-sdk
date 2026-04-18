@@ -63,6 +63,18 @@ export function parseActivity(activity: Activity): ParsedActivity {
 }
 
 /**
+ * Classify the inbound bearer token source from its validated claims.
+ * Used by the trigger to populate AuthContext.tokenSource for agent365 flows.
+ */
+export function detectTokenSource(claims: Record<string, unknown>): 'botFramework' | 'messagingBotApi' | 'agenticIdentity' | 'unknown' {
+	const aud = String(claims.aud ?? '');
+	if (aud.includes('botframework')) return 'botFramework';
+	if (aud.includes('a6c6ce43')) return 'messagingBotApi';
+	if (aud.startsWith('api://')) return 'agenticIdentity';
+	return 'unknown';
+}
+
+/**
  * Merge a new Activity into an envelope.
  * Preserves conversationReference if present (reply-style path);
  * otherwise returns activity-only (proactive-from-non-bot path).

@@ -37,6 +37,16 @@ export interface ParsedActivity {
 }
 
 /**
+ * Authentication context populated by the trigger when authKind = 'agent365'.
+ * Not present on the classic bot path.
+ */
+export interface AuthContext {
+	inboundBearer: string;
+	tokenSource: 'botFramework' | 'messagingBotApi' | 'agenticIdentity' | 'unknown';
+	validatedClaims: Record<string, unknown>;
+}
+
+/**
  * The shape every node in this package reads from and writes to.
  *
  * conversationReference is OPTIONAL — proactive sends originating from a
@@ -49,6 +59,7 @@ export interface ItemEnvelope {
 	activity: Partial<Activity>;
 	parsed?: ParsedActivity;
 	raw?: Activity;
+	authContext?: AuthContext;
 }
 
 /** Azure Bot Service app type selection on the credential. */
