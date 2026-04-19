@@ -15,16 +15,14 @@ This is a community node for self-hosted n8n. It wraps the [Microsoft 365 Agents
 
 ## What you get
 
-- **M365 Agent Trigger** — parsed envelope out of the box, with Bot Framework JWT validated on every POST against Microsoft JWKS.
-- **M365 Agent API** credential — App ID + secret + tenant; SingleTenant, MultiTenant, and UserAssignedMsi app types supported.
-- **M365 Agent** action node — pick a resource and an operation from dropdowns, no hand-built `/v3/conversations/...` URLs.
-- **Message** resource — send / reply / update / delete / reply in thread. Teams threading (`;messageid=<parentActivityId>`) handled for you. Options include `@mentions` (user + everyone) and Suggested Actions (all 11 SDK action types).
-- **10 card resources** — Adaptive, Hero, Thumbnail, Animation, Audio, Video, Sign-In, Receipt, O365 Connector, Raw Attachment. Every card supports Send and Update.
-  - Builder UI for Hero / Thumbnail / Animation / Audio / Video / Sign-In — fill in title / subtitle / text / images / buttons / media, no JSON.
-  - `adaptivecards-templating` built in for Adaptive — paste a designer template, reference fields with `${field}`, bind state with `$when` / `$data`.
-  - JSON content field for Receipt / O365 Connector / Raw Attachment — paste the full card shape.
-- **Invoke Response** resource — respond to `Action.Execute` button callbacks and messaging-extension invokes on the same HTTP request.
-- **Agent 365** support — classic Azure Bot credential _and_ Entra Agent Identity Blueprint (inline MSAL or sidecar) with autonomous / agent-user identity modes.
+| Without this package                                      | With this package                                                                                                  |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Webhook → Code node to parse Activity JSON                | **M365 Agent Trigger** — parsed envelope out of the box                                                            |
+| Manual JWT validation (often skipped entirely)            | Validated on every POST against Microsoft JWKS                                                                     |
+| OAuth2 credential + scope + token-refresh plumbing        | **M365 Agent API** credential — App ID + secret + tenant                                                           |
+| HTTP Request with hand-built `/v3/conversations/...` URLs | **M365 Agent** — pick a resource and an operation from dropdowns                                                   |
+| Manual `;messageid=` thread suffix for Teams threads      | Resource `Message`, operation `Reply in Thread`                                                                    |
+| Hand-written card JSON for every card type                | 10 first-class card resources — builder UI for rich cards, templating for Adaptive, raw JSON for connector/receipt |
 
 ---
 
