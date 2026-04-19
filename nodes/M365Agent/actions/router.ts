@@ -9,6 +9,7 @@ import * as cardAnimation from './card-animation';
 import * as cardAudio from './card-audio';
 import * as cardHero from './card-hero';
 import * as cardThumbnail from './card-thumbnail';
+import * as cardVideo from './card-video';
 import * as invokeResponse from './invokeResponse';
 import { makeBundleKey } from './bundleKey';
 
@@ -22,6 +23,7 @@ type Resource =
 	| 'audioCard'
 	| 'heroCard'
 	| 'thumbnailCard'
+	| 'videoCard'
 	| 'invokeResponse';
 
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -252,6 +254,35 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 							throw new NodeOperationError(
 								this.getNode(),
 								`Unknown thumbnailCard operation: ${operation}`,
+								{ itemIndex: i },
+							);
+					}
+					break;
+				}
+				case 'videoCard': {
+					switch (operation) {
+						case 'send':
+							result = await cardVideo.send.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						case 'update':
+							result = await cardVideo.update.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						default:
+							throw new NodeOperationError(
+								this.getNode(),
+								`Unknown videoCard operation: ${operation}`,
 								{ itemIndex: i },
 							);
 					}

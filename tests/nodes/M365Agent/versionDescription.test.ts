@@ -14,6 +14,7 @@ describe('M365Agent versionDescription', () => {
 			'Invoke Response',
 			'Message',
 			'Thumbnail Card',
+			'Video Card',
 		]);
 	});
 
