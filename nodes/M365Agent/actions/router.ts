@@ -6,13 +6,19 @@ import type { AuthKind, M365ClassicBotCred, M365Agent365Cred } from '../../../sh
 import * as message from './message';
 import * as cardAdaptive from './card-adaptive';
 import * as cardHero from './card-hero';
+import * as cardThumbnail from './card-thumbnail';
 import * as invokeResponse from './invokeResponse';
 import { makeBundleKey } from './bundleKey';
 
 // Re-export so external callers (tests, docs) can still import from 'router'.
 export { makeBundleKey };
 
-type Resource = 'message' | 'adaptiveCard' | 'heroCard' | 'invokeResponse';
+type Resource =
+	| 'message'
+	| 'adaptiveCard'
+	| 'heroCard'
+	| 'thumbnailCard'
+	| 'invokeResponse';
 
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
@@ -155,6 +161,35 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 							throw new NodeOperationError(
 								this.getNode(),
 								`Unknown heroCard operation: ${operation}`,
+								{ itemIndex: i },
+							);
+					}
+					break;
+				}
+				case 'thumbnailCard': {
+					switch (operation) {
+						case 'send':
+							result = await cardThumbnail.send.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						case 'update':
+							result = await cardThumbnail.update.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						default:
+							throw new NodeOperationError(
+								this.getNode(),
+								`Unknown thumbnailCard operation: ${operation}`,
 								{ itemIndex: i },
 							);
 					}
