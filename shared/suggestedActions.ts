@@ -1,15 +1,38 @@
 import type { Activity } from '@microsoft/agents-activity';
 
-/** The four action kinds useful for quick-reply bot UX. */
-export type SuggestedActionKind = 'imBack' | 'messageBack' | 'postBack' | 'openUrl';
+/**
+ * All CardAction.type values defined by the M365 Agents SDK / Bot Framework
+ * protocol. See `.local/Agents-for-js/packages/agents-activity/src/action/actionTypes.ts`
+ * (and the .NET `Microsoft.Agents.Core.Models.ActionTypes` reference). Support
+ * varies by channel; the node exposes every value and lets Teams / WebChat /
+ * Direct Line render what they render.
+ */
+export type SuggestedActionKind =
+	| 'call'
+	| 'downloadFile'
+	| 'imBack'
+	| 'messageBack'
+	| 'openApp'
+	| 'openUrl'
+	| 'playAudio'
+	| 'playVideo'
+	| 'postBack'
+	| 'showImage'
+	| 'signin';
 
 export interface SuggestedActionInput {
 	type: SuggestedActionKind;
 	/** Chip label — required. */
 	title: string;
-	/** Action payload — message text for imBack/postBack, hidden payload for messageBack, URL for openUrl. */
+	/**
+	 * Action payload — semantics depend on `type`: message text for
+	 * `imBack` / `postBack`, hidden payload for `messageBack`, URL for
+	 * `openUrl` / `downloadFile` / `showImage` / `playAudio` / `playVideo`,
+	 * `tel:` URI for `call`, app name for `openApp`, OAuth connection name
+	 * (or URL) for `signin`.
+	 */
 	value: string;
-	/** Only for messageBack — the user-visible text shown in the transcript after the click. Ignored for other action types. */
+	/** Only for `messageBack` — the user-visible text shown in the transcript after the click. Ignored for other action types. */
 	displayText?: string;
 }
 
@@ -25,7 +48,19 @@ export interface SuggestedActionsShape {
 	actions: CardActionShape[];
 }
 
-const VALID_TYPES: readonly SuggestedActionKind[] = ['imBack', 'messageBack', 'postBack', 'openUrl'];
+const VALID_TYPES: readonly SuggestedActionKind[] = [
+	'call',
+	'downloadFile',
+	'imBack',
+	'messageBack',
+	'openApp',
+	'openUrl',
+	'playAudio',
+	'playVideo',
+	'postBack',
+	'showImage',
+	'signin',
+];
 
 function assert(cond: unknown, message: string): asserts cond {
 	if (!cond) {

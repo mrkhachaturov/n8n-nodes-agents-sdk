@@ -17,9 +17,14 @@ describe('suggestedActionsOption property', () => {
 	});
 
 	it('type options are alphabetical by name (manifest community eslint rule)', () => {
+		// Case-insensitive sort — matches n8n-nodes-base/node-param-options-type-unsorted-items.
+		// The autofixer prefers Title Case for single-word identifiers (Call, Signin) while
+		// leaving camelCase ones (imBack, openUrl) alone, so a case-sensitive `.sort()` would
+		// split the list; case-insensitive matches what the lint rule actually enforces.
 		const typeField = valuesRow.find((v) => v.name === 'type');
 		const names = (typeField?.options as Array<{ name: string }> | undefined)?.map((o) => o.name);
-		expect(names).toEqual([...(names ?? [])].sort());
+		const ci = (a: string, b: string) => a.toLowerCase().localeCompare(b.toLowerCase());
+		expect(names).toEqual([...(names ?? [])].sort(ci));
 	});
 
 	it('displayText shown only when type = messageBack', () => {
@@ -27,12 +32,27 @@ describe('suggestedActionsOption property', () => {
 		expect(dt?.displayOptions?.show?.type).toEqual(['messageBack']);
 	});
 
-	it('four action types exposed', () => {
+	it('all 11 SDK ActionTypes exposed', () => {
+		// Mirrors Microsoft.Agents.Core.Models.ActionTypes (and the JS SDK's
+		// ActionTypes enum in agents-activity). The node exposes the full
+		// protocol surface; channel support varies but that is not our call.
 		const typeField = valuesRow.find((v) => v.name === 'type');
 		const typeValues = (typeField?.options as Array<{ value: string }> | undefined)
 			?.map((o) => o.value)
 			.sort();
-		expect(typeValues).toEqual(['imBack', 'messageBack', 'openUrl', 'postBack']);
+		expect(typeValues).toEqual([
+			'call',
+			'downloadFile',
+			'imBack',
+			'messageBack',
+			'openApp',
+			'openUrl',
+			'playAudio',
+			'playVideo',
+			'postBack',
+			'showImage',
+			'signin',
+		]);
 	});
 
 	// Repo lint convention (asymmetric period rule, see Task 3 / conversationReference.ts).

@@ -27,10 +27,17 @@ export const suggestedActionsOption: INodeProperties = {
 					name: 'type',
 					type: 'options',
 					options: [
+						{ name: 'Call (Phone Call)', value: 'call' },
+						{ name: 'downloadFile (Download File)', value: 'downloadFile' },
 						{ name: 'imBack (Send Message)', value: 'imBack' },
 						{ name: 'messageBack (Send With Display Text)', value: 'messageBack' },
+						{ name: 'openApp (Open App)', value: 'openApp' },
 						{ name: 'openUrl (Open Link)', value: 'openUrl' },
+						{ name: 'playAudio (Play Audio)', value: 'playAudio' },
+						{ name: 'playVideo (Play Video)', value: 'playVideo' },
 						{ name: 'postBack (Send Hidden)', value: 'postBack' },
+						{ name: 'showImage (Show Image)', value: 'showImage' },
+						{ name: 'Signin (Sign-In)', value: 'signin' },
 					],
 					default: 'imBack',
 				},
@@ -48,8 +55,7 @@ export const suggestedActionsOption: INodeProperties = {
 					type: 'string',
 					default: '',
 					required: true,
-					description:
-						'Action payload — see the Type dropdown for what each action expects',
+					description: 'Action payload — see the Type dropdown for what each action expects',
 				},
 				{
 					displayName: 'Display Text',

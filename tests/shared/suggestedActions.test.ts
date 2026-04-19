@@ -37,6 +37,31 @@ describe('buildSuggestedActions', () => {
 		});
 	});
 
+	it('accepts the full SDK ActionTypes enum (11 values incl. playVideo)', () => {
+		// `playVideo` is in the SDK enum but missing from `actionTypesZodSchema`
+		// upstream. `cardActionZodSchema.type` uses a union with
+		// `z.string().min(1)`, so any non-empty string still validates — the
+		// wire value ships fine. We expose every SDK value; channels render
+		// what they render.
+		const kinds = [
+			'call',
+			'downloadFile',
+			'imBack',
+			'messageBack',
+			'openApp',
+			'openUrl',
+			'playAudio',
+			'playVideo',
+			'postBack',
+			'showImage',
+			'signin',
+		] as const;
+		const result = buildSuggestedActions(
+			kinds.map((k) => ({ type: k, title: k, value: `${k}-value` })),
+		);
+		expect(result.actions.map((a) => a.type)).toEqual([...kinds]);
+	});
+
 	it('throws on empty title', () => {
 		expect(() => buildSuggestedActions([{ type: 'imBack', title: '', value: 'x' }])).toThrow(
 			/title/i,
@@ -45,9 +70,9 @@ describe('buildSuggestedActions', () => {
 
 	it('throws on unknown type', () => {
 		// Force an invalid type to exercise the validator.
-		expect(() =>
-			buildSuggestedActions([{ type: 'bogus' as any, title: 't', value: 'v' }]),
-		).toThrow(/type/i);
+		expect(() => buildSuggestedActions([{ type: 'bogus' as any, title: 't', value: 'v' }])).toThrow(
+			/type/i,
+		);
 	});
 
 	it('throws on empty value (all action types)', () => {
@@ -66,9 +91,7 @@ describe('buildSuggestedActions', () => {
 	});
 
 	it('messageBack without displayText omits the field (does not set undefined)', () => {
-		const result = buildSuggestedActions([
-			{ type: 'messageBack', title: 't', value: 'v' },
-		]);
+		const result = buildSuggestedActions([{ type: 'messageBack', title: 't', value: 'v' }]);
 		expect(result.actions[0]).toEqual({ type: 'messageBack', title: 't', value: 'v' });
 		expect(result.actions[0]).not.toHaveProperty('displayText');
 	});
