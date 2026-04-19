@@ -85,7 +85,7 @@ export async function execute(
 	try {
 		const activity = { type: 'typing' } as Activity;
 		const result = await bundle.client.sendToConversation(ref.conversation.id, activity);
-		return { ...item, sendResult: { activityId: result.id, type: 'typing' } };
+		return { ...item, typingResult: { activityId: result.id } };
 	} catch (err) {
 		const e = err as Error;
 		throw new NodeApiError(this.getNode(), { message: e.message } as JsonObject, {
