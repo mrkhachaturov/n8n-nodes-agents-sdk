@@ -17,8 +17,8 @@ export const description: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: resourceDisplayOptions,
 		options: [
-			{ name: 'Send', value: 'send', action: 'Send a sign-in card' },
-			{ name: 'Update', value: 'update', action: 'Update a sign-in card' },
+			{ name: 'Send', value: 'send', action: 'Send a sign in card' },
+			{ name: 'Update', value: 'update', action: 'Update a sign in card' },
 		],
 		default: 'send',
 	},
