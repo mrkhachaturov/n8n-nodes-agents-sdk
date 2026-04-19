@@ -16,6 +16,10 @@ export const description: INodeProperties[] = [
 		type: 'options',
 		noDataExpression: true,
 		displayOptions: resourceDisplayOptions,
+		// n8n-nodes-base/node-param-operation-option-action-miscased rejects hyphens
+		// in `action` strings — so 'Send a sign-in card' lints as miscased. The UI
+		// only shows `name: 'Send'`; `action` feeds tooltip/search metadata where
+		// the unhyphenated form is acceptable. Descriptions below still read "sign-in".
 		options: [
 			{ name: 'Send', value: 'send', action: 'Send a sign in card' },
 			{ name: 'Update', value: 'update', action: 'Update a sign in card' },

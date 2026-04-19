@@ -1,27 +1,7 @@
 import type { IExecuteFunctions } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import type { Attachment } from '@microsoft/agents-activity';
-
-function parseJsonParam(
-	ctx: IExecuteFunctions,
-	itemIndex: number,
-	fieldName: string,
-	raw: unknown,
-): unknown {
-	if (raw === undefined || raw === null) return {};
-	if (typeof raw !== 'string') return raw;
-	const trimmed = raw.trim();
-	if (trimmed === '' || trimmed === '={}') return {};
-	try {
-		return JSON.parse(trimmed);
-	} catch (err) {
-		throw new NodeOperationError(
-			ctx.getNode(),
-			`Invalid JSON in ${fieldName}: ${(err as Error).message}`,
-			{ itemIndex },
-		);
-	}
-}
+import { parseJsonParam } from './parseJsonParam';
 
 export function buildRawAttachment(ctx: IExecuteFunctions, itemIndex: number): Attachment {
 	const contentType = (ctx.getNodeParameter('contentType', itemIndex, '') as string).trim();
