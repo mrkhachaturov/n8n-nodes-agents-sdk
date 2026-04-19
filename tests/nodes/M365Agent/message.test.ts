@@ -42,11 +42,16 @@ describe('message resource description', () => {
 		expect(shown).not.toContain('delete');
 	});
 
-	it('Options collection includes mentions and suggestedActions', () => {
+	it('Options collection includes mentions, suggestedActions, and rawActivityOverride', () => {
 		const opts = message.description.find((p) => p.name === 'options');
 		const inner = (opts?.options as Array<{ name: string }>) ?? [];
 		const names = inner.map((o) => o.name);
-		expect(names).toEqual(['workflowFooter', 'mentions', 'suggestedActions']);
+		expect(names).toEqual([
+			'workflowFooter',
+			'mentions',
+			'rawActivityOverride',
+			'suggestedActions',
+		]);
 	});
 
 	it('mentions and suggestedActions are gated to body-carrying operations', () => {

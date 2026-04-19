@@ -9,6 +9,7 @@ import * as typing from './typing.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
 import { mentionsOption } from '../../descriptions/mentionsOption';
 import { suggestedActionsOption } from '../../descriptions/suggestedActionsOption';
+import { rawActivityOverrideField } from '../../../../shared/rawActivityOverride';
 
 const resourceDisplayOptions = { show: { resource: ['message'] } };
 
@@ -85,6 +86,7 @@ export const description: INodeProperties[] = [
 					'Whether to append "_Sent from n8n workflow._" as a plain-text marker at the end of the message. Helpful for debugging and auditing. (A clickable link with instance URL + workflow ID is deferred to a later milestone.)',
 			},
 			mentionsOption,
+			rawActivityOverrideField,
 			suggestedActionsOption,
 		],
 	},

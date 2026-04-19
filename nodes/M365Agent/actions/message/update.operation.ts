@@ -8,6 +8,10 @@ import {
 	type BotConnectorBundle,
 } from '../../../../shared/botConnector';
 import { applyMessageOptionsToActivity } from '../../../../shared/applyMessageOptionsToActivity';
+import {
+	applyRawActivityOverride,
+	RawActivityOverrideError,
+} from '../../../../shared/rawActivityOverride';
 import type {
 	AuthKind,
 	IdentityMode,
@@ -59,6 +63,21 @@ export async function execute(
 		activity = applyMessageOptionsToActivity(activity, options, suggestedActionsTo);
 	} catch (err) {
 		throw new NodeOperationError(this.getNode(), (err as Error).message, { itemIndex });
+	}
+
+	// Raw Activity Override — replace the constructed body with user-supplied JSON
+	// when `options.rawActivityOverride` is non-empty. Empty string = no-op.
+	let finalActivity: Partial<Activity>;
+	try {
+		finalActivity = applyRawActivityOverride(
+			activity as Record<string, unknown>,
+			options.rawActivityOverride as string | undefined,
+		) as Partial<Activity>;
+	} catch (err) {
+		if (err instanceof RawActivityOverrideError) {
+			throw new NodeOperationError(this.getNode(), err.message, { itemIndex });
+		}
+		throw err;
 	}
 
 	// ── Auth routing ──────────────────────────────────────────────────────────
@@ -115,7 +134,7 @@ export async function execute(
 		const result = await bundle.client.updateActivity(
 			ref.conversation.id,
 			ref.activityId,
-			activity as Activity,
+			finalActivity as Activity,
 		);
 		return { ...item, updateResult: { id: result.id } };
 	} catch (err) {
