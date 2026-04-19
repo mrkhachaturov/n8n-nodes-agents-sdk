@@ -4,6 +4,7 @@ import * as cardAdaptive from './card-adaptive';
 import * as cardAnimation from './card-animation';
 import * as cardAudio from './card-audio';
 import * as cardHero from './card-hero';
+import * as cardO365Connector from './card-o365-connector';
 import * as cardReceipt from './card-receipt';
 import * as cardSignIn from './card-sign-in';
 import * as cardThumbnail from './card-thumbnail';
@@ -70,6 +71,7 @@ export const versionDescription: INodeTypeDescription = {
 				{ name: 'Hero Card', value: 'heroCard' },
 				{ name: 'Invoke Response', value: 'invokeResponse' },
 				{ name: 'Message', value: 'message' },
+				{ name: 'O365 Connector Card', value: 'o365ConnectorCard' },
 				{ name: 'Receipt Card', value: 'receiptCard' },
 				{ name: 'Sign-In Card', value: 'signInCard' },
 				{ name: 'Thumbnail Card', value: 'thumbnailCard' },
@@ -82,6 +84,7 @@ export const versionDescription: INodeTypeDescription = {
 		...cardAnimation.description,
 		...cardAudio.description,
 		...cardHero.description,
+		...cardO365Connector.description,
 		...cardReceipt.description,
 		...cardSignIn.description,
 		...cardThumbnail.description,
