@@ -1,6 +1,18 @@
 import type { INodeProperties } from 'n8n-workflow';
 
-type SupportedResource = 'message' | 'card';
+export type CardResource =
+	| 'adaptiveCard'
+	| 'animationCard'
+	| 'audioCard'
+	| 'heroCard'
+	| 'o365ConnectorCard'
+	| 'rawAttachment'
+	| 'receiptCard'
+	| 'signInCard'
+	| 'thumbnailCard'
+	| 'videoCard';
+
+type SupportedResource = 'message' | CardResource;
 type MessageOperation = 'send' | 'reply' | 'update' | 'delete' | 'replyInThread';
 type CardOperation = 'send' | 'update';
 
@@ -11,7 +23,10 @@ export function identityModeFields(
 	resource: 'message',
 	operation: MessageOperation,
 ): INodeProperties[];
-export function identityModeFields(resource: 'card', operation: CardOperation): INodeProperties[];
+export function identityModeFields(
+	resource: CardResource,
+	operation: CardOperation,
+): INodeProperties[];
 export function identityModeFields(
 	resource: SupportedResource,
 	operation: string,
