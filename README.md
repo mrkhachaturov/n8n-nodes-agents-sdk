@@ -7,20 +7,24 @@
 
 Build **Microsoft Teams**, **M365 Copilot**, **WebChat**, and **Direct Line** bots with [n8n](https://n8n.io) as your orchestration layer.
 
-This package wraps the [Microsoft 365 Agents SDK](https://learn.microsoft.com/microsoft-365/agents-sdk/) (the supported successor to `botbuilder`) as first-class n8n nodes — JWT validation, MSAL token management, Bot Connector routing, and Adaptive Card templating all handled for you. No raw HTTP, no hand-assembled Activity JSON, no OAuth plumbing.
+This is a community node for self-hosted n8n. It wraps the [Microsoft 365 Agents SDK](https://learn.microsoft.com/microsoft-365/agents-sdk/) (the supported successor to `botbuilder`) so you get JWT validation, MSAL token management, Bot Connector routing, and the **full CardFactory surface** — Adaptive, Hero, Thumbnail, Animation, Audio, Video, Sign-In, Receipt, O365 Connector, and Raw Attachment — as first-class n8n operations. No raw HTTP, no hand-assembled Activity JSON, no OAuth plumbing.
+
+> **0.4.0 breaking change.** The single `Card` resource was split into ten first-class card resources (Adaptive, Animation, Audio, Hero, O365 Connector, Raw Attachment, Receipt, Sign-In, Thumbnail, Video). Workflows saved on 0.3.x with `resource: "card"` will fail loudly on load — rebuild them on `resource: "adaptiveCard"` (for templated Adaptive Cards) or the appropriate new card resource. See [CHANGELOG.md](./CHANGELOG.md) for the full list.
 
 ---
 
 ## What you get
 
-| Without this package                                          | With this package                                                |
-| ------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Webhook → Code node to parse Activity JSON                    | **M365 Agent Trigger** — parsed envelope out of the box          |
-| Manual JWT validation (often skipped entirely)                | Validated on every POST against Microsoft JWKS                   |
-| OAuth2 credential + scope + token-refresh plumbing            | **M365 Agent API** credential — App ID + secret + tenant         |
-| HTTP Request with hand-built `/v3/conversations/...` URLs     | **M365 Agent** — pick a resource and an operation from dropdowns |
-| Manual `;messageid=` thread suffix for Teams threads          | Resource `Message`, operation `Reply in Thread`                  |
-| Hand-written Adaptive Card JSON with string-concat templating | `adaptivecards-templating` + `${field}` bindings built in        |
+- **M365 Agent Trigger** — parsed envelope out of the box, with Bot Framework JWT validated on every POST against Microsoft JWKS.
+- **M365 Agent API** credential — App ID + secret + tenant; SingleTenant, MultiTenant, and UserAssignedMsi app types supported.
+- **M365 Agent** action node — pick a resource and an operation from dropdowns, no hand-built `/v3/conversations/...` URLs.
+- **Message** resource — send / reply / update / delete / reply in thread. Teams threading (`;messageid=<parentActivityId>`) handled for you. Options include `@mentions` (user + everyone) and Suggested Actions (all 11 SDK action types).
+- **10 card resources** — Adaptive, Hero, Thumbnail, Animation, Audio, Video, Sign-In, Receipt, O365 Connector, Raw Attachment. Every card supports Send and Update.
+  - Builder UI for Hero / Thumbnail / Animation / Audio / Video / Sign-In — fill in title / subtitle / text / images / buttons / media, no JSON.
+  - `adaptivecards-templating` built in for Adaptive — paste a designer template, reference fields with `${field}`, bind state with `$when` / `$data`.
+  - JSON content field for Receipt / O365 Connector / Raw Attachment — paste the full card shape.
+- **Invoke Response** resource — respond to `Action.Execute` button callbacks and messaging-extension invokes on the same HTTP request.
+- **Agent 365** support — classic Azure Bot credential _and_ Entra Agent Identity Blueprint (inline MSAL or sidecar) with autonomous / agent-user identity modes.
 
 ---
 
@@ -47,7 +51,7 @@ npm install n8n-nodes-agents-sdk
 
 ### Queue mode (separate app + worker)
 
-n8n's UI installer does **not** work in queue mode — it only installs the package on the node that handled the UI click, leaving workers out of sync. Install at container start instead:
+n8n's UI installer does **not** work in queue mode — it only installs on the node that handled the UI click, leaving workers out of sync. Install at container start instead:
 
 ```sh
 # In your entrypoint, before exec /docker-entrypoint.sh:
@@ -73,7 +77,7 @@ Receives POSTs from Azure Bot Service, validates the Bot Framework JWT, and emit
 
 ### M365 Agent
 
-Unified action node. Pick a **Resource** and an **Operation**; the canvas card shows `operation: resource`.
+Unified action node. Pick a **Resource** and an **Operation**; the canvas subtitle renders as `<operation> <resource>` (for example `send heroCard`, `update adaptiveCard`).
 
 The **Conversation Source** toggle picks between `From Envelope` (default — read the conversation routing from the inbound item, works for every reply/update/delete flow) and `Specify Manually` (fill `serviceUrl`, `conversation.id`, `channelId`, and optional `activityId` yourself — for proactive sends originating outside the bot webhook).
 
@@ -88,20 +92,39 @@ The **Conversation Source** toggle picks between `From Envelope` (default — re
 
 All five operations share a **Text** field (with expression support), a **Conversation Source** selector, and an **Options** collection for optional knobs (`Workflow Footer`, Mentions, Suggested Actions).
 
-  **Options (inside every body-carrying operation: Send / Reply / Update / replyInThread):**
+**Options (inside every body-carrying operation — Send / Reply / Update / Reply in Thread):**
 
-  - **Mentions** — add Teams @-mentions. `User` pings one person (paste the user's Teams/AAD object id and display name from your inbound trigger envelope). `Everyone` pings the whole team (uses Teams' magic ID internally). The node inserts matching `<at>Name</at>` tokens into the text and attaches the entities — no hand-assembly needed.
-  - **Suggested Actions** — quick-reply chip buttons under the message. Four types: `imBack` (send a message back), `messageBack` (send with a user-visible text and a hidden payload), `postBack` (send hidden), `openUrl` (open a URL).
+- **Mentions** — add Teams @-mentions. `User` pings one person (paste the user's Teams/AAD object id and display name from your inbound trigger envelope). `Everyone` pings the whole team (uses Teams' magic ID internally). The node inserts matching `<at>Name</at>` tokens into the text and attaches the entities — no hand-assembly needed.
+- **Suggested Actions** — quick-reply chip buttons under the message. All 11 SDK action types supported (`imBack`, `messageBack`, `postBack`, `openUrl`, `call`, `downloadFile`, `openApp`, `playAudio`, `playVideo`, `showImage`, `signin`). Channel support varies — Teams, WebChat, and Direct Line each render a subset.
 
 </details>
 
 <details>
-  <summary><b>Resource: Card</b> — send / update Adaptive Cards with templating</summary>
+  <summary><b>Resource: Adaptive Card</b> — send / update Adaptive Cards with templating</summary>
 
 - ✅ **Send** — render an Adaptive Card template against a data object and send it as a card attachment
 - ✅ **Update** — re-render the template with new binding data and update a card you already posted (requires `activityId` on the conversation reference)
 
 Author the card in the [Adaptive Cards Designer](https://adaptivecards.microsoft.com/designer), paste the JSON into **Card Template**, and reference fields with `${field}` placeholders. **Binding Data** defaults to the whole inbound item (`={{ $json }}`). **Options → Fallback Text** shows on clients that can't render Adaptive Cards (notifications, mobile lockscreens).
+
+</details>
+
+<details>
+  <summary><b>Resources: Hero / Thumbnail / Animation / Audio / Video / Sign-In / Receipt / O365 Connector / Raw Attachment</b> — the rest of the CardFactory family</summary>
+
+All card resources support **Send** and **Update** operations and share the same authentication, conversation-source, and fallback-text conventions as the Adaptive Card resource.
+
+- **Hero Card** — title / subtitle / text / images / buttons / tap.
+- **Thumbnail Card** — same shape as Hero, different rendering.
+- **Animation Card** — GIF / animation card with media URLs + buttons (requires at least one media URL).
+- **Audio Card** — audio card with media URLs + buttons.
+- **Video Card** — video card with media URLs + buttons.
+- **Sign-In Card** — sign-in card with title / URL / body text.
+- **Receipt Card** — receipt card via JSON content (title / facts / items / total).
+- **O365 Connector Card** — Teams-specific connector card via JSON content (title / sections / potentialAction).
+- **Raw Attachment** — power-user escape hatch. Supply `Content Type` + `Content` (JSON) directly; used for card families or attachment types not yet first-class here.
+
+Buttons and tap actions across the builder-family resources use a unified **CardAction** row (Type + Title + Value + optional Channel Data / Value JSON / image / text / displayText), covering all 11 SDK action types.
 
 </details>
 
@@ -114,39 +137,7 @@ Required when handling `Action.Execute` button callbacks, messaging-extension se
 
 </details>
 
-Both nodes use the same credential — either **M365 Agent API** (classic bot) or **M365 Agent 365 API** (Agent 365). Neither is exposed as an AI-agent tool — side effects (sending to Azure Bot Service) and triggers (external webhook) aren't safe for autonomous LLM invocation.
-
----
-
-## Agent 365 support (v0.3.0)
-
-v0.3.0 adds first-class support for the **Entra Agent Identity Blueprint** alongside the existing classic Azure Bot credential. This lets you register your bot as a Microsoft 365 Agent Identity (preview) and issue tokens through MSAL or an isolated auth sidecar — no changes required for existing classic bot deployments.
-
-### New credential: `M365Agent365Api`
-
-Used when `Authentication Kind = Agent 365`. Replaces the classic App ID + secret fields with blueprint-aware fields (inline MSAL or sidecar URL).
-
-### `authKind` parameter
-
-| Value        | Credential required | Description                                             |
-| ------------ | ------------------- | ------------------------------------------------------- |
-| `classicBot` | `M365AgentApi`      | Existing Azure Bot Service flow — unchanged from v0.2.1 |
-| `agent365`   | `M365Agent365Api`   | Entra Agent Identity Blueprint — inline MSAL or sidecar |
-
-### Identity modes (Agent 365 only)
-
-| Mode             | When to use                                                 | Transport required                                                 |
-| ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
-| `autonomous`     | Agent acts as its Blueprint app identity                    | inline or sidecar                                                  |
-| `agentUser`      | Agent acts as its own M365 user (requires separate license) | sidecar only                                                       |
-| `interactiveOBO` | Delegated calls to Graph / MCP as the inbound user          | sidecar only (router-only; not yet surfaced on Message / Card UIs) |
-
-### Further reading
-
-- **Sidecar deployment**: [examples/sidecar/README.md](examples/sidecar/README.md)
-- **Auth guide** (choosing between classic, inline, and sidecar): [docs/auth-guide.md](docs/auth-guide.md)
-- **OBO guide** (what `interactiveOBO` is and why it's router-only today): [docs/obo-guide.md](docs/obo-guide.md)
-- **Licensing notes** (Frontier preview vs GA cost implications): [docs/licensing-notes.md](docs/licensing-notes.md)
+Both nodes use the same credential — either **M365 Agent API** (classic bot) or **M365 Agent 365 API** (Agent 365). Neither is exposed as an AI-agent tool — side effects (sending to Azure Bot Service) and external webhook triggers aren't safe for autonomous LLM invocation.
 
 ---
 
@@ -159,6 +150,34 @@ Used when `Authentication Kind = Agent 365`. Replaces the classic App ID + secre
 - **UserAssignedMsi** — Azure managed identity
 
 The built-in credential test hits `login.microsoftonline.com` to verify network reachability. Full token-acquisition validation runs inside the Trigger on every inbound webhook.
+
+---
+
+## Agent 365 support
+
+v0.3.0 added first-class support for the **Entra Agent Identity Blueprint** alongside the classic Azure Bot credential. Register your bot as a Microsoft 365 Agent Identity (preview) and issue tokens through MSAL or an isolated auth sidecar — no changes required for existing classic bot deployments.
+
+### `authKind` parameter
+
+| Value        | Credential required | Description                                             |
+| ------------ | ------------------- | ------------------------------------------------------- |
+| `classicBot` | `M365AgentApi`      | Existing Azure Bot Service flow — unchanged from v0.2.1 |
+| `agent365`   | `M365Agent365Api`   | Entra Agent Identity Blueprint — inline MSAL or sidecar |
+
+### Identity modes (Agent 365 only)
+
+| Mode             | When to use                                                 | Transport required                                                    |
+| ---------------- | ----------------------------------------------------------- | --------------------------------------------------------------------- |
+| `autonomous`     | Agent acts as its Blueprint app identity                    | inline or sidecar                                                     |
+| `agentUser`      | Agent acts as its own M365 user (requires separate license) | sidecar only                                                          |
+| `interactiveOBO` | Delegated calls to Graph / MCP as the inbound user          | sidecar only (router-only; not yet surfaced on any card / message UI) |
+
+### Further reading
+
+- **Sidecar deployment**: [examples/sidecar/README.md](examples/sidecar/README.md)
+- **Auth guide** (choosing between classic, inline, and sidecar): [docs/auth-guide.md](docs/auth-guide.md)
+- **OBO guide** (what `interactiveOBO` is and why it's router-only today): [docs/obo-guide.md](docs/obo-guide.md)
+- **Licensing notes** (Frontier preview vs GA cost implications): [docs/licensing-notes.md](docs/licensing-notes.md)
 
 ---
 
@@ -204,9 +223,39 @@ Ancillary state you carry through your workflow (correlation IDs, cached state, 
 
 ---
 
-## Adaptive Card templating
+## Cards
 
-Paste a template from the [Adaptive Cards Designer](https://adaptivecards.microsoft.com/designer) into **Card Template**. Use `${field}` for placeholders. `${field}` bindings resolve against whatever object you put in **Binding Data** (defaults to the whole inbound item):
+Ten card resources cover every shape the Bot Framework / Teams renders. Pick the one that matches your UX — they fall into three authoring styles:
+
+### 1. Builder cards — fill in a form, no JSON
+
+**Hero Card**, **Thumbnail Card**, **Animation Card**, **Audio Card**, **Video Card**, **Sign-In Card** all expose a form UI. You fill in title, subtitle, text, images, buttons, media URLs — the node assembles the correct SDK shape for you. This is the simplest path for the common case (an order-update card, a "click here to sign in" card, a notification with quick-reply buttons).
+
+The media-family (Animation / Audio / Video) requires at least one media URL and lets you set `autoloop` / `autostart` / `aspect` / `duration` under **Options**. Every builder card's **Buttons** and **Tap Action** share the same unified **CardAction** row (Type + Title + Value + optional Channel Data / Value JSON / image / text / displayText) across all 11 SDK action types (`openUrl`, `imBack`, `messageBack`, `postBack`, `call`, `downloadFile`, `openApp`, `playAudio`, `playVideo`, `showImage`, `signin`). Channel support varies — Teams, WebChat, and Direct Line each render a subset.
+
+Minimal Hero Card workflow parameters:
+
+```yaml
+resource: heroCard
+operation: send
+title: 'Order #{{$json.orderId}}'
+subtitle: 'Ready for pickup'
+text: 'Tap to confirm'
+buttons:
+  button:
+    - type: openUrl
+      title: 'View order'
+      value: '{{$json.orderUrl}}'
+options:
+  fallbackText: 'Order ready'
+  tapAction:
+    type: openUrl
+    value: '{{$json.orderUrl}}'
+```
+
+### 2. Adaptive Card — templated JSON with bindings
+
+Paste a template from the [Adaptive Cards Designer](https://adaptivecards.microsoft.com/designer) into **Card Template**. Use `${field}` for placeholders. `${field}` bindings resolve against whatever object you put in **Binding Data** (defaults to the whole inbound item `={{ $json }}`):
 
 ```json
 {
@@ -228,15 +277,21 @@ Paste a template from the [Adaptive Cards Designer](https://adaptivecards.micros
 
 Any `[Parsing] Unknown property` warnings the designer shows on `Action.Submit.data` custom keys are [false positives](https://github.com/microsoft/AdaptiveCards/blob/main/samples/v1.0/Tests/Feedback.json) — they're part of the Adaptive Cards spec, just not typed in the designer's bundled schema.
 
-### State-driven variants
-
-You don't need a separate "pick-a-template-by-state" node. `adaptivecards-templating` already supports this with three features:
+**State-driven variants.** You don't need a separate "pick-a-template-by-state" node. `adaptivecards-templating` supports this directly:
 
 1. **`${field}`** — scalar binding. Change a value across the card with one variable: `"style": "${statusStyle}"`, `"text": "${statusBadgeText}"`.
 2. **`$when`** — conditional rendering. Show/hide whole sections per state: `{ "$when": "${status == 'completed'}", "type": "TextBlock", "text": "Done" }`.
 3. **`$data`** — iterate over an array. Render one button per item in `cardButtons`.
 
-Templating handles state-driven cards (new / accepted / in_progress / paused / completed, etc.) from a single template — no dedicated picker node needed. See the upstream [`adaptivecards-templating` docs](https://www.npmjs.com/package/adaptivecards-templating) for the full templating reference.
+A single template handles every state (new / accepted / in_progress / paused / completed, etc.) — no picker node needed. See the upstream [`adaptivecards-templating` docs](https://www.npmjs.com/package/adaptivecards-templating) for the full reference.
+
+### 3. JSON-content cards — paste the whole card
+
+**Receipt Card**, **O365 Connector Card**, and **Raw Attachment** take the full card object as JSON in a single field. Use these when the card shape is fixed (Teams connector cards with their own schema) or when you want an escape hatch for attachment types not yet first-class here.
+
+- **Receipt** — `{ title, facts[], items[], total, tax?, vat?, tap?, buttons[] }`.
+- **O365 Connector** — Teams-specific: `{ title, summary, themeColor, sections[], potentialAction[] }`. See the [cards reference](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#office-365-connector-card).
+- **Raw Attachment** — you provide `contentType` + `content` directly. Useful for card families not yet first-class in this package.
 
 ---
 
@@ -245,30 +300,14 @@ Templating handles state-driven cards (new / accepted / in_progress / paused / c
 To message a channel from a workflow that wasn't triggered by the Trigger (a schedule, an external webhook, a database row, anything), switch **Conversation Source** to `Specify Manually` and fill in the fields. For Teams channels, `conversation.id` looks like `19:xxx@thread.tacv2` and you'll typically have captured it from a prior bot interaction.
 
 ```
-[Schedule Trigger]  →  [HTTP Request: fetch data]  →  [M365 Agent — Card: Send (manual)]
+[Schedule Trigger]  →  [HTTP Request: fetch data]  →  [M365 Agent — Adaptive Card: Send (manual)]
 ```
 
 ---
 
-## Development
+## Issues & contributions
 
-```bash
-npm install
-npm run build          # compile TS → dist/
-npm run build:watch    # tsc --watch
-npm run dev            # spins up n8n with the package loaded
-npm run lint
-npm run lint:fix
-npm test               # vitest — unit tests, offline
-npm run test:integration   # hits real Azure; needs M365_TEST_* env vars
-```
-
-Release is CI-driven via GitHub Actions Trusted Publishing — no NPM token needed. Bump the version, tag, push:
-
-```bash
-npm version minor       # or patch / major
-git push --follow-tags
-```
+Bug reports, feature requests, and PRs are welcome at [github.com/mrkhachaturov/n8n-nodes-agents-sdk](https://github.com/mrkhachaturov/n8n-nodes-agents-sdk/issues). Please include your n8n version, the resource/operation you're using, and the relevant workflow JSON or error message.
 
 ---
 
