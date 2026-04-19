@@ -69,7 +69,7 @@ describe('dispatchSend', () => {
     expect(result.extra).toBe('keep');
   });
 
-  it('wraps non-NodeOperationError failures from the connector as NodeApiError', async () => {
+  it('wraps non-NodeOperationError failures from the connector as NodeApiError and includes resourceLabel', async () => {
     fakeClient.sendToConversation.mockRejectedValue(new Error('network down'));
     const build = vi
       .fn()
@@ -87,17 +87,17 @@ describe('dispatchSend', () => {
       },
     }) as unknown as IExecuteFunctions;
 
-    await expect(
-      dispatchSend({
-        ctx,
-        itemIndex: 0,
-        resourceLabel: 'heroCard',
-        authKind: 'classicBot',
-        credentials: makeCredentials() as never,
-        bundles: new Map(),
-        buildAttachment: build,
-      }),
-    ).rejects.toBeInstanceOf(NodeApiError);
+    const promise = dispatchSend({
+      ctx,
+      itemIndex: 0,
+      resourceLabel: 'heroCard',
+      authKind: 'classicBot',
+      credentials: makeCredentials() as never,
+      bundles: new Map(),
+      buildAttachment: build,
+    });
+    await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+    await expect(promise).rejects.toThrow(/heroCard send failed/);
   });
 
   it('lets NodeOperationError from buildAttachment propagate unchanged', async () => {

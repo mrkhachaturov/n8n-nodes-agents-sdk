@@ -116,6 +116,9 @@ export async function dispatchSend(args: DispatchSendArgs): Promise<IDataObject>
     );
     return { ...item, cardSendResult: { id: result.id } };
   } catch (err) {
+    // Defensive: connector today throws Axios errors, not NodeOperationError.
+    // The guard is here so future connector wrappers (e.g. agent365 sidecar) that
+    // pre-classify auth-layer user errors as NodeOperationError propagate cleanly.
     if (err instanceof NodeOperationError) throw err;
     const e = err as Error;
     throw new NodeApiError(ctx.getNode(), { message: e.message } as JsonObject, {

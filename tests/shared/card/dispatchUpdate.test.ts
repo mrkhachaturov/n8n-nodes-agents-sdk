@@ -159,7 +159,7 @@ describe('dispatchUpdate', () => {
     ).rejects.toBeInstanceOf(NodeOperationError);
   });
 
-  it('wraps connector failures as NodeApiError', async () => {
+  it('wraps connector failures as NodeApiError and includes resourceLabel', async () => {
     fakeClient.updateActivity.mockRejectedValue(new Error('nope'));
     const build = vi.fn().mockReturnValue({ contentType: 'x', content: {} } as Attachment);
     const ctx = makeExecuteContext({
@@ -174,16 +174,16 @@ describe('dispatchUpdate', () => {
       },
     }) as unknown as IExecuteFunctions;
 
-    await expect(
-      dispatchUpdate({
-        ctx,
-        itemIndex: 0,
-        resourceLabel: 'heroCard',
-        authKind: 'classicBot',
-        credentials: makeCredentials() as never,
-        bundles: new Map(),
-        buildAttachment: build,
-      }),
-    ).rejects.toBeInstanceOf(NodeApiError);
+    const promise = dispatchUpdate({
+      ctx,
+      itemIndex: 0,
+      resourceLabel: 'heroCard',
+      authKind: 'classicBot',
+      credentials: makeCredentials() as never,
+      bundles: new Map(),
+      buildAttachment: build,
+    });
+    await expect(promise).rejects.toBeInstanceOf(NodeApiError);
+    await expect(promise).rejects.toThrow(/heroCard update failed/);
   });
 });
