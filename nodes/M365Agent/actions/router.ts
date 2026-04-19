@@ -96,6 +96,9 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 						case 'reply':
 							result = await message.reply.execute.call(this, i, authKind, credentials, bundles);
 							break;
+						case 'typing':
+							result = await message.typing.execute.call(this, i, authKind, credentials, bundles);
+							break;
 						case 'update':
 							result = await message.update.execute.call(this, i, authKind, credentials, bundles);
 							break;

@@ -13,7 +13,7 @@ export type CardResource =
 	| 'videoCard';
 
 type SupportedResource = 'message' | CardResource;
-type MessageOperation = 'send' | 'reply' | 'update' | 'delete' | 'replyInThread';
+type MessageOperation = 'send' | 'reply' | 'update' | 'delete' | 'replyInThread' | 'typing';
 type CardOperation = 'send' | 'update';
 
 /** Build identityMode + agent-user selector fields for a given resource+operation pair.

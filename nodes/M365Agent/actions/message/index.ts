@@ -5,6 +5,7 @@ import * as reply from './reply.operation';
 import * as replyInThread from './replyInThread.operation';
 import * as update from './update.operation';
 import * as deleteMessage from './deleteMessage.operation';
+import * as typing from './typing.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
 import { mentionsOption } from '../../descriptions/mentionsOption';
 import { suggestedActionsOption } from '../../descriptions/suggestedActionsOption';
@@ -27,6 +28,7 @@ export const description: INodeProperties[] = [
 				action: 'Reply inside an existing thread',
 			},
 			{ name: 'Send', value: 'send', action: 'Send a message' },
+			{ name: 'Typing', value: 'typing', action: 'Send typing indicator' },
 			{ name: 'Update', value: 'update', action: 'Update a message' },
 		],
 		default: 'send',
@@ -93,6 +95,7 @@ export const description: INodeProperties[] = [
 	...replyInThread.description,
 	...update.description,
 	...deleteMessage.description,
+	...typing.description,
 ];
 
-export { send, reply, replyInThread, update, deleteMessage };
+export { send, reply, replyInThread, update, deleteMessage, typing };
