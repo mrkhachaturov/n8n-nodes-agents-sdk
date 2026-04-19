@@ -14,6 +14,7 @@ describe('M365Agent versionDescription', () => {
 			'Invoke Response',
 			'Message',
 			'O365 Connector Card',
+			'Raw Attachment',
 			'Receipt Card',
 			'Sign-In Card',
 			'Thumbnail Card',
