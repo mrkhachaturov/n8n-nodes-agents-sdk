@@ -151,11 +151,11 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 			out.push({ ...items[i], json: result, pairedItem: { item: i } });
 		} catch (err) {
 			if (this.continueOnFail()) {
-				const message = (err as Error).message;
 				// Full input item preserved on the error path too — only json is merged.
+				// Inlined (err as Error).message to avoid shadowing the `message` module import.
 				out.push({
 					...items[i],
-					json: { ...(items[i].json as IDataObject), error: message },
+					json: { ...(items[i].json as IDataObject), error: (err as Error).message },
 					pairedItem: { item: i },
 				});
 				continue;
