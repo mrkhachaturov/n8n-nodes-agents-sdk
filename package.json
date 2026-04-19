@@ -1,7 +1,7 @@
 {
 	"name": "n8n-nodes-agents-sdk",
 	"version": "0.4.0",
-	"description": "n8n community nodes for the Microsoft 365 Agents SDK. Build Teams/Copilot/WebChat bots with n8n as the orchestration layer.",
+	"description": "n8n community nodes for the Microsoft 365 Agents SDK. Build Teams, M365 Copilot, WebChat, and Direct Line bots with 10 first-class card resources (Adaptive, Hero, Thumbnail, Animation, Audio, Video, Sign-In, Receipt, O365 Connector, Raw) — JWT validation, MSAL auth, and Bot Connector routing handled.",
 	"license": "MIT",
 	"homepage": "https://github.com/mrkhachaturov/n8n-nodes-agents-sdk",
 	"keywords": [
@@ -9,11 +9,21 @@
 		"n8n",
 		"microsoft",
 		"m365",
-		"agents",
-		"bot-framework",
+		"microsoft-365",
+		"microsoft-teams",
 		"teams",
+		"teams-bot",
 		"copilot",
-		"adaptive-cards"
+		"webchat",
+		"direct-line",
+		"agents-sdk",
+		"bot-framework",
+		"azure-bot-service",
+		"adaptive-cards",
+		"hero-card",
+		"cards",
+		"entra",
+		"chatbot"
 	],
 	"author": {
 		"name": "Ruben Khachaturov",
