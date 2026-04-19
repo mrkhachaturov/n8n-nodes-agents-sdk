@@ -3,6 +3,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import * as send from './send.operation';
 import * as update from './update.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
+import { rawActivityOverrideField } from '../../../../shared/rawActivityOverride';
 
 const resourceDisplayOptions = { show: { resource: ['signInCard'] } };
 const operationDisplayOptions = {
@@ -56,6 +57,15 @@ export const description: INodeProperties[] = [
 		default: '',
 		description: 'Optional body text shown above the sign-in button',
 		displayOptions: operationDisplayOptions,
+	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add option',
+		default: {},
+		displayOptions: operationDisplayOptions,
+		options: [rawActivityOverrideField],
 	},
 
 	...send.description,

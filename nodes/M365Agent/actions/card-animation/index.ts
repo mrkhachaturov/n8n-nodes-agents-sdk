@@ -5,6 +5,7 @@ import * as update from './update.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
 import { mediaField } from '../../../../shared/cardBuilders/media';
 import { buttonsField } from '../../../../shared/cardBuilders/buttons';
+import { rawActivityOverrideField } from '../../../../shared/rawActivityOverride';
 
 const resourceDisplayOptions = { show: { resource: ['animationCard'] } };
 const operationDisplayOptions = {
@@ -97,6 +98,7 @@ export const description: INodeProperties[] = [
 				type: 'string',
 				default: '',
 			},
+			rawActivityOverrideField,
 			{ displayName: 'Shareable', name: 'shareable', type: 'boolean', default: true },
 			{
 				displayName: 'Value',

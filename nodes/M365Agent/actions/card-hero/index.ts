@@ -6,6 +6,7 @@ import { conversationReferenceProperties } from '../../descriptions/conversation
 import { imagesField } from '../../../../shared/cardBuilders/images';
 import { buttonsField } from '../../../../shared/cardBuilders/buttons';
 import { cardActionFields } from '../../../../shared/cardBuilders/cardActionRow';
+import { rawActivityOverrideField } from '../../../../shared/rawActivityOverride';
 
 const resourceDisplayOptions = { show: { resource: ['heroCard'] } };
 const operationDisplayOptions = {
@@ -68,6 +69,7 @@ export const description: INodeProperties[] = [
 				default: '',
 				description: 'Shown by clients that cannot render this card',
 			},
+			rawActivityOverrideField,
 			{
 				displayName: 'Tap Action',
 				name: 'tapAction',

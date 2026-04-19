@@ -3,6 +3,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import * as send from './send.operation';
 import * as update from './update.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
+import { rawActivityOverrideField } from '../../../../shared/rawActivityOverride';
 
 const resourceDisplayOptions = { show: { resource: ['o365ConnectorCard'] } };
 const operationDisplayOptions = {
@@ -50,6 +51,7 @@ export const description: INodeProperties[] = [
 				type: 'string',
 				default: '',
 			},
+			rawActivityOverrideField,
 		],
 	},
 

@@ -5,6 +5,7 @@ import type { Activity, Attachment } from '@microsoft/agents-activity';
 import { acquireOutboundToken } from '../auth/router';
 import { CardBuildError } from '../cardBuilders/cardActionRow';
 import { createConnectorFromBearer, type BotConnectorBundle } from '../botConnector';
+import { applyRawActivityOverride, RawActivityOverrideError } from '../rawActivityOverride';
 import type { AuthKind, IdentityMode, M365ClassicBotCred, M365Agent365Cred } from '../types';
 import { resolveConversationReference } from '../../nodes/M365Agent/descriptions/conversationReference';
 import { makeBundleKey } from '../../nodes/M365Agent/actions/bundleKey';
@@ -57,6 +58,23 @@ export async function dispatchUpdate(args: DispatchUpdateArgs): Promise<IDataObj
 		attachments: [attachment],
 		...(options.fallbackText ? { text: options.fallbackText as string } : {}),
 	};
+
+	// Raw Activity Override (G023-reshape) — when `options.rawActivityOverride`
+	// is non-empty, the user-supplied JSON replaces the constructed Activity
+	// wholesale. Empty string is a no-op; invalid JSON becomes a
+	// NodeOperationError tagged with the field name.
+	let finalActivity: Partial<Activity>;
+	try {
+		finalActivity = applyRawActivityOverride(
+			activity as Record<string, unknown>,
+			options.rawActivityOverride as string | undefined,
+		) as Partial<Activity>;
+	} catch (err) {
+		if (err instanceof RawActivityOverrideError) {
+			throw new NodeOperationError(ctx.getNode(), err.message, { itemIndex });
+		}
+		throw err;
+	}
 
 	const identityMode: IdentityMode =
 		authKind === 'agent365'
@@ -114,7 +132,7 @@ export async function dispatchUpdate(args: DispatchUpdateArgs): Promise<IDataObj
 		const result = await bundle.client.updateActivity(
 			ref.conversation.id,
 			ref.activityId,
-			activity as Activity,
+			finalActivity as Activity,
 		);
 		return { ...item, cardUpdateResult: { id: result.id } };
 	} catch (err) {

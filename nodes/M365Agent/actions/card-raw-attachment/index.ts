@@ -3,6 +3,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import * as send from './send.operation';
 import * as update from './update.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
+import { rawActivityOverrideField } from '../../../../shared/rawActivityOverride';
 
 const resourceDisplayOptions = { show: { resource: ['rawAttachment'] } };
 const operationDisplayOptions = {
@@ -55,6 +56,7 @@ export const description: INodeProperties[] = [
 		options: [
 			{ displayName: 'Content URL', name: 'contentUrl', type: 'string', default: '' },
 			{ displayName: 'Name', name: 'name', type: 'string', default: '' },
+			rawActivityOverrideField,
 			{ displayName: 'Thumbnail URL', name: 'thumbnailUrl', type: 'string', default: '' },
 		],
 	},
