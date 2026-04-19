@@ -9,6 +9,7 @@ describe('M365Agent versionDescription', () => {
 		expect(names).toEqual([
 			'Adaptive Card',
 			'Animation Card',
+			'Audio Card',
 			'Hero Card',
 			'Invoke Response',
 			'Message',

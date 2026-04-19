@@ -6,6 +6,7 @@ import type { AuthKind, M365ClassicBotCred, M365Agent365Cred } from '../../../sh
 import * as message from './message';
 import * as cardAdaptive from './card-adaptive';
 import * as cardAnimation from './card-animation';
+import * as cardAudio from './card-audio';
 import * as cardHero from './card-hero';
 import * as cardThumbnail from './card-thumbnail';
 import * as invokeResponse from './invokeResponse';
@@ -18,6 +19,7 @@ type Resource =
 	| 'message'
 	| 'adaptiveCard'
 	| 'animationCard'
+	| 'audioCard'
 	| 'heroCard'
 	| 'thumbnailCard'
 	| 'invokeResponse';
@@ -169,6 +171,35 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 							throw new NodeOperationError(
 								this.getNode(),
 								`Unknown animationCard operation: ${operation}`,
+								{ itemIndex: i },
+							);
+					}
+					break;
+				}
+				case 'audioCard': {
+					switch (operation) {
+						case 'send':
+							result = await cardAudio.send.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						case 'update':
+							result = await cardAudio.update.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						default:
+							throw new NodeOperationError(
+								this.getNode(),
+								`Unknown audioCard operation: ${operation}`,
 								{ itemIndex: i },
 							);
 					}
