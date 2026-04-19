@@ -13,6 +13,7 @@ describe('M365Agent versionDescription', () => {
 			'Hero Card',
 			'Invoke Response',
 			'Message',
+			'Receipt Card',
 			'Sign-In Card',
 			'Thumbnail Card',
 			'Video Card',
