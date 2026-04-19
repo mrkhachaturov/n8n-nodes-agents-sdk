@@ -8,7 +8,8 @@ import type { ConversationReference } from '../../../shared/types';
  *   no UI fields shown.
  * Advanced: the user fills serviceUrl / conversation id / channel id / activity id
  *   manually. Used for proactive flows originating outside the bot webhook (e.g.,
- *   a 1C ERP event) where there is no inbound envelope to read.
+ *   an external webhook or scheduled trigger) where there is no inbound envelope
+ *   to read.
  *
  * Manifest §6.3 Simple vs Advanced; §7 fallback when the API can't list.
  */

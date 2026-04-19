@@ -1,3 +1,19 @@
+/**
+ * Regression pin for CardFactory Wrap Plan C Task 21 — the 0.3.x hard-break
+ * contract documented in spec §6.3 and the router's default-path invariant
+ * text documented in spec §5.1 clause 6c.
+ *
+ * This test asserts THREE distinct message fragments:
+ *   (1) the `Unexpected resource "<name>"` prefix  (§5.1 clause 6c)
+ *   (2) the invokeResponse single-operation invariant reminder
+ *   (3) the "single HTTP request / cannot be combined" reasoning
+ *
+ * Do NOT "simplify" this to one regex. Each sentence is load-bearing: it tells
+ * users WHY the resource value they had in 0.3.x no longer works AND what the
+ * router's single-batch invariant is. A refactor that drops any of the three
+ * sentences must deliberately update this test — that's the whole point of
+ * the three-assertion pin.
+ */
 import { describe, it, expect, vi } from 'vitest';
 import { M365Agent } from '../../nodes/M365Agent/M365Agent.node';
 import { makeExecuteContext, makeCredentials } from '../helpers/makeContext';
