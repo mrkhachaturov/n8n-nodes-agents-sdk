@@ -182,13 +182,21 @@ Credentials come from the parent repo's mise-managed 1Password env
 (`~/.op-env/at-m365bot.env`) which exports:
 
 ```
-M365_TEST_CLIENT_ID
-M365_TEST_TENANT_ID
-M365_TEST_CLIENT_SECRET
+M365_TEST_CLIENT_ID            # shared by all integration tests
+M365_TEST_TENANT_ID            # shared by all integration tests
+M365_TEST_CLIENT_SECRET        # shared by all integration tests
+M365_TEST_CONVERSATION_ID      # required by card-send integration tests (Adaptive, Hero)
+M365_TEST_SERVICE_URL          # required by card-send integration tests (Adaptive, Hero)
 ```
 
+The three auth vars are required for any integration run;
+`M365_TEST_CONVERSATION_ID` and `M365_TEST_SERVICE_URL` are additionally
+required for card-send integration tests
+(`card-adaptive.integration.test.ts`, `card-hero.integration.test.ts`).
+Tests whose env vars are missing are skipped cleanly via `describe.skip`.
+
 `just test-integration` wraps `mise exec --` so the env loads automatically.
-Without the env vars, the integration `describe` block is skipped cleanly —
+Without the env vars, the relevant `describe` blocks are skipped cleanly —
 CI and anyone without credentials can still run `npm test` offline.
 
 ## Installing into n8n

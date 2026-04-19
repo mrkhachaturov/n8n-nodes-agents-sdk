@@ -37,8 +37,11 @@ test:
 
 # Run integration tests against real Azure. Uses `mise exec` so the
 # parent repo's 1Password-managed env (~/.op-env/at-m365bot.env) is loaded,
-# populating M365_TEST_CLIENT_ID / _SECRET / _TENANT_ID. Tests skip cleanly
-# if those vars are not set.
+# populating:
+#   - M365_TEST_CLIENT_ID / _SECRET / _TENANT_ID    (shared auth — required by every integration test)
+#   - M365_TEST_CONVERSATION_ID / _SERVICE_URL       (required additionally by card-send integration tests:
+#                                                     card-adaptive.integration.test.ts, card-hero.integration.test.ts)
+# Tests whose env vars are missing skip cleanly via `describe.skip`.
 test-integration:
 	mise exec -- npm run test:integration
 
