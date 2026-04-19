@@ -44,7 +44,7 @@ export function activityToConversationReference(activity: Activity): Conversatio
 export function parseActivity(activity: Activity): ParsedActivity {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const value = (activity as any).value;
-	return {
+	const parsed: ParsedActivity = {
 		type: activity.type ?? 'unknown',
 		text: activity.text,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,6 +60,41 @@ export function parseActivity(activity: Activity): ParsedActivity {
 				? activity.timestamp.toISOString()
 				: (activity.timestamp as string | undefined),
 	};
+
+	if (activity.type === 'conversationUpdate') {
+		if (Array.isArray(activity.membersAdded)) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			parsed.membersAdded = activity.membersAdded.map((m: any) => ({ id: m.id, name: m.name }));
+		}
+		if (Array.isArray(activity.membersRemoved)) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			parsed.membersRemoved = activity.membersRemoved.map((m: any) => ({
+				id: m.id,
+				name: m.name,
+			}));
+		}
+	}
+
+	if (activity.type === 'messageReaction') {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		if (Array.isArray((activity as any).reactionsAdded)) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			parsed.reactionsAdded = (activity as any).reactionsAdded.map((r: any) => ({
+				type: r.type,
+				user: r.user ? { id: r.user.id, name: r.user.name } : undefined,
+			}));
+		}
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		if (Array.isArray((activity as any).reactionsRemoved)) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			parsed.reactionsRemoved = (activity as any).reactionsRemoved.map((r: any) => ({
+				type: r.type,
+				user: r.user ? { id: r.user.id, name: r.user.name } : undefined,
+			}));
+		}
+	}
+
+	return parsed;
 }
 
 /**

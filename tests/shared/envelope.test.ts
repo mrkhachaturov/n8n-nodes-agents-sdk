@@ -65,3 +65,38 @@ describe('shared/envelope', () => {
 		expect(merged.activity).toEqual(newActivity);
 	});
 });
+
+describe('parseActivity — 0.5.0 additions', () => {
+	it('populates membersAdded/Removed on conversationUpdate', () => {
+		const parsed = parseActivity({
+			type: 'conversationUpdate',
+			membersAdded: [{ id: 'user1', name: 'Alice' }],
+			membersRemoved: [{ id: 'user2', name: 'Bob' }],
+		} as any);
+		expect(parsed.membersAdded).toEqual([{ id: 'user1', name: 'Alice' }]);
+		expect(parsed.membersRemoved).toEqual([{ id: 'user2', name: 'Bob' }]);
+	});
+
+	it('populates reactionsAdded/Removed on messageReaction', () => {
+		const parsed = parseActivity({
+			type: 'messageReaction',
+			reactionsAdded: [{ type: 'like', user: { id: 'user1', name: 'Alice' } }],
+			reactionsRemoved: [{ type: 'heart', user: { id: 'user2', name: 'Bob' } }],
+		} as any);
+		expect(parsed.reactionsAdded).toEqual([{ type: 'like', user: { id: 'user1', name: 'Alice' } }]);
+		expect(parsed.reactionsRemoved).toEqual([
+			{ type: 'heart', user: { id: 'user2', name: 'Bob' } },
+		]);
+	});
+
+	it('leaves parsed sub-fields undefined when activity type does not match', () => {
+		const parsed = parseActivity({ type: 'message', text: 'hello' } as any);
+		expect(parsed.membersAdded).toBeUndefined();
+		expect(parsed.reactionsAdded).toBeUndefined();
+	});
+
+	it('does NOT assign invokeName on parsed (envelope-top-level per spec)', () => {
+		const parsed = parseActivity({ type: 'invoke', name: 'taskModule/fetch' } as any);
+		expect((parsed as any).invokeName).toBeUndefined();
+	});
+});
