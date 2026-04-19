@@ -64,10 +64,10 @@ describe('M365Agent router — unknown operation defaults', () => {
 				},
 			],
 			credentials: makeCredentials(),
-			parameters: { resource: 'card', operation: 'bogus' },
+			parameters: { resource: 'adaptiveCard', operation: 'bogus' },
 		});
 		await expect(node.execute.call(ctx as unknown as IExecuteFunctions)).rejects.toThrow(
-			/Unknown card operation: bogus/,
+			/Unknown adaptiveCard operation: bogus/,
 		);
 	});
 

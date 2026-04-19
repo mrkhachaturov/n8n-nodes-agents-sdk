@@ -96,10 +96,17 @@ export interface ExecuteContextOptions {
 	 * or just `${paramName}` for params that return the same value for every item.
 	 */
 	parameters?: Record<string, unknown>;
+	/** Value returned by `this.continueOnFail()`. Defaults to false. */
+	continueOnFail?: boolean;
 }
 
 export function makeExecuteContext(opts: ExecuteContextOptions = {}) {
-	const { inputItems = [], credentials = makeCredentials(), parameters = {} } = opts;
+	const {
+		inputItems = [],
+		credentials = makeCredentials(),
+		parameters = {},
+		continueOnFail = false,
+	} = opts;
 
 	const getInputData = vi.fn().mockReturnValue(inputItems.map((json) => ({ json })));
 	const getCredentials = vi.fn().mockResolvedValue(credentials);
@@ -115,10 +122,13 @@ export function makeExecuteContext(opts: ExecuteContextOptions = {}) {
 			return defaultValue;
 		});
 
+	const continueOnFailFn = vi.fn().mockReturnValue(continueOnFail);
+
 	return {
 		getInputData,
 		getCredentials,
 		getNode,
 		getNodeParameter,
+		continueOnFail: continueOnFailFn,
 	};
 }

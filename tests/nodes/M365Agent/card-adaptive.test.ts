@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as card from '../../../nodes/M365Agent/actions/card';
+import * as cardAdaptive from '../../../nodes/M365Agent/actions/card-adaptive';
 import { M365Agent } from '../../../nodes/M365Agent/M365Agent.node';
 import { makeExecuteContext, makeCredentials } from '../../helpers/makeContext';
 import type { IExecuteFunctions } from 'n8n-workflow';
@@ -37,43 +37,43 @@ vi.mock('../../../shared/botConnector', () => ({
 // Description-level assertions
 // ---------------------------------------------------------------------------
 
-describe('card resource description', () => {
+describe('adaptiveCard resource description', () => {
 	it('exposes Send / Update in alphabetical display order', () => {
-		const op = card.description.find((p) => p.name === 'operation');
+		const op = cardAdaptive.description.find((p) => p.name === 'operation');
 		const names = (op?.options as { name: string }[] | undefined)?.map((o) => o.name);
 		expect(names).toEqual(['Send', 'Update']);
 	});
 
-	it('exposes both card operations (alphabetical by value)', () => {
-		const op = card.description.find((p) => p.name === 'operation');
+	it('exposes both adaptiveCard operations (alphabetical by value)', () => {
+		const op = cardAdaptive.description.find((p) => p.name === 'operation');
 		const values = (op?.options as { value: string }[] | undefined)?.map((o) => o.value);
 		expect(values).toEqual(['send', 'update']);
 	});
 
 	it('each operation has an action string for the subtitle', () => {
-		const op = card.description.find((p) => p.name === 'operation');
+		const op = cardAdaptive.description.find((p) => p.name === 'operation');
 		const actions = (op?.options as { action?: string }[] | undefined)?.map((o) => o.action);
 		expect(actions?.every((a) => typeof a === 'string' && a.length > 0)).toBe(true);
 	});
 
-	it('operation selector is noDataExpression and scoped to card resource', () => {
-		const op = card.description.find((p) => p.name === 'operation');
+	it('operation selector is noDataExpression and scoped to adaptiveCard resource', () => {
+		const op = cardAdaptive.description.find((p) => p.name === 'operation');
 		expect(op?.noDataExpression).toBe(true);
 		const shown = (op?.displayOptions?.show as Record<string, string[]> | undefined)?.resource;
-		expect(shown).toEqual(['card']);
+		expect(shown).toEqual(['adaptiveCard']);
 		expect(op?.default).toBe('send');
 	});
 
-	it('cardTemplate field shown for both card/send and card/update', () => {
-		const tmpl = card.description.find((p) => p.name === 'cardTemplate');
+	it('cardTemplate field shown for both adaptiveCard/send and adaptiveCard/update', () => {
+		const tmpl = cardAdaptive.description.find((p) => p.name === 'cardTemplate');
 		const shown = tmpl?.displayOptions?.show as Record<string, string[]> | undefined;
-		expect(shown?.resource).toEqual(['card']);
+		expect(shown?.resource).toEqual(['adaptiveCard']);
 		expect(shown?.operation).toEqual(['send', 'update']);
 	});
 
 	it('bindingData and options are shown for both send and update (parity with the template)', () => {
 		for (const name of ['bindingData', 'options']) {
-			const prop = card.description.find((p) => p.name === name);
+			const prop = cardAdaptive.description.find((p) => p.name === name);
 			const shown = prop?.displayOptions?.show as Record<string, string[]> | undefined;
 			expect(shown?.operation).toEqual(['send', 'update']);
 		}
@@ -97,7 +97,7 @@ const CARD_UPDATE_ENVELOPE = {
 	customWorkflowField: 'preserved',
 };
 
-describe('M365Agent card/update execute', () => {
+describe('M365Agent adaptiveCard/update execute', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockCreateConnectorFromBearer.mockReturnValue(fakeBundle);
@@ -110,7 +110,7 @@ describe('M365Agent card/update execute', () => {
 			inputItems: [{ ...CARD_UPDATE_ENVELOPE, title: 'Job #42' }],
 			credentials: makeCredentials(),
 			parameters: {
-				resource: 'card',
+				resource: 'adaptiveCard',
 				operation: 'update',
 				conversationSource: 'envelope',
 				cardTemplate:
@@ -137,7 +137,7 @@ describe('M365Agent card/update execute', () => {
 		expect(result).toHaveLength(1);
 		expect(result[0]).toHaveLength(1);
 		const outItem = result[0][0];
-		expect(outItem.pairedItem).toBe(0);
+		expect(outItem.pairedItem).toEqual({ item: 0 });
 		expect(outItem.json).toMatchObject({
 			conversationReference: CARD_UPDATE_ENVELOPE.conversationReference,
 			customWorkflowField: 'preserved',
@@ -160,7 +160,7 @@ describe('M365Agent card/update execute', () => {
 			inputItems: [envelopeNoActId],
 			credentials: makeCredentials(),
 			parameters: {
-				resource: 'card',
+				resource: 'adaptiveCard',
 				operation: 'update',
 				conversationSource: 'envelope',
 				cardTemplate: '{"type":"AdaptiveCard","version":"1.4","body":[]}',

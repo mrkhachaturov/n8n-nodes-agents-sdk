@@ -16,8 +16,8 @@ vi.mock('../../../shared/botConnector', () => ({
 	})),
 }));
 
-import { execute as cardSendExecute } from '../../../nodes/M365Agent/actions/card/send.operation';
-import { execute as cardUpdateExecute } from '../../../nodes/M365Agent/actions/card/update.operation';
+import { execute as cardSendExecute } from '../../../nodes/M365Agent/actions/card-adaptive/send.operation';
+import { execute as cardUpdateExecute } from '../../../nodes/M365Agent/actions/card-adaptive/update.operation';
 import { acquireOutboundToken } from '../../../shared/auth/router';
 import { makeExecuteMock } from '../../helpers/executeMock';
 
@@ -52,7 +52,7 @@ describe('card/send routing', () => {
 			nodeParams: (name: string, _i: number, fallback?: unknown) => {
 				const map: Record<string, unknown> = {
 					authKind: 'classicBot',
-					resource: 'card',
+					resource: 'adaptiveCard',
 					operation: 'send',
 					conversationSource: 'envelope',
 					cardTemplate: CARD_TEMPLATE,
@@ -84,7 +84,7 @@ describe('card/send routing', () => {
 				const map: Record<string, unknown> = {
 					authKind: 'agent365',
 					identityMode: 'autonomous',
-					resource: 'card',
+					resource: 'adaptiveCard',
 					operation: 'send',
 					conversationSource: 'envelope',
 					cardTemplate: CARD_TEMPLATE,
@@ -135,7 +135,7 @@ describe('card/send routing', () => {
 					identityMode: 'agentUser',
 					userSelectorMode: 'byUpn',
 					agentUsername: 'a@b.com',
-					resource: 'card',
+					resource: 'adaptiveCard',
 					operation: 'send',
 					conversationSource: 'envelope',
 					cardTemplate: CARD_TEMPLATE,
@@ -175,6 +175,46 @@ describe('card/send routing', () => {
 			}),
 		);
 	});
+
+	it('continueOnFail=true emits error-merged item instead of throwing', async () => {
+		const { M365Agent } = await import('../../../nodes/M365Agent/M365Agent.node');
+		const { makeExecuteContext, makeCredentials } = await import('../../helpers/makeContext');
+		const node = new M365Agent();
+		const ctx = makeExecuteContext({
+			inputItems: [
+				{
+					conversationReference: {
+						serviceUrl: 'https://smba/',
+						conversation: { id: '19:c@thread.tacv2' },
+						channelId: 'msteams',
+					},
+					extra: 'preserved',
+				},
+			],
+			credentials: makeCredentials(),
+			parameters: {
+				resource: 'adaptiveCard',
+				operation: 'send',
+				authKind: 'classicBot',
+				conversationSource: 'envelope',
+				cardTemplate: '{not-json',
+				bindingData: {},
+				options: {},
+			},
+		});
+		(ctx as unknown as { continueOnFail: () => boolean }).continueOnFail = () => true;
+
+		const result = await node.execute.call(
+			ctx as unknown as import('n8n-workflow').IExecuteFunctions,
+		);
+		expect(result[0]).toHaveLength(1);
+		const item = result[0][0];
+		expect(item.json).toMatchObject({
+			extra: 'preserved',
+			error: expect.stringContaining('Invalid JSON'),
+		});
+		expect(item.pairedItem).toEqual({ item: 0 });
+	});
 });
 
 // ── card/update ───────────────────────────────────────────────────────────────
@@ -188,7 +228,7 @@ describe('card/update routing', () => {
 			nodeParams: (name: string, _i: number, fallback?: unknown) => {
 				const map: Record<string, unknown> = {
 					authKind: 'classicBot',
-					resource: 'card',
+					resource: 'adaptiveCard',
 					operation: 'update',
 					conversationSource: 'envelope',
 					cardTemplate: CARD_TEMPLATE,
@@ -220,7 +260,7 @@ describe('card/update routing', () => {
 				const map: Record<string, unknown> = {
 					authKind: 'agent365',
 					identityMode: 'autonomous',
-					resource: 'card',
+					resource: 'adaptiveCard',
 					operation: 'update',
 					conversationSource: 'envelope',
 					cardTemplate: CARD_TEMPLATE,
@@ -271,7 +311,7 @@ describe('card/update routing', () => {
 					identityMode: 'agentUser',
 					userSelectorMode: 'byUpn',
 					agentUsername: 'a@b.com',
-					resource: 'card',
+					resource: 'adaptiveCard',
 					operation: 'update',
 					conversationSource: 'envelope',
 					cardTemplate: CARD_TEMPLATE,

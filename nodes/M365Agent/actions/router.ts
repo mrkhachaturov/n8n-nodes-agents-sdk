@@ -4,14 +4,14 @@ import type { BotConnectorBundle } from '../../../shared/botConnector';
 import type { AuthKind, M365ClassicBotCred, M365Agent365Cred } from '../../../shared/types';
 
 import * as message from './message';
-import * as card from './card';
+import * as cardAdaptive from './card-adaptive';
 import * as invokeResponse from './invokeResponse';
 import { makeBundleKey } from './bundleKey';
 
 // Re-export so external callers (tests, docs) can still import from 'router'.
 export { makeBundleKey };
 
-type Resource = 'message' | 'card' | 'invokeResponse';
+type Resource = 'message' | 'adaptiveCard' | 'invokeResponse';
 
 export async function router(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
@@ -25,14 +25,26 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 	// to the HTTP connection and never talks to Azure Bot Service.
 	const firstResource = this.getNodeParameter('resource', 0) as Resource;
 	if (firstResource === 'invokeResponse') {
-		const firstOp = this.getNodeParameter('operation', 0) as string;
-		if (firstOp !== 'respond') {
-			throw new NodeOperationError(this.getNode(), `Unknown invokeResponse operation: ${firstOp}`, {
-				itemIndex: 0,
-			});
+		for (let i = 0; i < items.length; i++) {
+			const r = this.getNodeParameter('resource', i) as Resource;
+			const op = this.getNodeParameter('operation', i) as string;
+			if (r !== 'invokeResponse') {
+				throw new NodeOperationError(
+					this.getNode(),
+					`Invoke Response must be the only resource for the whole batch. Item ${i} resolves to resource "${String(r)}".`,
+					{ itemIndex: i },
+				);
+			}
+			if (op !== 'respond') {
+				throw new NodeOperationError(
+					this.getNode(),
+					`Unknown invokeResponse operation: ${op}`,
+					{ itemIndex: i },
+				);
+			}
 		}
 		await invokeResponse.respond.execute(this);
-		return [items.map((item, i) => ({ ...item, pairedItem: i }))];
+		return [items.map((item, i) => ({ ...item, pairedItem: { item: i } }))];
 	}
 
 	// Credentials are only needed for message/card operations (both talk to the
@@ -54,74 +66,102 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 		const resource = this.getNodeParameter('resource', i) as Resource;
 		const operation = this.getNodeParameter('operation', i) as string;
 
-		let result: IDataObject;
-		switch (resource) {
-			case 'message': {
-				switch (operation) {
-					case 'send':
-						result = await message.send.execute.call(this, i, authKind, credentials, bundles);
-						break;
-					case 'reply':
-						result = await message.reply.execute.call(this, i, authKind, credentials, bundles);
-						break;
-					case 'update':
-						result = await message.update.execute.call(this, i, authKind, credentials, bundles);
-						break;
-					case 'delete':
-						result = await message.deleteMessage.execute.call(
-							this,
-							i,
-							authKind,
-							credentials,
-							bundles,
-						);
-						break;
-					case 'replyInThread':
-						result = await message.replyInThread.execute.call(
-							this,
-							i,
-							authKind,
-							credentials,
-							bundles,
-						);
-						break;
-					default:
-						throw new NodeOperationError(
-							this.getNode(),
-							`Unknown message operation: ${operation}`,
-							{ itemIndex: i },
-						);
+		try {
+			let result: IDataObject;
+			switch (resource) {
+				case 'message': {
+					switch (operation) {
+						case 'send':
+							result = await message.send.execute.call(this, i, authKind, credentials, bundles);
+							break;
+						case 'reply':
+							result = await message.reply.execute.call(this, i, authKind, credentials, bundles);
+							break;
+						case 'update':
+							result = await message.update.execute.call(this, i, authKind, credentials, bundles);
+							break;
+						case 'delete':
+							result = await message.deleteMessage.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						case 'replyInThread':
+							result = await message.replyInThread.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						default:
+							throw new NodeOperationError(
+								this.getNode(),
+								`Unknown message operation: ${operation}`,
+								{ itemIndex: i },
+							);
+					}
+					break;
 				}
-				break;
-			}
-			case 'card': {
-				switch (operation) {
-					case 'send':
-						result = await card.send.execute.call(this, i, authKind, credentials, bundles);
-						break;
-					case 'update':
-						result = await card.update.execute.call(this, i, authKind, credentials, bundles);
-						break;
-					default:
-						throw new NodeOperationError(this.getNode(), `Unknown card operation: ${operation}`, {
-							itemIndex: i,
-						});
+				case 'adaptiveCard': {
+					switch (operation) {
+						case 'send':
+							result = await cardAdaptive.send.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						case 'update':
+							result = await cardAdaptive.update.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						default:
+							throw new NodeOperationError(
+								this.getNode(),
+								`Unknown adaptiveCard operation: ${operation}`,
+								{ itemIndex: i },
+							);
+					}
+					break;
 				}
-				break;
+				// invokeResponse is handled by the early return above.
+				default: {
+					throw new NodeOperationError(
+						this.getNode(),
+						`Unexpected resource "${String(resource)}" in the per-item loop. Invoke Response must be the only operation in this node execution; it responds to a single HTTP request and cannot be combined with other resources.`,
+						{ itemIndex: i },
+					);
+				}
 			}
-			// invokeResponse is handled by the early return above.
-			default: {
-				throw new NodeOperationError(
-					this.getNode(),
-					`Unexpected resource "${String(resource)}" in the per-item loop. Invoke Response must be the only operation in this node execution; it responds to a single HTTP request and cannot be combined with other resources.`,
-					{ itemIndex: i },
-				);
-			}
-		}
 
-		// Preserve full input item — binary, metadata, everything — and only
-		// swap in the merged json. Earlier drafts dropped binary (manifest §12).
-		out.push({ ...items[i], json: result, pairedItem: i });
+			// Preserve full input item — binary, metadata, everything — and only
+			// swap in the merged json. Matches manifest §12 "never drop binary".
+			out.push({ ...items[i], json: result, pairedItem: { item: i } });
+		} catch (err) {
+			if (this.continueOnFail()) {
+				const message = (err as Error).message;
+				// Full input item preserved on the error path too — only json is merged.
+				out.push({
+					...items[i],
+					json: { ...(items[i].json as IDataObject), error: message },
+					pairedItem: { item: i },
+				});
+				continue;
+			}
+			throw err;
+		}
 	}
 
 	return [out];

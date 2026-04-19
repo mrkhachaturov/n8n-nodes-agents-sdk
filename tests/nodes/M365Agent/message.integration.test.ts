@@ -116,7 +116,7 @@ describe('Message resource — Reply with proactive (envelope-driven) activity',
 		expect(result).toHaveLength(1); // first output branch
 		expect(result[0]).toHaveLength(1); // one item
 		const outItem = result[0][0];
-		expect(outItem.pairedItem).toBe(0);
+		expect(outItem.pairedItem).toEqual({ item: 0 });
 		expect(outItem.json).toMatchObject({
 			// Input envelope preserved (manifest §12)
 			conversationReference: PROACTIVE_ENVELOPE.conversationReference,

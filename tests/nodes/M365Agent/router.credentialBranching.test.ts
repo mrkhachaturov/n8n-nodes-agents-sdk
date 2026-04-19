@@ -7,7 +7,7 @@ vi.mock('../../../nodes/M365Agent/actions/message', () => ({
 	deleteMessage: { execute: vi.fn().mockResolvedValue({ id: 'stub-delete' }) },
 	replyInThread: { execute: vi.fn().mockResolvedValue({ id: 'stub-thread' }) },
 }));
-vi.mock('../../../nodes/M365Agent/actions/card', () => ({
+vi.mock('../../../nodes/M365Agent/actions/card-adaptive', () => ({
 	send: { execute: vi.fn().mockResolvedValue({ id: 'stub-card-send' }) },
 	update: { execute: vi.fn().mockResolvedValue({ id: 'stub-card-update' }) },
 }));
