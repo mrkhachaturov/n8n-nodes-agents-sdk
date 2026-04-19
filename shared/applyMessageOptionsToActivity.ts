@@ -9,10 +9,15 @@ import { applySuggestedActionsToActivity, type SuggestedActionInput } from './su
  * options (mentions, suggestedActions) to it, and return the resulting
  * activity. Throws plain Error on shape problems — call sites wrap in
  * NodeOperationError so the error carries itemIndex per manifest §11.
+ *
+ * `suggestedActionsTo` scopes the chips to specific recipients. For replies
+ * to a user's button click, pass `[userId]` so Teams channel scope renders
+ * the chips for that clicker. Empty (default) = broadcast to everyone.
  */
 export function applyMessageOptionsToActivity(
 	activity: Partial<Activity>,
 	options: IDataObject,
+	suggestedActionsTo: string[] = [],
 ): Partial<Activity> {
 	let next = activity;
 
@@ -24,7 +29,7 @@ export function applyMessageOptionsToActivity(
 	const actions = (options.suggestedActions as { values?: SuggestedActionInput[] } | undefined)
 		?.values;
 	if (actions && actions.length > 0) {
-		next = applySuggestedActionsToActivity(next, actions);
+		next = applySuggestedActionsToActivity(next, actions, suggestedActionsTo);
 	}
 
 	return next;

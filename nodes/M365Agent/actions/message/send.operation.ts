@@ -82,9 +82,20 @@ export async function execute(
 		renderedText = `${text}\n\n_Sent from n8n workflow._`;
 	}
 
+	// For replies to a user's click, target suggestedActions chips to the clicker
+	// so Teams channel scope renders them for that person. Falls back to the user
+	// on the conversationReference, then to broadcast (empty to). For proactive
+	// sends (no prior click), typically resolves to empty → broadcast.
+	const parsed = item.parsed as IDataObject | undefined;
+	const clickerFromParsed = parsed?.userId as string | undefined;
+	const clickerFromRef =
+		(ref as { user?: { id?: string } }).user?.id ?? undefined;
+	const clickerId = clickerFromParsed ?? clickerFromRef;
+	const suggestedActionsTo: string[] = clickerId ? [clickerId] : [];
+
 	let activity: Partial<Activity> = { type: 'message', text: renderedText };
 	try {
-		activity = applyMessageOptionsToActivity(activity, options);
+		activity = applyMessageOptionsToActivity(activity, options, suggestedActionsTo);
 	} catch (err) {
 		throw new NodeOperationError(this.getNode(), (err as Error).message, { itemIndex });
 	}

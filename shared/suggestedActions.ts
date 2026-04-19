@@ -33,7 +33,10 @@ function assert(cond: unknown, message: string): asserts cond {
 	}
 }
 
-export function buildSuggestedActions(inputs: SuggestedActionInput[]): SuggestedActionsShape {
+export function buildSuggestedActions(
+	inputs: SuggestedActionInput[],
+	to: string[] = [],
+): SuggestedActionsShape {
 	const actions: CardActionShape[] = [];
 	for (const [i, a] of inputs.entries()) {
 		assert(
@@ -51,18 +54,23 @@ export function buildSuggestedActions(inputs: SuggestedActionInput[]): Suggested
 		}
 		actions.push(out);
 	}
-	return { to: [], actions };
+	return { to, actions };
 }
 
 /**
  * Returns a new activity with `suggestedActions` set. Empty inputs → unchanged.
+ * `to` scopes who sees the chips — for replies to button clicks, pass the
+ * clicking user's id so Teams renders the chips for that person in channel
+ * scope. Empty array = broadcast to all recipients (SDK default, fine for
+ * proactive sends where there's no specific clicker).
  * Never mutates input.
  */
 export function applySuggestedActionsToActivity(
 	activity: Partial<Activity>,
 	inputs: SuggestedActionInput[],
+	to: string[] = [],
 ): Partial<Activity> {
 	if (inputs.length === 0) return activity;
-	const suggestedActions = buildSuggestedActions(inputs);
+	const suggestedActions = buildSuggestedActions(inputs, to);
 	return { ...activity, suggestedActions: suggestedActions as Activity['suggestedActions'] };
 }
