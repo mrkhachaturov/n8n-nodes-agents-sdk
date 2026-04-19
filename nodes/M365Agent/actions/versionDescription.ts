@@ -4,6 +4,7 @@ import * as cardAdaptive from './card-adaptive';
 import * as cardAnimation from './card-animation';
 import * as cardAudio from './card-audio';
 import * as cardHero from './card-hero';
+import * as cardSignIn from './card-sign-in';
 import * as cardThumbnail from './card-thumbnail';
 import * as cardVideo from './card-video';
 import * as invokeResponse from './invokeResponse';
@@ -68,6 +69,7 @@ export const versionDescription: INodeTypeDescription = {
 				{ name: 'Hero Card', value: 'heroCard' },
 				{ name: 'Invoke Response', value: 'invokeResponse' },
 				{ name: 'Message', value: 'message' },
+				{ name: 'Sign-In Card', value: 'signInCard' },
 				{ name: 'Thumbnail Card', value: 'thumbnailCard' },
 				{ name: 'Video Card', value: 'videoCard' },
 			],
@@ -78,6 +80,7 @@ export const versionDescription: INodeTypeDescription = {
 		...cardAnimation.description,
 		...cardAudio.description,
 		...cardHero.description,
+		...cardSignIn.description,
 		...cardThumbnail.description,
 		...cardVideo.description,
 		...invokeResponse.description,

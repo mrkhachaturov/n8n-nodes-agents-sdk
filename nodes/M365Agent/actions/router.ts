@@ -8,6 +8,7 @@ import * as cardAdaptive from './card-adaptive';
 import * as cardAnimation from './card-animation';
 import * as cardAudio from './card-audio';
 import * as cardHero from './card-hero';
+import * as cardSignIn from './card-sign-in';
 import * as cardThumbnail from './card-thumbnail';
 import * as cardVideo from './card-video';
 import * as invokeResponse from './invokeResponse';
@@ -22,6 +23,7 @@ type Resource =
 	| 'animationCard'
 	| 'audioCard'
 	| 'heroCard'
+	| 'signInCard'
 	| 'thumbnailCard'
 	| 'videoCard'
 	| 'invokeResponse';
@@ -225,6 +227,35 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 							throw new NodeOperationError(
 								this.getNode(),
 								`Unknown heroCard operation: ${operation}`,
+								{ itemIndex: i },
+							);
+					}
+					break;
+				}
+				case 'signInCard': {
+					switch (operation) {
+						case 'send':
+							result = await cardSignIn.send.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						case 'update':
+							result = await cardSignIn.update.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						default:
+							throw new NodeOperationError(
+								this.getNode(),
+								`Unknown signInCard operation: ${operation}`,
 								{ itemIndex: i },
 							);
 					}
