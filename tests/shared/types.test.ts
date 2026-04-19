@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, expectTypeOf } from 'vitest';
 import type {
 	ConversationReference,
 	ItemEnvelope,
@@ -74,5 +74,31 @@ describe('auth types', () => {
 	it('M365Agent365Transport admits inline or sidecar', () => {
 		const t: M365Agent365Transport[] = ['inline', 'sidecar'];
 		expect(t).toHaveLength(2);
+	});
+});
+
+describe('ItemEnvelope — 0.5.0 field additions', () => {
+	it('exposes optional invokeName at top level', () => {
+		expectTypeOf<ItemEnvelope>().toHaveProperty('invokeName').toEqualTypeOf<string | undefined>();
+	});
+
+	it('exposes optional membersAdded / membersRemoved on parsed', () => {
+		type P = NonNullable<ItemEnvelope['parsed']>;
+		expectTypeOf<P>()
+			.toHaveProperty('membersAdded')
+			.toEqualTypeOf<Array<{ id?: string; name?: string }> | undefined>();
+		expectTypeOf<P>()
+			.toHaveProperty('membersRemoved')
+			.toEqualTypeOf<Array<{ id?: string; name?: string }> | undefined>();
+	});
+
+	it('exposes optional reactionsAdded / reactionsRemoved on parsed', () => {
+		type P = NonNullable<ItemEnvelope['parsed']>;
+		expectTypeOf<P>()
+			.toHaveProperty('reactionsAdded')
+			.toEqualTypeOf<Array<{ type?: string; user?: { id?: string; name?: string } }> | undefined>();
+		expectTypeOf<P>()
+			.toHaveProperty('reactionsRemoved')
+			.toEqualTypeOf<Array<{ type?: string; user?: { id?: string; name?: string } }> | undefined>();
 	});
 });

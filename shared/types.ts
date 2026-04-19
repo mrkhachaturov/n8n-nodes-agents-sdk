@@ -34,6 +34,12 @@ export interface ParsedActivity {
 	userId?: string;
 	aadObjectId?: string;
 	timestamp?: string;
+	/** Populated when activity.type === 'conversationUpdate'. Added in 0.5.0 (T3-activity-routing-conversationUpdate). */
+	membersAdded?: Array<{ id?: string; name?: string }>;
+	membersRemoved?: Array<{ id?: string; name?: string }>;
+	/** Populated when activity.type === 'messageReaction'. Added in 0.5.0 (T3-activity-routing-messageReaction). */
+	reactionsAdded?: Array<{ type?: string; user?: { id?: string; name?: string } }>;
+	reactionsRemoved?: Array<{ type?: string; user?: { id?: string; name?: string } }>;
 }
 
 /**
@@ -60,6 +66,8 @@ export interface ItemEnvelope {
 	parsed?: ParsedActivity;
 	raw?: Activity;
 	authContext?: AuthContext;
+	/** Convenience field surfaced for invoke activities. Equal to activity.name when activity.type === 'invoke', else undefined. Added in 0.5.0 (T7-envelope-invokeName). */
+	invokeName?: string;
 }
 
 /** Azure Bot Service app type selection on the credential. */
