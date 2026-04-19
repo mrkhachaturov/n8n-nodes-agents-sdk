@@ -88,6 +88,8 @@ export async function dispatchUpdate(args: DispatchUpdateArgs): Promise<IDataObj
   const bundleKey = makeBundleKey(ref.serviceUrl, authKind, identityMode, agentUsername, agentUserId);
   let bundle = bundles.get(bundleKey);
   if (!bundle) {
+    // Let NodeOperationError from backends (agent365Inline agentUser / interactiveOBO
+    // rejection) propagate unchanged. Wrap only non-NodeOperationError failures.
     try {
       const { authorizationHeader } = await acquireOutboundToken({
         authKind,
