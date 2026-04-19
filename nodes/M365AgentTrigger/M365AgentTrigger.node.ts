@@ -22,6 +22,15 @@ import {
 import type { ItemEnvelope, M365AgentCredentials, AuthContext, AuthKind } from '../../shared/types';
 import { agent365CredentialTest } from '../../shared/auth/credentialTest';
 import { validateInboundToken } from '../../shared/auth/router';
+import { KNOWN_INVOKE_NAMES, InvokeNameLabel } from '../../shared/invokeNames';
+
+/**
+ * Build the `invokeNames` dropdown options from the shared registry,
+ * sorted alphabetically by display name to satisfy n8n-nodes-base lint rules.
+ */
+const INVOKE_NAME_OPTIONS = [...KNOWN_INVOKE_NAMES]
+	.map((value) => ({ name: InvokeNameLabel[value], value }))
+	.sort((a, b) => a.name.localeCompare(b.name));
 
 export class M365AgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -187,6 +196,17 @@ export class M365AgentTrigger implements INodeType {
 				],
 			},
 			{
+				displayName: 'Invoke Names',
+				name: 'invokeNames',
+				type: 'multiOptions',
+				noDataExpression: true,
+				default: [],
+				displayOptions: { show: { activityTypes: ['invoke'] } },
+				description:
+					'Filter inbound invoke activities by name. Empty = accept all invoke names. Select from known names or add custom via expression for unknown/future names.',
+				options: INVOKE_NAME_OPTIONS,
+			},
+			{
 				displayName: 'Channel Filter',
 				name: 'channelFilter',
 				type: 'multiOptions',
@@ -259,6 +279,16 @@ export class M365AgentTrigger implements INodeType {
 			return { webhookResponse: { status: 200 }, workflowData: [[]] };
 		}
 
+		// Invoke-name filter: only applies when activityTypes includes 'invoke'
+		// and the inbound activity is itself an invoke. Empty list = accept all
+		// invoke names. Non-empty + no match ⇒ swallow (200 OK, zero items).
+		if (body.type === 'invoke' && activityTypes.includes('invoke')) {
+			const invokeNames = this.getNodeParameter('invokeNames', []) as string[];
+			if (invokeNames.length > 0 && (!body.name || !invokeNames.includes(body.name))) {
+				return { webhookResponse: { status: 200 }, workflowData: [[]] };
+			}
+		}
+
 		const authHeader = req.headers.authorization as string | undefined;
 		let envelope: ItemEnvelope;
 		try {
@@ -268,6 +298,9 @@ export class M365AgentTrigger implements INodeType {
 				parsed: parseActivity(body),
 				raw: body,
 			};
+			if (body.type === 'invoke' && typeof body.name === 'string') {
+				base.invokeName = body.name;
+			}
 			if (authKind === 'agent365' && validatedClaims && authHeader) {
 				const authContext: AuthContext = {
 					inboundBearer: authHeader,

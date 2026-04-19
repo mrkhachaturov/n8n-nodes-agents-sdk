@@ -35,6 +35,7 @@ function makeTriggerContext(configuredFilter: string[], inboundType: string) {
 		getHeaderData: () => ({}),
 		getNodeParameter: (name: string) => {
 			if (name === 'activityTypes') return configuredFilter;
+			if (name === 'invokeNames') return [];
 			if (name === 'channelFilter') return [];
 			if (name === 'authKind') return 'classicBot';
 			if (name === 'responseMode') return 'onReceived';
