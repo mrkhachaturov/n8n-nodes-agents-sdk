@@ -8,6 +8,7 @@ import * as cardAdaptive from './card-adaptive';
 import * as cardAnimation from './card-animation';
 import * as cardAudio from './card-audio';
 import * as cardHero from './card-hero';
+import * as cardState from './card-state';
 import * as cardO365Connector from './card-o365-connector';
 import * as cardRawAttachment from './card-raw-attachment';
 import * as cardReceipt from './card-receipt';
@@ -26,6 +27,7 @@ type Resource =
 	| 'animationCard'
 	| 'audioCard'
 	| 'heroCard'
+	| 'cardState'
 	| 'o365ConnectorCard'
 	| 'rawAttachment'
 	| 'receiptCard'
@@ -216,6 +218,26 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 							throw new NodeOperationError(
 								this.getNode(),
 								`Unknown heroCard operation: ${operation}`,
+								{ itemIndex: i },
+							);
+					}
+					break;
+				}
+				case 'cardState': {
+					switch (operation) {
+						case 'select':
+							result = await cardState.select.execute.call(
+								this,
+								i,
+								authKind,
+								credentials,
+								bundles,
+							);
+							break;
+						default:
+							throw new NodeOperationError(
+								this.getNode(),
+								`Unknown cardState operation: ${operation}`,
 								{ itemIndex: i },
 							);
 					}

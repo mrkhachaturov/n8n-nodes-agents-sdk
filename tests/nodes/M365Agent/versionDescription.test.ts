@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { versionDescription } from '../../../nodes/M365Agent/actions/versionDescription';
 
 describe('M365Agent versionDescription', () => {
-	it('lists exactly 12 resources, alphabetical by display name', () => {
+	it('lists exactly 13 resources, alphabetical by display name', () => {
 		// Assert the array as-written — sorting before compare hides misordering.
 		const resource = versionDescription.properties.find((p) => p.name === 'resource')!;
 		const options = resource.options as Array<{ name: string; value: string }>;
@@ -10,6 +10,7 @@ describe('M365Agent versionDescription', () => {
 			'Adaptive Card',
 			'Animation Card',
 			'Audio Card',
+			'Card State Machine',
 			'Hero Card',
 			'Invoke Response',
 			'Message',
@@ -24,6 +25,7 @@ describe('M365Agent versionDescription', () => {
 			'adaptiveCard',
 			'animationCard',
 			'audioCard',
+			'cardState',
 			'heroCard',
 			'invokeResponse',
 			'message',

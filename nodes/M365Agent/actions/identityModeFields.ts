@@ -12,7 +12,7 @@ export type CardResource =
 	| 'thumbnailCard'
 	| 'videoCard';
 
-type SupportedResource = 'message' | CardResource;
+type SupportedResource = 'message' | CardResource | 'cardState';
 type MessageOperation = 'send' | 'reply' | 'update' | 'delete' | 'replyInThread' | 'typing';
 type CardOperation = 'send' | 'update';
 
@@ -26,6 +26,10 @@ export function identityModeFields(
 export function identityModeFields(
 	resource: CardResource,
 	operation: CardOperation,
+): INodeProperties[];
+export function identityModeFields(
+	resource: 'cardState',
+	operation: 'select',
 ): INodeProperties[];
 export function identityModeFields(
 	resource: SupportedResource,
