@@ -1,6 +1,7 @@
 import { NodeConnectionTypes, type INodeTypeDescription } from 'n8n-workflow';
 import * as message from './message';
 import * as cardAdaptive from './card-adaptive';
+import * as cardAnimation from './card-animation';
 import * as cardHero from './card-hero';
 import * as cardThumbnail from './card-thumbnail';
 import * as invokeResponse from './invokeResponse';
@@ -60,6 +61,7 @@ export const versionDescription: INodeTypeDescription = {
 			noDataExpression: true,
 			options: [
 				{ name: 'Adaptive Card', value: 'adaptiveCard' },
+				{ name: 'Animation Card', value: 'animationCard' },
 				{ name: 'Hero Card', value: 'heroCard' },
 				{ name: 'Invoke Response', value: 'invokeResponse' },
 				{ name: 'Message', value: 'message' },
@@ -69,6 +71,7 @@ export const versionDescription: INodeTypeDescription = {
 		},
 		...message.description,
 		...cardAdaptive.description,
+		...cardAnimation.description,
 		...cardHero.description,
 		...cardThumbnail.description,
 		...invokeResponse.description,

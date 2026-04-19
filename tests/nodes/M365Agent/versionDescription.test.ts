@@ -8,6 +8,7 @@ describe('M365Agent versionDescription', () => {
 		const names = (resource?.options as { name: string }[] | undefined)?.map((o) => o.name);
 		expect(names).toEqual([
 			'Adaptive Card',
+			'Animation Card',
 			'Hero Card',
 			'Invoke Response',
 			'Message',
