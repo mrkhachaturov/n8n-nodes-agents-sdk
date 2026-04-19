@@ -7,6 +7,9 @@ import type { INodeProperties } from 'n8n-workflow';
  * Type options are alphabetical per `eslint-plugin-n8n-nodes-base/
  * node-param-options-type-unsorted-items`. Display Text only meaningful for
  * messageBack (manifest §5 displayOptions).
+ *
+ * G022 — Pair this with `suggestedActionsToOverrideOption` below to override
+ * the auto-populated `to` list for proactive sends (no inbound clicker).
  */
 export const suggestedActionsOption: INodeProperties = {
 	displayName: 'Suggested Actions',
@@ -69,4 +72,33 @@ export const suggestedActionsOption: INodeProperties = {
 			],
 		},
 	],
+};
+
+/**
+ * Suggested Actions — To (Override) — G022.
+ *
+ * Peer to `suggestedActionsOption` inside the Message Options collection.
+ * Overrides the auto-populated recipient list on `activity.suggestedActions.to`.
+ *
+ * By default the executor auto-populates `to` with the inbound clicker's user
+ * ID (so Teams channel scope renders the chips for that person). Proactive
+ * flows have no inbound clicker — use this field to pass an explicit user ID
+ * (typically via an expression like
+ * `={{ $('M365 Conversation Ref').item.json.conversationReference.user.id }}`).
+ * Leave empty for broadcast to the whole conversation.
+ *
+ * Semantics (see `shared/applyMessageOptionsToActivity.ts`):
+ *   - Field omitted (default) → auto-populate from envelope.
+ *   - Populated array         → wins over auto-populate.
+ *   - Explicit empty array    → broadcast; auto-populate skipped.
+ */
+export const suggestedActionsToOverrideOption: INodeProperties = {
+	displayName: 'Suggested Actions — To (Override)',
+	name: 'suggestedActionsToOverride',
+	type: 'string',
+	typeOptions: { multipleValues: true },
+	default: [],
+	placeholder: 'e.g. 29:1abcDefG...',
+	description:
+		'Override the recipient list on Suggested Actions chips. By default the chips target the inbound clicker (auto-populated from the envelope); set this to explicit user IDs for proactive sends where there is no clicker. Leave empty to broadcast to the whole conversation.',
 };

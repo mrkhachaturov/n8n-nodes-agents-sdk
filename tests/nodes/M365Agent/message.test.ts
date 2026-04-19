@@ -42,7 +42,7 @@ describe('message resource description', () => {
 		expect(shown).not.toContain('delete');
 	});
 
-	it('Options collection includes mentions, suggestedActions, and rawActivityOverride', () => {
+	it('Options collection includes mentions, suggestedActions, rawActivityOverride, and suggestedActionsToOverride', () => {
 		const opts = message.description.find((p) => p.name === 'options');
 		const inner = (opts?.options as Array<{ name: string }>) ?? [];
 		const names = inner.map((o) => o.name);
@@ -51,6 +51,7 @@ describe('message resource description', () => {
 			'mentions',
 			'rawActivityOverride',
 			'suggestedActions',
+			'suggestedActionsToOverride',
 		]);
 	});
 

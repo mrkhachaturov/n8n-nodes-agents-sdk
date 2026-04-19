@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { INodeProperties, INodePropertyCollection } from 'n8n-workflow';
-import { suggestedActionsOption } from '../../../../nodes/M365Agent/descriptions/suggestedActionsOption';
+import {
+	suggestedActionsOption,
+	suggestedActionsToOverrideOption,
+} from '../../../../nodes/M365Agent/descriptions/suggestedActionsOption';
 
 describe('suggestedActionsOption property', () => {
 	const valuesRow = (suggestedActionsOption.options as INodePropertyCollection[])[0]
@@ -67,5 +70,22 @@ describe('suggestedActionsOption property', () => {
 	it('property-level description ends with a period (multi-sentence)', () => {
 		expect(suggestedActionsOption.description).toBeDefined();
 		expect((suggestedActionsOption.description as string).endsWith('.')).toBe(true);
+	});
+});
+
+describe('suggestedActionsToOverrideOption property (G022)', () => {
+	it('is a multi-string override field with empty-array default', () => {
+		expect(suggestedActionsToOverrideOption.name).toBe('suggestedActionsToOverride');
+		expect(suggestedActionsToOverrideOption.type).toBe('string');
+		expect(suggestedActionsToOverrideOption.typeOptions?.multipleValues).toBe(true);
+		expect(suggestedActionsToOverrideOption.default).toEqual([]);
+	});
+
+	it('description follows the asymmetric period rule (multi-sentence ends with a period)', () => {
+		const desc = suggestedActionsToOverrideOption.description;
+		expect(desc).toBeDefined();
+		const text = desc as string;
+		const isMultiSentence = text.slice(0, -1).includes('. ');
+		expect(text.endsWith('.')).toBe(isMultiSentence);
 	});
 });
