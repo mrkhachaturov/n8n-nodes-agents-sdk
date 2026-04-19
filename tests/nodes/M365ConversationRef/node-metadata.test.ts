@@ -26,6 +26,12 @@ describe('M365ConversationRef — node metadata', () => {
 	});
 
 	it('is NOT marked usableAsTool (the node handles sensitive bearer material)', () => {
-		expect(node.description.usableAsTool).toBe(false);
+		// `usableAsTool` is intentionally OMITTED from versionDescription —
+		// n8n-workflow's type only accepts `true | UsableAsToolDescription |
+		// undefined`, so the idiomatic "off" is absence. `toBeFalsy` accepts
+		// both `undefined` (current state) and `false` (if the type ever
+		// widens), matching the assertion pattern used for M365Agent and
+		// M365AgentTrigger.
+		expect(node.description.usableAsTool).toBeFalsy();
 	});
 });

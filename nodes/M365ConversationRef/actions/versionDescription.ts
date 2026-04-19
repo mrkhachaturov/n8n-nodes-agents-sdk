@@ -12,7 +12,12 @@ export const versionDescription: INodeTypeDescription = {
 	defaults: { name: 'M365 Conversation Ref' },
 	inputs: [NodeConnectionTypes.Main],
 	outputs: [NodeConnectionTypes.Main],
-	usableAsTool: false,
+	// usableAsTool intentionally OMITTED — this node serializes conversation
+	// references with optional inbound bearer tokens (sensitive auth material)
+	// and must not be invocable from an AI Agent's reasoning loop. n8n-workflow
+	// types only accept `true | UsableAsToolDescription | undefined`, so the
+	// idiomatic "off" is omission. The class-level eslint-disable in
+	// M365ConversationRef.node.ts keeps that intent explicit.
 	properties: [
 		{
 			displayName: 'Resource',

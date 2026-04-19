@@ -4,7 +4,7 @@
  * reasoning loop. The lint rule's autofix would add `usableAsTool: true`, which
  * is the wrong default for nodes handling bearer tokens. n8n-workflow's type
  * only accepts `true | UsableAsToolDescription | undefined` so the idiomatic
- * "off" is `usableAsTool: false` (set in versionDescription). Suppressing this
+ * "off" is omission (versionDescription omits the field). Suppressing this
  * rule keeps that intent explicit at the class level.
  */
 import type {
