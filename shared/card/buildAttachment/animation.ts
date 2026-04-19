@@ -33,11 +33,9 @@ export function buildAnimationAttachment(ctx: IExecuteFunctions, itemIndex: numb
 		(ctx.getNodeParameter('posterImageAltText', itemIndex, '') as string) || undefined;
 	const media = buildMedia(ctx.getNodeParameter('media', itemIndex, {}) as never);
 	if (media.length === 0) {
-		throw new NodeOperationError(
-			ctx.getNode(),
-			'Animation Card requires at least one media URL',
-			{ itemIndex },
-		);
+		throw new NodeOperationError(ctx.getNode(), 'Animation Card requires at least one media URL', {
+			itemIndex,
+		});
 	}
 	const buttons = buildButtons(ctx.getNodeParameter('buttons', itemIndex, {}) as never);
 	const options = ctx.getNodeParameter('options', itemIndex, {}) as MediaCardOptions;
@@ -63,10 +61,5 @@ export function buildAnimationAttachment(ctx: IExecuteFunctions, itemIndex: numb
 	}
 	if (value !== undefined) other.value = value;
 
-	return CardFactory.animationCard(
-		title,
-		media,
-		buttons.length > 0 ? buttons : undefined,
-		other,
-	);
+	return CardFactory.animationCard(title, media, buttons.length > 0 ? buttons : undefined, other);
 }

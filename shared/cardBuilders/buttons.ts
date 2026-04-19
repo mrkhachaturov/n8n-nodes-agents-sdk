@@ -9,27 +9,27 @@ import { cardActionFields, buildActions } from './cardActionRow';
  * property in their resource-scoped `displayOptions`.
  */
 export function buttonsField(): INodeProperties {
-  return {
-    displayName: 'Buttons',
-    name: 'buttons',
-    type: 'fixedCollection',
-    typeOptions: { multipleValues: true },
-    default: {},
-    options: [
-      {
-        displayName: 'Button',
-        name: 'button',
-        values: cardActionFields(),
-      },
-    ],
-  };
+	return {
+		displayName: 'Buttons',
+		name: 'buttons',
+		type: 'fixedCollection',
+		typeOptions: { multipleValues: true },
+		default: {},
+		options: [
+			{
+				displayName: 'Button',
+				name: 'button',
+				values: cardActionFields(),
+			},
+		],
+	};
 }
 
 interface ButtonsCollection {
-  button?: Parameters<typeof buildActions>[0];
+	button?: Parameters<typeof buildActions>[0];
 }
 
 /** Convert the raw Buttons fixedCollection value to `CardAction[]`. */
 export function buildButtons(raw: ButtonsCollection | undefined): CardAction[] {
-  return buildActions(raw?.button);
+	return buildActions(raw?.button);
 }

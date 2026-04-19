@@ -88,8 +88,7 @@ export async function execute(
 	// sends (no prior click), typically resolves to empty → broadcast.
 	const parsed = item.parsed as IDataObject | undefined;
 	const clickerFromParsed = parsed?.userId as string | undefined;
-	const clickerFromRef =
-		(ref as { user?: { id?: string } }).user?.id ?? undefined;
+	const clickerFromRef = (ref as { user?: { id?: string } }).user?.id ?? undefined;
 	const clickerId = clickerFromParsed ?? clickerFromRef;
 	const suggestedActionsTo: string[] = clickerId ? [clickerId] : [];
 

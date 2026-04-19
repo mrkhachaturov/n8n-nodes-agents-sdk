@@ -57,11 +57,9 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 				);
 			}
 			if (op !== 'respond') {
-				throw new NodeOperationError(
-					this.getNode(),
-					`Unknown invokeResponse operation: ${op}`,
-					{ itemIndex: i },
-				);
+				throw new NodeOperationError(this.getNode(), `Unknown invokeResponse operation: ${op}`, {
+					itemIndex: i,
+				});
 			}
 		}
 		await invokeResponse.respond.execute(this);
@@ -189,22 +187,10 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 				case 'audioCard': {
 					switch (operation) {
 						case 'send':
-							result = await cardAudio.send.execute.call(
-								this,
-								i,
-								authKind,
-								credentials,
-								bundles,
-							);
+							result = await cardAudio.send.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						case 'update':
-							result = await cardAudio.update.execute.call(
-								this,
-								i,
-								authKind,
-								credentials,
-								bundles,
-							);
+							result = await cardAudio.update.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						default:
 							throw new NodeOperationError(
@@ -221,13 +207,7 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 							result = await cardHero.send.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						case 'update':
-							result = await cardHero.update.execute.call(
-								this,
-								i,
-								authKind,
-								credentials,
-								bundles,
-							);
+							result = await cardHero.update.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						default:
 							throw new NodeOperationError(
@@ -299,13 +279,7 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 				case 'receiptCard': {
 					switch (operation) {
 						case 'send':
-							result = await cardReceipt.send.execute.call(
-								this,
-								i,
-								authKind,
-								credentials,
-								bundles,
-							);
+							result = await cardReceipt.send.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						case 'update':
 							result = await cardReceipt.update.execute.call(
@@ -328,13 +302,7 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 				case 'signInCard': {
 					switch (operation) {
 						case 'send':
-							result = await cardSignIn.send.execute.call(
-								this,
-								i,
-								authKind,
-								credentials,
-								bundles,
-							);
+							result = await cardSignIn.send.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						case 'update':
 							result = await cardSignIn.update.execute.call(
@@ -386,22 +354,10 @@ export async function router(this: IExecuteFunctions): Promise<INodeExecutionDat
 				case 'videoCard': {
 					switch (operation) {
 						case 'send':
-							result = await cardVideo.send.execute.call(
-								this,
-								i,
-								authKind,
-								credentials,
-								bundles,
-							);
+							result = await cardVideo.send.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						case 'update':
-							result = await cardVideo.update.execute.call(
-								this,
-								i,
-								authKind,
-								credentials,
-								bundles,
-							);
+							result = await cardVideo.update.execute.call(this, i, authKind, credentials, bundles);
 							break;
 						default:
 							throw new NodeOperationError(

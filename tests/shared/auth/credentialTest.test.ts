@@ -41,12 +41,10 @@ describe('agent365CredentialTest', () => {
 	});
 
 	it('sidecar → OK when /healthz and /AuthorizationHeaderUnauthenticated both 200', async () => {
-		mockFetch
-			.mockResolvedValueOnce({ ok: true, status: 200 })
-			.mockResolvedValueOnce({
-				ok: true,
-				json: () => Promise.resolve({ authorizationHeader: 'Bearer x' }),
-			});
+		mockFetch.mockResolvedValueOnce({ ok: true, status: 200 }).mockResolvedValueOnce({
+			ok: true,
+			json: () => Promise.resolve({ authorizationHeader: 'Bearer x' }),
+		});
 		const r = await agent365CredentialTest.call(
 			{} as any,
 			{
