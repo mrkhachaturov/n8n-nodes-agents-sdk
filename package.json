@@ -62,7 +62,8 @@
 		],
 		"nodes": [
 			"dist/nodes/M365AgentTrigger/M365AgentTrigger.node.js",
-			"dist/nodes/M365Agent/M365Agent.node.js"
+			"dist/nodes/M365Agent/M365Agent.node.js",
+			"dist/nodes/M365ConversationRef/M365ConversationRef.node.js"
 		]
 	},
 	"engines": {
