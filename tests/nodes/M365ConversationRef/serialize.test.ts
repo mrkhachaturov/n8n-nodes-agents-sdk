@@ -48,3 +48,55 @@ describe('M365ConversationRef — Serialize/save', () => {
 		await expect(node.execute.call(ctx({}, false) as any)).rejects.toThrow(/conversationReference/);
 	});
 });
+
+function loadCtx(payload: any, payloadField = 'payload') {
+	return {
+		getInputData: () => [{ json: { [payloadField]: payload } }],
+		getNodeParameter: (n: string) => {
+			if (n === 'resource') return 'serialize';
+			if (n === 'operation') return 'load';
+			if (n === 'payloadField') return payloadField;
+			return undefined;
+		},
+		getNode: () => ({ name: 'test' }),
+		helpers: { returnJsonArray: (x: any) => x },
+	} as any;
+}
+
+describe('M365ConversationRef — Serialize/load', () => {
+	const node = new M365ConversationRef();
+
+	const savedPayload = {
+		conversationReference: { serviceUrl: 'u', conversation: { id: 'c' } },
+		tokenSource: 'agent365',
+		claimsExp: 9999999999,
+		inboundBearer: 'Bearer eyJ',
+	};
+
+	it('reconstructs envelope shape with expired=false', async () => {
+		const res = await node.execute.call(loadCtx(savedPayload) as any);
+		const out = res[0][0].json as any;
+		expect(out.conversationReference).toEqual(savedPayload.conversationReference);
+		expect(out.authContext.inboundBearer).toBe('Bearer eyJ');
+		expect(out.expired).toBe(false);
+	});
+
+	it('reports expired=true when claimsExp is in the past', async () => {
+		const expired = { ...savedPayload, claimsExp: 1 };
+		const res = await node.execute.call(loadCtx(expired) as any);
+		const out = res[0][0].json as any;
+		expect(out.expired).toBe(true);
+		// Bearer still returned — workflow decides how to react
+		expect(out.authContext.inboundBearer).toBe('Bearer eyJ');
+	});
+
+	it('respects a custom payloadField', async () => {
+		const res = await node.execute.call(loadCtx(savedPayload, 'stored') as any);
+		const out = res[0][0].json as any;
+		expect(out.conversationReference).toEqual(savedPayload.conversationReference);
+	});
+
+	it('throws on malformed payload (missing conversationReference)', async () => {
+		await expect(node.execute.call(loadCtx({ tokenSource: 'agent365' }) as any)).rejects.toThrow(/conversationReference/);
+	});
+});
