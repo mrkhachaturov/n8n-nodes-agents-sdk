@@ -17,20 +17,42 @@ describe('imagesField', () => {
 		expect(row.values.map((v) => v.name)).toEqual(['url', 'alt', 'options']);
 	});
 
-	it('Tap Action inside Options is a collection (singleton), not fixedCollection', () => {
+	it('Tap Action inside Options is a singular fixedCollection (not collection)', () => {
+		// Why: n8n's frontend validator (packages/workflow/src/node-helpers.ts:1540)
+		// walks every direct child of a `collection` unconditionally — no
+		// `value === undefined` guard. Wrapping cardActionFields() (which has
+		// `required: true` on type/title/value) in a singular `fixedCollection`
+		// makes the validator skip the inner walk until the user opens
+		// "Add Tap Action".
 		const field = imagesField();
 		const row = (
 			field.options as Array<{
 				values: Array<{
 					name: string;
 					type?: string;
-					options?: Array<{ name: string; type: string }>;
+					typeOptions?: { multipleValues?: boolean };
+					options?: Array<{
+						name: string;
+						type: string;
+						typeOptions?: { multipleValues?: boolean };
+						options?: Array<{ name: string; values?: Array<{ name: string }> }>;
+					}>;
 				}>;
 			}>
 		)[0];
 		const options = row.values.find((v) => v.name === 'options')!;
 		const tap = options.options!.find((o) => o.name === 'tapAction')!;
-		expect(tap.type).toBe('collection');
+		expect(tap.type).toBe('fixedCollection');
+		expect(tap.typeOptions).toEqual({ multipleValues: false });
+		// One named inner group ("action") wraps cardActionFields().
+		const actionGroup = tap.options![0];
+		expect(actionGroup.name).toBe('action');
+		expect(actionGroup.values!.map((v) => v.name)).toEqual([
+			'type',
+			'title',
+			'value',
+			'options',
+		]);
 	});
 });
 
@@ -51,14 +73,16 @@ describe('buildImages', () => {
 		expect(out).toEqual([{ url: 'https://a', alt: 'hello' }, { url: 'https://b' }]);
 	});
 
-	it('extracts tap singleton from Options.tapAction', () => {
+	it('extracts tap from Options.tapAction.action (the fixedCollection-wrapped shape)', () => {
 		const out = buildImages({
 			image: [
 				{
 					url: 'https://a',
 					alt: 'alt',
 					options: {
-						tapAction: { type: 'openUrl', title: 'Open', value: 'https://x' },
+						tapAction: {
+							action: { type: 'openUrl', title: 'Open', value: 'https://x' },
+						},
 					},
 				},
 			],
@@ -66,10 +90,14 @@ describe('buildImages', () => {
 		expect(out[0].tap).toEqual({ type: 'openUrl', title: 'Open', value: 'https://x' });
 	});
 
-	it('omits tap when Options.tapAction is absent or empty', () => {
+	it('omits tap when Options.tapAction is absent, empty, or missing the action wrapper', () => {
 		const empty = buildImages({ image: [{ url: 'u', alt: 'a', options: {} }] });
 		expect(empty[0]).not.toHaveProperty('tap');
 		const missing = buildImages({ image: [{ url: 'u', alt: 'a' }] });
 		expect(missing[0]).not.toHaveProperty('tap');
+		const wrapperPresentNoAction = buildImages({
+			image: [{ url: 'u', alt: 'a', options: { tapAction: {} } }],
+		});
+		expect(wrapperPresentNoAction[0]).not.toHaveProperty('tap');
 	});
 });

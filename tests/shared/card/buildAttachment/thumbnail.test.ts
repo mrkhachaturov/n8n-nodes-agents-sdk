@@ -27,4 +27,20 @@ describe('buildThumbnailAttachment', () => {
 		expect(att.contentType).toBe('application/vnd.microsoft.card.thumbnail');
 		expect((att.content as { title: string }).title).toBe('Thumb');
 	});
+
+	it('reads tap from the fixedCollection-wrapped Options.tapAction.action shape', () => {
+		const att = buildThumbnailAttachment(
+			ctx({
+				title: 'Thumb',
+				options: {
+					tapAction: {
+						action: { type: 'openUrl', title: 'Tap', value: 'https://x' },
+					},
+				},
+			}),
+			0,
+		);
+		const content = att.content as { tap?: { type: string; value: string } };
+		expect(content.tap).toEqual({ type: 'openUrl', title: 'Tap', value: 'https://x' });
+	});
 });

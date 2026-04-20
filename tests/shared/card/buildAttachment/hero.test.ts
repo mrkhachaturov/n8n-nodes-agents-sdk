@@ -26,7 +26,13 @@ describe('buildHeroAttachment', () => {
 				},
 				options: {
 					fallbackText: 'fallback',
-					tapAction: { type: 'openUrl', title: 'Main Open', value: 'https://main' },
+					// Tap Action is now wrapped in a singular fixedCollection so the
+					// n8n editor's validator only walks Type/Title/Value once the
+					// user opens "Add Tap Action" — saved shape is
+					// `tapAction.action = { type, title, value, ... }`.
+					tapAction: {
+						action: { type: 'openUrl', title: 'Main Open', value: 'https://main' },
+					},
 				},
 			}),
 			0,
@@ -54,6 +60,15 @@ describe('buildHeroAttachment', () => {
 		expect(content.title).toBe('T');
 		expect(content.images).toBeUndefined();
 		expect(content.buttons).toBeUndefined();
+		expect(content.tap).toBeUndefined();
+	});
+
+	it('omits tap when the fixedCollection wrapper is present but the action is missing', () => {
+		const att = buildHeroAttachment(
+			ctx({ title: 'T', options: { tapAction: {} } }),
+			0,
+		);
+		const content = att.content as Record<string, unknown>;
 		expect(content.tap).toBeUndefined();
 	});
 });

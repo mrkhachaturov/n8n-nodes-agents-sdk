@@ -10,7 +10,9 @@ interface CardImage {
 
 /**
  * Images builder — fixedCollection(multipleValues). Each row has url + alt +
- * Options.tapAction (a single CardAction). Tap is a singleton per SDK CardImage.
+ * Options.tapAction (a single CardAction, wrapped in a singular fixedCollection
+ * so the n8n editor's validator only walks Type/Title/Value once the user opens
+ * "Add Tap Action"). Tap is a singleton per SDK CardImage.
  * Used by Hero and Thumbnail resources.
  */
 export function imagesField(): INodeProperties {
@@ -50,11 +52,18 @@ export function imagesField(): INodeProperties {
 							{
 								displayName: 'Tap Action',
 								name: 'tapAction',
-								type: 'collection',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: false },
 								placeholder: 'Add Tap Action',
 								default: {},
 								description: 'Action invoked when the user taps the image',
-								options: cardActionFields(),
+								options: [
+									{
+										displayName: 'Action',
+										name: 'action',
+										values: cardActionFields(),
+									},
+								],
 							},
 						],
 					},
@@ -64,11 +73,15 @@ export function imagesField(): INodeProperties {
 	};
 }
 
+type CardActionRowInput = Parameters<typeof buildActions>[0] extends Array<infer R> | undefined
+	? R
+	: never;
+
 interface ImageRow {
 	url?: string;
 	alt?: string;
 	options?: {
-		tapAction?: Parameters<typeof buildActions>[0] extends Array<infer R> | undefined ? R : never;
+		tapAction?: { action?: CardActionRowInput };
 	};
 }
 
@@ -83,7 +96,7 @@ export function buildImages(raw: ImagesCollection | undefined): CardImage[] {
 	return rows.map((row) => {
 		const image: CardImage = { url: row.url ?? '' };
 		if (row.alt) image.alt = row.alt;
-		const tapRaw = row.options?.tapAction;
+		const tapRaw = row.options?.tapAction?.action;
 		if (tapRaw && Object.keys(tapRaw as Record<string, unknown>).length > 0) {
 			const [tap] = buildActions([tapRaw]);
 			if (tap) image.tap = tap;

@@ -5,9 +5,17 @@ import { buildButtons } from '../../cardBuilders/buttons';
 import { buildImages } from '../../cardBuilders/images';
 import { buildActions } from '../../cardBuilders/cardActionRow';
 
+type CardActionRowInput = Parameters<typeof buildActions>[0] extends Array<infer R> | undefined
+	? R
+	: never;
+
 /**
  * Thumbnail Card attachment builder. Mirrors `CardFactory.thumbnailCard(title, text, images, buttons, other)`
  * from @microsoft/agents-hosting. Subtitle and Tap Action go into the `other` param.
+ *
+ * Tap Action is wrapped in a singular fixedCollection so the n8n editor's
+ * validator only walks Type/Title/Value once the user opens "Add Tap Action".
+ * Saved shape: `options.tapAction.action = { type, title, value, ... }`.
  */
 export function buildThumbnailAttachment(ctx: IExecuteFunctions, itemIndex: number): Attachment {
 	const title = (ctx.getNodeParameter('title', itemIndex, '') as string) || '';
@@ -16,10 +24,10 @@ export function buildThumbnailAttachment(ctx: IExecuteFunctions, itemIndex: numb
 	const images = buildImages(ctx.getNodeParameter('images', itemIndex, {}) as never);
 	const buttons = buildButtons(ctx.getNodeParameter('buttons', itemIndex, {}) as never);
 	const options = ctx.getNodeParameter('options', itemIndex, {}) as {
-		tapAction?: Parameters<typeof buildActions>[0] extends Array<infer R> | undefined ? R : never;
+		tapAction?: { action?: CardActionRowInput };
 	};
 
-	const tapRaw = options.tapAction;
+	const tapRaw = options.tapAction?.action;
 	const tap =
 		tapRaw && Object.keys(tapRaw as Record<string, unknown>).length > 0
 			? buildActions([tapRaw])[0]

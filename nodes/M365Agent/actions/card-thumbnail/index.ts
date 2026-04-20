@@ -73,11 +73,18 @@ export const description: INodeProperties[] = [
 			{
 				displayName: 'Tap Action',
 				name: 'tapAction',
-				type: 'collection',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: false },
 				placeholder: 'Add Tap Action',
 				default: {},
 				description: 'Action invoked when the card body is tapped',
-				options: cardActionFields(),
+				options: [
+					{
+						displayName: 'Action',
+						name: 'action',
+						values: cardActionFields(),
+					},
+				],
 			},
 		],
 	},
