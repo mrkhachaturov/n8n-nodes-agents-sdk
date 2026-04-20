@@ -13,12 +13,16 @@ import { KNOWN_INVOKE_NAMES } from '../../../shared/invokeNames';
  * through `getNodeParameter` — the filter logic is list-membership, so anything
  * in the saved config passes regardless of UI-type constraints.
  */
+type FilterMode = 'simple' | 'advanced';
+
 function makeCtx(opts: {
+	mode?: FilterMode;
 	activityTypes?: string[];
 	invokeNames?: string[];
 	type: string;
 	name?: string;
 }) {
+	const mode: FilterMode = opts.mode ?? 'advanced';
 	// Minimal-but-valid Activity skeleton — envelope builder requires serviceUrl, channelId, conversation.
 	const body: Record<string, unknown> = {
 		type: opts.type,
@@ -41,8 +45,12 @@ function makeCtx(opts: {
 		getBodyData: () => body,
 		getHeaderData: () => ({}),
 		getNodeParameter: (name: string) => {
-			if (name === 'activityTypes') return opts.activityTypes ?? [];
-			if (name === 'invokeNames') return opts.invokeNames ?? [];
+			if (name === 'activityFilterMode') return mode;
+			if (name === 'activityTypesSimple') return mode === 'simple' ? opts.activityTypes ?? [] : [];
+			if (name === 'activityTypesAdvanced')
+				return mode === 'advanced' ? opts.activityTypes ?? [] : [];
+			if (name === 'invokeNamesSimple') return mode === 'simple' ? opts.invokeNames ?? [] : [];
+			if (name === 'invokeNamesAdvanced') return mode === 'advanced' ? opts.invokeNames ?? [] : [];
 			if (name === 'channelFilter') return [];
 			if (name === 'authKind') return 'classicBot';
 			if (name === 'responseMode') return 'onReceived';
@@ -107,12 +115,78 @@ describe('M365AgentTrigger invoke-name filter', () => {
 		expect((res.workflowData as any)[0].length).toBeGreaterThan(0);
 	});
 
-	// Metadata assertion — keeps the Trigger dropdown aligned with the shared registry.
-	it('Trigger `invokeNames` property exposes every value in KNOWN_INVOKE_NAMES', () => {
+	it('Simple mode: accepts invoke with matching name when filter configured', async () => {
+		const res = await trigger.webhook.call(
+			makeCtx({
+				mode: 'simple',
+				activityTypes: ['invoke'],
+				invokeNames: ['taskModule/fetch'],
+				type: 'invoke',
+				name: 'taskModule/fetch',
+			}) as any,
+		);
+		expect((res.workflowData as any)[0].length).toBeGreaterThan(0);
+	});
+
+	it('Simple mode: skips invoke with non-matching name when filter configured', async () => {
+		const res = await trigger.webhook.call(
+			makeCtx({
+				mode: 'simple',
+				activityTypes: ['invoke'],
+				invokeNames: ['taskModule/fetch'],
+				type: 'invoke',
+				name: 'composeExtension/query',
+			}) as any,
+		);
+		expect((res.workflowData as any)[0].length).toBe(0);
+	});
+
+	// Metadata assertions — both Simple and Advanced variants expose the full registry.
+	it('Trigger `invokeNamesSimple` and `invokeNamesAdvanced` expose every value in KNOWN_INVOKE_NAMES', () => {
 		const instance = new M365AgentTrigger();
-		const invokeNamesProp = instance.description.properties.find((p) => p.name === 'invokeNames');
-		expect(invokeNamesProp).toBeDefined();
-		const uiValues = (invokeNamesProp?.options as any[]).map((o) => o.value).sort();
-		expect(uiValues).toEqual([...KNOWN_INVOKE_NAMES].sort());
+		const expected = [...KNOWN_INVOKE_NAMES].sort();
+
+		const simpleProp = instance.description.properties.find((p) => p.name === 'invokeNamesSimple');
+		expect(simpleProp).toBeDefined();
+		const simpleValues = (simpleProp?.options as any[]).map((o) => o.value).sort();
+		expect(simpleValues).toEqual(expected);
+
+		const advancedProp = instance.description.properties.find(
+			(p) => p.name === 'invokeNamesAdvanced',
+		);
+		expect(advancedProp).toBeDefined();
+		const advancedValues = (advancedProp?.options as any[]).map((o) => o.value).sort();
+		expect(advancedValues).toEqual(expected);
+	});
+
+	// Strict invoke gate (D1-D): Advanced invokeNames only visible when
+	// activityTypesAdvanced explicitly contains 'invoke'. Empty-list "accept all"
+	// must hide the invoke-name picker to keep the UI unambiguous.
+	it('strict invoke gate: invokeNamesAdvanced requires activityTypesAdvanced to include "invoke"', () => {
+		const instance = new M365AgentTrigger();
+		const advancedProp = instance.description.properties.find(
+			(p) => p.name === 'invokeNamesAdvanced',
+		);
+		expect(advancedProp).toBeDefined();
+		expect((advancedProp as any).displayOptions).toEqual({
+			show: {
+				activityFilterMode: ['advanced'],
+				activityTypesAdvanced: ['invoke'],
+			},
+		});
+	});
+
+	it('strict invoke gate: invokeNamesSimple requires activityTypesSimple to include "invoke"', () => {
+		const instance = new M365AgentTrigger();
+		const simpleProp = instance.description.properties.find(
+			(p) => p.name === 'invokeNamesSimple',
+		);
+		expect(simpleProp).toBeDefined();
+		expect((simpleProp as any).displayOptions).toEqual({
+			show: {
+				activityFilterMode: ['simple'],
+				activityTypesSimple: ['invoke'],
+			},
+		});
 	});
 });

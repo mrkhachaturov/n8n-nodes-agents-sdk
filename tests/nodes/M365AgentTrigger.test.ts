@@ -20,10 +20,12 @@ describe('M365AgentTrigger description', () => {
 		expect(credName).toBe('m365AgentApi');
 	});
 
-	it('exposes activityTypes and channelFilter properties', () => {
+	it('exposes activity filter properties (Simple/Advanced split) and channelFilter', () => {
 		const node = new M365AgentTrigger();
 		const names = node.description.properties.map((p) => p.name);
-		expect(names).toContain('activityTypes');
+		expect(names).toContain('activityFilterMode');
+		expect(names).toContain('activityTypesSimple');
+		expect(names).toContain('activityTypesAdvanced');
 		expect(names).toContain('channelFilter');
 	});
 
@@ -90,7 +92,11 @@ describe('M365AgentTrigger webhook()', () => {
 			headers: { authorization: 'Bearer valid.jwt.token' },
 			body,
 			credentials: makeCredentials({ anonymousAllowed: false }),
-			parameters: { activityTypes: ['message'], channelFilter: [] },
+			parameters: {
+				activityFilterMode: 'simple',
+				activityTypesSimple: ['message'],
+				channelFilter: [],
+			},
 		});
 
 		const result = await node.webhook.call(ctx as never);
@@ -125,7 +131,11 @@ describe('M365AgentTrigger webhook()', () => {
 			headers: { authorization: 'Bearer valid.jwt.token' },
 			body,
 			credentials: makeCredentials({ anonymousAllowed: false }),
-			parameters: { activityTypes: ['message'], channelFilter: [] },
+			parameters: {
+				activityFilterMode: 'simple',
+				activityTypesSimple: ['message'],
+				channelFilter: [],
+			},
 		});
 
 		const result = await node.webhook.call(ctx as never);

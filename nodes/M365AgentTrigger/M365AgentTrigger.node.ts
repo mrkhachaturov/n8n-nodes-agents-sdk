@@ -115,13 +115,70 @@ export class M365AgentTrigger implements INodeType {
 					'How the trigger replies to the incoming HTTP request. Most bots use Immediate; invoke activities require Wait For Response Node.',
 			},
 			{
+				displayName: 'Activity Filter Mode',
+				name: 'activityFilterMode',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Simple',
+						value: 'simple',
+						description:
+							'Curated set of common activity types (message, invoke, typing, conversationUpdate, messageReaction, event, installationUpdate)',
+					},
+					{
+						name: 'Advanced',
+						value: 'advanced',
+						description: 'All 18 Activity types from the SDK enum, for deep-protocol routing',
+					},
+				],
+				default: 'simple',
+				description:
+					'Simple mode exposes the 7 most-used activity types. Advanced mode exposes the full ActivityTypes enum for protocol-level routing.',
+			},
+			{
 				displayName: 'Activity Types',
-				name: 'activityTypes',
+				name: 'activityTypesSimple',
 				type: 'multiOptions',
 				noDataExpression: true,
-				default: [],
+				displayOptions: { show: { activityFilterMode: ['simple'] } },
+				default: ['message'],
+				description: 'Filter inbound activities by type. Empty = accept all Simple types.',
+				options: [
+					{
+						name: 'Conversation Update',
+						value: 'conversationUpdate',
+						description: 'Members added or removed from conversation',
+					},
+					{ name: 'Event', value: 'event', description: 'Generic event' },
+					{
+						name: 'Installation Update',
+						value: 'installationUpdate',
+						description: 'App installed / uninstalled in a conversation',
+					},
+					{
+						name: 'Invoke',
+						value: 'invoke',
+						description: 'Synchronous request expecting a response (cards, tasks)',
+					},
+					{ name: 'Message', value: 'message', description: 'Standard text or rich message' },
+					{
+						name: 'Message Reaction',
+						value: 'messageReaction',
+						description: 'Reaction added to or removed from a message',
+					},
+					{ name: 'Typing', value: 'typing', description: 'Typing indicator signal' },
+				],
+			},
+			{
+				displayName: 'Activity Types',
+				name: 'activityTypesAdvanced',
+				type: 'multiOptions',
+				noDataExpression: true,
+				displayOptions: { show: { activityFilterMode: ['advanced'] } },
+				default: ['message'],
 				description:
-					'Filter inbound activities by type. Empty = accept all. Populated from the full ActivityTypes enum (18 members).',
+					'Filter inbound activities from the full SDK ActivityTypes enum (18 types). Empty = accept all 18.',
 				options: [
 					{ name: 'Command', value: 'command', description: 'Command invocation' },
 					{
@@ -197,13 +254,34 @@ export class M365AgentTrigger implements INodeType {
 			},
 			{
 				displayName: 'Invoke Names',
-				name: 'invokeNames',
+				name: 'invokeNamesSimple',
 				type: 'multiOptions',
 				noDataExpression: true,
 				default: [],
-				displayOptions: { show: { activityTypes: ['invoke'] } },
+				displayOptions: {
+					show: {
+						activityFilterMode: ['simple'],
+						activityTypesSimple: ['invoke'],
+					},
+				},
 				description:
-					'Filter inbound invoke activities by name. Empty = accept all invoke names. Select from known names or add custom via expression for unknown/future names.',
+					'Filter inbound invoke activities by name. Empty = accept all invoke names.',
+				options: INVOKE_NAME_OPTIONS,
+			},
+			{
+				displayName: 'Invoke Names',
+				name: 'invokeNamesAdvanced',
+				type: 'multiOptions',
+				noDataExpression: true,
+				default: [],
+				displayOptions: {
+					show: {
+						activityFilterMode: ['advanced'],
+						activityTypesAdvanced: ['invoke'],
+					},
+				},
+				description:
+					'Filter inbound invoke activities by name. Empty = accept all invoke names.',
 				options: INVOKE_NAME_OPTIONS,
 			},
 			{
@@ -266,7 +344,11 @@ export class M365AgentTrigger implements INodeType {
 		}
 
 		const body = this.getBodyData() as unknown as Activity;
-		const activityTypes = this.getNodeParameter('activityTypes', []) as string[];
+		const mode = this.getNodeParameter('activityFilterMode', 'simple') as 'simple' | 'advanced';
+		const activityTypes = this.getNodeParameter(
+			mode === 'simple' ? 'activityTypesSimple' : 'activityTypesAdvanced',
+			[],
+		) as string[];
 		const channelFilter = this.getNodeParameter('channelFilter', []) as string[];
 
 		// Filters return 200 OK to Azure Bot Service (acknowledging receipt)
@@ -283,7 +365,10 @@ export class M365AgentTrigger implements INodeType {
 		// and the inbound activity is itself an invoke. Empty list = accept all
 		// invoke names. Non-empty + no match ⇒ swallow (200 OK, zero items).
 		if (body.type === 'invoke' && activityTypes.includes('invoke')) {
-			const invokeNames = this.getNodeParameter('invokeNames', []) as string[];
+			const invokeNames = this.getNodeParameter(
+				mode === 'simple' ? 'invokeNamesSimple' : 'invokeNamesAdvanced',
+				[],
+			) as string[];
 			if (invokeNames.length > 0 && (!body.name || !invokeNames.includes(body.name))) {
 				return { webhookResponse: { status: 200 }, workflowData: [[]] };
 			}

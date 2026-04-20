@@ -39,9 +39,12 @@ function makeCtx(body: Record<string, unknown>) {
 		getBodyData: () => full,
 		getHeaderData: () => ({}),
 		getNodeParameter: (name: string) => {
-			if (name === 'activityTypes') return [];
+			if (name === 'activityFilterMode') return 'advanced';
+			if (name === 'activityTypesSimple') return [];
+			if (name === 'activityTypesAdvanced') return [];
+			if (name === 'invokeNamesSimple') return [];
+			if (name === 'invokeNamesAdvanced') return [];
 			if (name === 'channelFilter') return [];
-			if (name === 'invokeNames') return [];
 			if (name === 'authKind') return 'classicBot';
 			if (name === 'responseMode') return 'onReceived';
 			return undefined;
