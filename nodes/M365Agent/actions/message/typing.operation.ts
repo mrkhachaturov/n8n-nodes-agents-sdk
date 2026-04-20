@@ -1,5 +1,5 @@
 import type { IExecuteFunctions, IDataObject, INodeProperties, JsonObject } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import type { Activity } from '@microsoft/agents-activity';
 
 import { acquireOutboundToken } from '../../../../shared/auth/router';
@@ -30,7 +30,19 @@ export async function execute(
 ): Promise<IDataObject> {
 	const item = this.getInputData()[itemIndex].json as IDataObject;
 	// Typing can be proactive — unlike delete/update/reply we do NOT require activityId.
-	const ref = resolveConversationReference(this, itemIndex, item);
+	let ref: ReturnType<typeof resolveConversationReference>;
+	try {
+		ref = resolveConversationReference(this, itemIndex, item);
+	} catch (err) {
+		if (err instanceof NodeOperationError) {
+			throw new NodeOperationError(
+				this.getNode(),
+				'Typing requires conversation reference. Use From Envelope (default) on a reply flow, or Specify Manually for proactive.',
+				{ itemIndex },
+			);
+		}
+		throw err;
+	}
 
 	// ── Auth routing ──────────────────────────────────────────────────────────
 	const identityMode: IdentityMode =

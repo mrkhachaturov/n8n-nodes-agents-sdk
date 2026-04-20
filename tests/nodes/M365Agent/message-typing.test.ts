@@ -99,7 +99,9 @@ describe('message/typing operation', () => {
 				{ appType: 'SingleTenant', clientId: 'c' } as any,
 				new Map(),
 			),
-		).rejects.toThrow(/conversationReference is missing/i);
+		).rejects.toThrow(
+			/Typing requires conversation reference\. Use From Envelope \(default\) on a reply flow, or Specify Manually for proactive\./,
+		);
 	});
 
 	it('classic authKind → router receives classicBot', async () => {
