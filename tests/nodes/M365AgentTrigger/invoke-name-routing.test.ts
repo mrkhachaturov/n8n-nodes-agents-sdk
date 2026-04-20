@@ -79,6 +79,14 @@ describe('M365AgentTrigger invoke-name filter', () => {
 		expect(envelope.invokeName).toBeUndefined();
 	});
 
+	it('omits invokeName on envelope when type=invoke but name is empty string', async () => {
+		const res = await trigger.webhook.call(
+			makeCtx({ type: 'invoke', name: '' }) as any,
+		);
+		const envelope = (res.workflowData as any)[0][0].json;
+		expect(envelope.invokeName).toBeUndefined();
+	});
+
 	it('accepts invoke with matching name when filter configured', async () => {
 		const res = await trigger.webhook.call(
 			makeCtx({

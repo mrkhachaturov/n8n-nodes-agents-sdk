@@ -390,7 +390,7 @@ export class M365AgentTrigger implements INodeType {
 				parsed: parseActivity(body),
 				raw: body,
 			};
-			if (body.type === 'invoke' && typeof body.name === 'string') {
+			if (body.type === 'invoke' && typeof body.name === 'string' && body.name.length > 0) {
 				base.invokeName = body.name;
 			}
 			if (authKind === 'agent365' && validatedClaims && authHeader) {
