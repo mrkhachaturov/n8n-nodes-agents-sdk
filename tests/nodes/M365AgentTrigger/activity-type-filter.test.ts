@@ -111,7 +111,7 @@ describe('M365AgentTrigger activity-type filter — Simple/Advanced mode split (
 		expect(res.workflowData?.[0]?.length ?? 0).toBeGreaterThan(0);
 	});
 
-	it('Simple mode: skips a type not in the Simple selection (ignores Advanced list)', async () => {
+	it('Simple mode: skips a type not in the Simple selection (reads the Simple list when mode=simple)', async () => {
 		// Simple selection is ['message'] only → 'typing' must be swallowed.
 		const ctx = makeTriggerContext(['message'], 'typing', 'simple');
 		const res = await trigger.webhook.call(ctx as any);
@@ -165,5 +165,17 @@ describe('M365AgentTrigger activity-type filter — Simple/Advanced mode split (
 	it('old flat `activityTypes` and `invokeNames` properties are removed', () => {
 		expect(trigger.description.properties.find((p) => p.name === 'activityTypes')).toBeUndefined();
 		expect(trigger.description.properties.find((p) => p.name === 'invokeNames')).toBeUndefined();
+	});
+
+	// Counts assertion — the Simple and Advanced options arrays are derived from a
+	// single source-of-truth constant in the node file. This guards against drift
+	// if the constant is edited without updating the SIMPLE subset filter.
+	it('option-list counts are stable: 7 Simple, 18 Advanced', () => {
+		const simple = trigger.description.properties.find((p) => p.name === 'activityTypesSimple');
+		const advanced = trigger.description.properties.find(
+			(p) => p.name === 'activityTypesAdvanced',
+		);
+		expect((simple?.options as any[]).length).toBe(7);
+		expect((advanced?.options as any[]).length).toBe(18);
 	});
 });

@@ -32,6 +32,108 @@ const INVOKE_NAME_OPTIONS = [...KNOWN_INVOKE_NAMES]
 	.map((value) => ({ name: InvokeNameLabel[value], value }))
 	.sort((a, b) => a.name.localeCompare(b.name));
 
+/**
+ * Single source of truth for the 18 ActivityTypes enum values exposed in the
+ * `activityTypesAdvanced` multiOptions property. The Simple mode's 7-entry
+ * curated subset is derived below, so any wording change only needs to happen
+ * here — the Simple and Advanced lists cannot drift.
+ *
+ * Ordering mirrors the alphabetical-by-name convention used elsewhere in this
+ * node (see `INVOKE_NAME_OPTIONS`) to satisfy the n8n-nodes-base lint rule.
+ */
+const ALL_ACTIVITY_TYPE_OPTIONS: Array<{ name: string; value: string; description: string }> = [
+	{ name: 'Command', value: 'command', description: 'Command invocation' },
+	{
+		name: 'Command Result',
+		value: 'commandResult',
+		description: 'Result of a command invocation',
+	},
+	{
+		name: 'Contact Relation Update',
+		value: 'contactRelationUpdate',
+		description: 'Contact relationship change',
+	},
+	{
+		name: 'Conversation Update',
+		value: 'conversationUpdate',
+		description: 'Members added or removed from conversation',
+	},
+	{
+		name: 'Delete User Data',
+		value: 'deleteUserData',
+		description: 'User requested data deletion',
+	},
+	{
+		name: 'End Of Conversation',
+		value: 'endOfConversation',
+		description: 'Conversation ended',
+	},
+	{ name: 'Event', value: 'event', description: 'Generic event' },
+	{
+		name: 'Handoff',
+		value: 'handoff',
+		description: 'Bot-to-bot or bot-to-human handoff',
+	},
+	{
+		name: 'Installation Update',
+		value: 'installationUpdate',
+		description: 'App installed / uninstalled in a conversation',
+	},
+	{
+		name: 'Invoke',
+		value: 'invoke',
+		description: 'Synchronous request expecting a response (cards, tasks)',
+	},
+	{
+		name: 'Invoke Response',
+		value: 'invokeResponse',
+		description: 'Response payload for an invoke (rare inbound)',
+	},
+	{ name: 'Message', value: 'message', description: 'Standard text or rich message' },
+	{
+		name: 'Message Delete',
+		value: 'messageDelete',
+		description: 'A previously-sent message was deleted',
+	},
+	{
+		name: 'Message Reaction',
+		value: 'messageReaction',
+		description: 'Reaction added to or removed from a message',
+	},
+	{
+		name: 'Message Update',
+		value: 'messageUpdate',
+		description: 'A previously-sent message was edited',
+	},
+	{
+		name: 'Suggestion',
+		value: 'suggestion',
+		description: 'Proactive suggestion activity',
+	},
+	{ name: 'Trace', value: 'trace', description: 'Debug / trace activity' },
+	{ name: 'Typing', value: 'typing', description: 'Typing indicator signal' },
+];
+
+/**
+ * Curated set of the 7 activity types shown in Simple mode. Kept as a Set so
+ * membership checks are O(1) and the Simple options list is derived by
+ * filtering `ALL_ACTIVITY_TYPE_OPTIONS` — this preserves ordering and
+ * guarantees byte-identical descriptions between the two modes.
+ */
+const SIMPLE_ACTIVITY_TYPE_VALUES = new Set([
+	'conversationUpdate',
+	'event',
+	'installationUpdate',
+	'invoke',
+	'message',
+	'messageReaction',
+	'typing',
+]);
+
+const SIMPLE_ACTIVITY_TYPE_OPTIONS = ALL_ACTIVITY_TYPE_OPTIONS.filter((o) =>
+	SIMPLE_ACTIVITY_TYPE_VALUES.has(o.value),
+);
+
 export class M365AgentTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'M365 Agent Trigger',
@@ -144,31 +246,7 @@ export class M365AgentTrigger implements INodeType {
 				displayOptions: { show: { activityFilterMode: ['simple'] } },
 				default: ['message'],
 				description: 'Filter inbound activities by type. Empty = accept all Simple types.',
-				options: [
-					{
-						name: 'Conversation Update',
-						value: 'conversationUpdate',
-						description: 'Members added or removed from conversation',
-					},
-					{ name: 'Event', value: 'event', description: 'Generic event' },
-					{
-						name: 'Installation Update',
-						value: 'installationUpdate',
-						description: 'App installed / uninstalled in a conversation',
-					},
-					{
-						name: 'Invoke',
-						value: 'invoke',
-						description: 'Synchronous request expecting a response (cards, tasks)',
-					},
-					{ name: 'Message', value: 'message', description: 'Standard text or rich message' },
-					{
-						name: 'Message Reaction',
-						value: 'messageReaction',
-						description: 'Reaction added to or removed from a message',
-					},
-					{ name: 'Typing', value: 'typing', description: 'Typing indicator signal' },
-				],
+				options: SIMPLE_ACTIVITY_TYPE_OPTIONS,
 			},
 			{
 				displayName: 'Activity Types',
@@ -179,78 +257,7 @@ export class M365AgentTrigger implements INodeType {
 				default: ['message'],
 				description:
 					'Filter inbound activities from the full SDK ActivityTypes enum (18 types). Empty = accept all 18.',
-				options: [
-					{ name: 'Command', value: 'command', description: 'Command invocation' },
-					{
-						name: 'Command Result',
-						value: 'commandResult',
-						description: 'Result of a command invocation',
-					},
-					{
-						name: 'Contact Relation Update',
-						value: 'contactRelationUpdate',
-						description: 'Contact relationship change',
-					},
-					{
-						name: 'Conversation Update',
-						value: 'conversationUpdate',
-						description: 'Members added or removed from conversation',
-					},
-					{
-						name: 'Delete User Data',
-						value: 'deleteUserData',
-						description: 'User requested data deletion',
-					},
-					{
-						name: 'End Of Conversation',
-						value: 'endOfConversation',
-						description: 'Conversation ended',
-					},
-					{ name: 'Event', value: 'event', description: 'Generic event' },
-					{
-						name: 'Handoff',
-						value: 'handoff',
-						description: 'Bot-to-bot or bot-to-human handoff',
-					},
-					{
-						name: 'Installation Update',
-						value: 'installationUpdate',
-						description: 'App installed / uninstalled in a conversation',
-					},
-					{
-						name: 'Invoke',
-						value: 'invoke',
-						description: 'Synchronous request expecting a response (cards, tasks)',
-					},
-					{
-						name: 'Invoke Response',
-						value: 'invokeResponse',
-						description: 'Response payload for an invoke (rare inbound)',
-					},
-					{ name: 'Message', value: 'message', description: 'Standard text or rich message' },
-					{
-						name: 'Message Delete',
-						value: 'messageDelete',
-						description: 'A previously-sent message was deleted',
-					},
-					{
-						name: 'Message Reaction',
-						value: 'messageReaction',
-						description: 'Reaction added to or removed from a message',
-					},
-					{
-						name: 'Message Update',
-						value: 'messageUpdate',
-						description: 'A previously-sent message was edited',
-					},
-					{
-						name: 'Suggestion',
-						value: 'suggestion',
-						description: 'Proactive suggestion activity',
-					},
-					{ name: 'Trace', value: 'trace', description: 'Debug / trace activity' },
-					{ name: 'Typing', value: 'typing', description: 'Typing indicator signal' },
-				],
+				options: ALL_ACTIVITY_TYPE_OPTIONS,
 			},
 			{
 				displayName: 'Invoke Names',
