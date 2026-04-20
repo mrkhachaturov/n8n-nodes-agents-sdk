@@ -42,16 +42,17 @@ describe('message resource description', () => {
 		expect(shown).not.toContain('delete');
 	});
 
-	it('Options collection includes mentions, suggestedActions, rawActivityOverride, and suggestedActionsToOverride', () => {
+	it('Options collection includes workflowFooter, mentions, rawActivityOverride, and suggestedActions (to-override nested inside suggestedActions)', () => {
 		const opts = message.description.find((p) => p.name === 'options');
 		const inner = (opts?.options as Array<{ name: string }>) ?? [];
 		const names = inner.map((o) => o.name);
+		// The recipient-override field is NO LONGER a peer — it lives as `to` inside
+		// the `suggestedActions` collection per spec §4/§8 (audit A3/D2-A).
 		expect(names).toEqual([
 			'workflowFooter',
 			'mentions',
 			'rawActivityOverride',
 			'suggestedActions',
-			'suggestedActionsToOverride',
 		]);
 	});
 

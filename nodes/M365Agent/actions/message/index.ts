@@ -8,10 +8,7 @@ import * as deleteMessage from './deleteMessage.operation';
 import * as typing from './typing.operation';
 import { conversationReferenceProperties } from '../../descriptions/conversationReference';
 import { mentionsOption } from '../../descriptions/mentionsOption';
-import {
-	suggestedActionsOption,
-	suggestedActionsToOverrideOption,
-} from '../../descriptions/suggestedActionsOption';
+import { suggestedActionsOption } from '../../descriptions/suggestedActionsOption';
 import { rawActivityOverrideField } from '../../../../shared/rawActivityOverride';
 
 const resourceDisplayOptions = { show: { resource: ['message'] } };
@@ -91,7 +88,6 @@ export const description: INodeProperties[] = [
 			mentionsOption,
 			rawActivityOverrideField,
 			suggestedActionsOption,
-			suggestedActionsToOverrideOption,
 		],
 	},
 

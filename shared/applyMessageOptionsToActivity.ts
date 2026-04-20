@@ -14,15 +14,16 @@ import { applySuggestedActionsToActivity, type SuggestedActionInput } from './su
  * to a user's button click, pass `[userId]` so Teams channel scope renders
  * the chips for that clicker. Empty (default) = broadcast to everyone.
  *
- * G022 — `options.suggestedActionsToOverride` lets the workflow explicitly
- * set the recipient list, winning over the envelope-derived auto-populate.
- * This is the proactive-path escape hatch: there is no inbound clicker to
- * target, so users pipe a resolved user ID (for example from an earlier
- * `M365 Conversation Ref` node) into this field. Semantics:
- *   - `undefined` (not set) → fall back to `suggestedActionsTo` (existing).
- *   - non-empty array      → wins over `suggestedActionsTo`.
- *   - explicit empty array → explicit broadcast; auto-populate is skipped.
- *   - anything else        → throws (array of strings is the only valid shape).
+ * The Suggested Actions option is a `collection` (spec §4/§8) containing:
+ *   - `chips`: fixedCollection of chip rows at `options.suggestedActions.chips.values`
+ *   - `to`:    optional `string[]` at `options.suggestedActions.to` that wins
+ *              over the envelope-derived auto-populate.
+ *
+ * `to` semantics (proactive-path escape hatch):
+ *   - `undefined` (not set) → fall back to `suggestedActionsTo` (auto-populate).
+ *   - non-empty array       → wins over `suggestedActionsTo`.
+ *   - explicit empty array  → explicit broadcast; auto-populate is skipped.
+ *   - anything else         → throws (array of strings is the only valid shape).
  */
 export function applyMessageOptionsToActivity(
 	activity: Partial<Activity>,
@@ -36,23 +37,25 @@ export function applyMessageOptionsToActivity(
 		next = applyMentionsToActivity(next, mentions);
 	}
 
-	const actions = (options.suggestedActions as { values?: SuggestedActionInput[] } | undefined)
-		?.values;
+	const suggested = options.suggestedActions as
+		| { chips?: { values?: SuggestedActionInput[] }; to?: unknown }
+		| undefined;
+	const actions = suggested?.chips?.values;
 	if (actions && actions.length > 0) {
-		const override = options.suggestedActionsToOverride;
+		const override = suggested?.to;
 		let resolvedTo: string[];
 		if (override === undefined) {
 			resolvedTo = suggestedActionsTo;
 		} else {
 			if (!Array.isArray(override)) {
 				throw new Error(
-					`suggestedActionsToOverride: expected an array of user IDs, got ${typeof override}`,
+					`suggestedActions.to: expected an array of user IDs, got ${typeof override}`,
 				);
 			}
 			for (const [i, entry] of override.entries()) {
 				if (typeof entry !== 'string') {
 					throw new Error(
-						`suggestedActionsToOverride[${i}]: expected a string user ID, got ${typeof entry}`,
+						`suggestedActions.to[${i}]: expected a string user ID, got ${typeof entry}`,
 					);
 				}
 			}

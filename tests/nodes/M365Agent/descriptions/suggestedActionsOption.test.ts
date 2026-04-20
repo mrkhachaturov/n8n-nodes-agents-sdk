@@ -1,20 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import type { INodeProperties, INodePropertyCollection } from 'n8n-workflow';
-import {
-	suggestedActionsOption,
-	suggestedActionsToOverrideOption,
-} from '../../../../nodes/M365Agent/descriptions/suggestedActionsOption';
+import { suggestedActionsOption } from '../../../../nodes/M365Agent/descriptions/suggestedActionsOption';
 
 describe('suggestedActionsOption property', () => {
-	const valuesRow = (suggestedActionsOption.options as INodePropertyCollection[])[0]
-		.values as INodeProperties[];
+	// The Suggested Actions option is a `collection` that nests:
+	//   - `chips` (fixedCollection, multipleValues) — the repeating type/title/value/displayText rows
+	//   - `to`    (string[])                        — recipient override (nested per spec §4/§8)
+	const inner = suggestedActionsOption.options as INodeProperties[];
+	const chipsField = inner.find((o) => o.name === 'chips') as INodeProperties;
+	const toField = inner.find((o) => o.name === 'to') as INodeProperties;
+	const valuesRow = (chipsField.options as INodePropertyCollection[])[0].values as INodeProperties[];
 
-	it('is a fixedCollection with multipleValues', () => {
-		expect(suggestedActionsOption.type).toBe('fixedCollection');
-		expect(suggestedActionsOption.typeOptions?.multipleValues).toBe(true);
+	it('is a collection (outer wrapper) containing chips + to', () => {
+		expect(suggestedActionsOption.type).toBe('collection');
+		expect(suggestedActionsOption.name).toBe('suggestedActions');
+		const names = inner.map((o) => o.name);
+		expect(names).toEqual(['chips', 'to']);
 	});
 
-	it('has Values row with type + title + value + displayText (in display order)', () => {
+	it('chips is a fixedCollection with multipleValues + sortable', () => {
+		expect(chipsField.type).toBe('fixedCollection');
+		expect(chipsField.typeOptions?.multipleValues).toBe(true);
+		expect(chipsField.typeOptions?.sortable).toBe(true);
+	});
+
+	it('chips Values row has type + title + value + displayText (in display order)', () => {
 		const names = valuesRow.map((v) => v.name);
 		expect(names).toEqual(['type', 'title', 'value', 'displayText']);
 	});
@@ -59,7 +69,7 @@ describe('suggestedActionsOption property', () => {
 	});
 
 	// Repo lint convention (asymmetric period rule, see Task 3 / conversationReference.ts).
-	it('field descriptions follow the asymmetric period rule', () => {
+	it('chip field descriptions follow the asymmetric period rule', () => {
 		for (const v of valuesRow) {
 			if (!v.description) continue;
 			const isMultiSentence = v.description.slice(0, -1).includes('. ');
@@ -67,25 +77,21 @@ describe('suggestedActionsOption property', () => {
 		}
 	});
 
-	it('property-level description ends with a period (multi-sentence)', () => {
-		expect(suggestedActionsOption.description).toBeDefined();
-		expect((suggestedActionsOption.description as string).endsWith('.')).toBe(true);
-	});
-});
+	describe('to (override) nested inside Suggested Actions collection — spec §4/§8, audit A3', () => {
+		it('is a multi-string override field with empty-array default', () => {
+			expect(toField).toBeDefined();
+			expect(toField.name).toBe('to');
+			expect(toField.type).toBe('string');
+			expect(toField.typeOptions?.multipleValues).toBe(true);
+			expect(toField.default).toEqual([]);
+		});
 
-describe('suggestedActionsToOverrideOption property (G022)', () => {
-	it('is a multi-string override field with empty-array default', () => {
-		expect(suggestedActionsToOverrideOption.name).toBe('suggestedActionsToOverride');
-		expect(suggestedActionsToOverrideOption.type).toBe('string');
-		expect(suggestedActionsToOverrideOption.typeOptions?.multipleValues).toBe(true);
-		expect(suggestedActionsToOverrideOption.default).toEqual([]);
-	});
-
-	it('description follows the asymmetric period rule (multi-sentence ends with a period)', () => {
-		const desc = suggestedActionsToOverrideOption.description;
-		expect(desc).toBeDefined();
-		const text = desc as string;
-		const isMultiSentence = text.slice(0, -1).includes('. ');
-		expect(text.endsWith('.')).toBe(isMultiSentence);
+		it('description follows the asymmetric period rule (multi-sentence ends with a period)', () => {
+			const desc = toField.description;
+			expect(desc).toBeDefined();
+			const text = desc as string;
+			const isMultiSentence = text.slice(0, -1).includes('. ');
+			expect(text.endsWith('.')).toBe(isMultiSentence);
+		});
 	});
 });

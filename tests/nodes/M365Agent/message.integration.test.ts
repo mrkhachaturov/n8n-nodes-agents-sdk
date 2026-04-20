@@ -161,10 +161,12 @@ describe('Message/Send with mentions + suggested actions', () => {
 						values: [{ type: 'user', id: '29:abc', name: 'Alice' }],
 					},
 					suggestedActions: {
-						values: [
-							{ type: 'imBack', title: 'Yes', value: 'yes' },
-							{ type: 'imBack', title: 'No', value: 'no' },
-						],
+						chips: {
+							values: [
+								{ type: 'imBack', title: 'Yes', value: 'yes' },
+								{ type: 'imBack', title: 'No', value: 'no' },
+							],
+						},
 					},
 				},
 			},
@@ -207,7 +209,7 @@ describe('Message/Reply with mentions + suggested actions', () => {
 				options: {
 					mentions: { values: [{ type: 'user', id: 'alice-user-id', name: 'Alice' }] },
 					suggestedActions: {
-						values: [{ type: 'imBack', title: 'OK', value: 'ok' }],
+						chips: { values: [{ type: 'imBack', title: 'OK', value: 'ok' }] },
 					},
 				},
 			},
@@ -247,7 +249,9 @@ describe('Message/Update with mentions + suggested actions', () => {
 				options: {
 					mentions: { values: [{ type: 'user', id: 'alice-user-id', name: 'Alice' }] },
 					suggestedActions: {
-						values: [{ type: 'openUrl', title: 'Details', value: 'https://example.com/x' }],
+						chips: {
+							values: [{ type: 'openUrl', title: 'Details', value: 'https://example.com/x' }],
+						},
 					},
 				},
 			},
@@ -289,7 +293,11 @@ describe('Message/replyInThread with mentions + suggested actions', () => {
 				options: {
 					mentions: { values: [{ type: 'everyone', name: 'Everyone' }] },
 					suggestedActions: {
-						values: [{ type: 'messageBack', title: 'Ack', value: 'ack', displayText: '👍' }],
+						chips: {
+							values: [
+								{ type: 'messageBack', title: 'Ack', value: 'ack', displayText: '👍' },
+							],
+						},
 					},
 				},
 			},

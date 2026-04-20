@@ -25,10 +25,10 @@ describe('applyMessageOptionsToActivity', () => {
 		expect(result.suggestedActions).toBeUndefined();
 	});
 
-	it('applies only suggestedActions when only options.suggestedActions.values is non-empty', () => {
+	it('applies only suggestedActions when only options.suggestedActions.chips.values is non-empty', () => {
 		const options: IDataObject = {
 			suggestedActions: {
-				values: [{ type: 'imBack', title: 'Yes', value: 'yes' }],
+				chips: { values: [{ type: 'imBack', title: 'Yes', value: 'yes' }] },
 			},
 		};
 		const result = applyMessageOptionsToActivity(baseActivity, options);
@@ -47,7 +47,7 @@ describe('applyMessageOptionsToActivity', () => {
 		const options: IDataObject = {
 			mentions: { values: [{ type: 'user', id: '29:abc', name: 'Alice' }] },
 			suggestedActions: {
-				values: [{ type: 'imBack', title: 'Yes', value: 'yes' }],
+				chips: { values: [{ type: 'imBack', title: 'Yes', value: 'yes' }] },
 			},
 		};
 		const result = applyMessageOptionsToActivity(baseActivity, options);
@@ -70,7 +70,7 @@ describe('applyMessageOptionsToActivity', () => {
 	it('propagates Error from buildSuggestedActions on invalid action shape', () => {
 		const options: IDataObject = {
 			suggestedActions: {
-				values: [{ type: 'imBack', title: '', value: 'x' }],
+				chips: { values: [{ type: 'imBack', title: '', value: 'x' }] },
 			},
 		};
 		expect(() => applyMessageOptionsToActivity(baseActivity, options)).toThrow(Error);
