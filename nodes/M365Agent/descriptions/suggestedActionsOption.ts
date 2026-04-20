@@ -27,7 +27,6 @@ export const suggestedActionsOption: INodeProperties = {
 	displayName: 'Suggested Actions',
 	name: 'suggestedActions',
 	type: 'collection',
-	placeholder: 'Add suggested actions',
 	default: {},
 	options: [
 		{
@@ -100,7 +99,7 @@ export const suggestedActionsOption: INodeProperties = {
 			default: [],
 			placeholder: 'e.g. 29:1abcDefG...',
 			description:
-				'Override the recipient list on the Suggested Actions chips. By default the chips target the inbound clicker (auto-populated from the envelope); set this to explicit user IDs for proactive sends where there is no clicker. Leave empty to broadcast to the whole conversation.',
+				'Override the recipient list. By default the chips target the inbound clicker (auto-populated from the envelope); set this to explicit user IDs for proactive sends where there is no clicker. Leave empty to broadcast to the whole conversation.',
 		},
 	],
 };
